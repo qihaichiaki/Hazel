@@ -28,6 +28,20 @@
                 "BUILD_CONFIG": "Release",
                 "BUILD_PLATFROM": "x64"
             }
+        },
+        {
+            "name": "HazelDist",
+            "generator": "Visual Studio 17 2022",
+            "description": "发布版本",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "BUILD_CONFIG": "Release",
+                "BUILD_PLATFROM": "x64"
+            }
         }
     ],
     "buildPresets": [

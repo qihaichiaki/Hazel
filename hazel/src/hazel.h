@@ -6,5 +6,5 @@
 #include "Hazel/log.h"
 
 // ==== 入口点 ================
-#include "Hazel/entryPoint.h"
+#include "Hazel/entry_point.h"
 // ===========================

@@ -79,3 +79,102 @@ Hazel引擎
 * 日志加入到暴露给客户端的头文件中去
 * 封装宏，让调用日志更方便，并且能够**统一控制**诸如debug日志在发布版本中不写日志
 * 使用宏的级别: trace, info, warn, error, fatal
+
+
+### 使用构建系统(原为premake)
+* 原本为premake, 这里用CMake替代.
+
+* 构建系统的目的是为了适配不同平台编译出相同的可执行程序的
+
+
+### 规划事件系统
+* 因为要引入第一个系统->窗口系统. 那么此时事件处理就必不可少了
+
+* Application: 包含一个循环, 保持整个系统运转, 并且持续更新我们的游戏
+  *  作为事务的中心枢纽, 它需要能够接收事件，可以将他们最终派发到各个游戏层(layer)中去
+
+* layer
+
+* 以window事件为例: 放大、缩小、点击...... 这些在底层库中会存在事件发生(事件回调)。而整个事件我们需要传递给application.
+* 但是，我们并不需要将application强行绑定到window类中，window通过事件调度派发事件。而事件的处理者的就是application相关层级, 所以application对于window来说是透明的.
+
+* 需要一个事件系统。并且每个事件需要详细的信息.
+* 应用程序创建窗口，应用程序此时就可以给窗口类型设置事件处理回调。这样每次窗口接收到对应的事件就会检查此回调是否存在并且执行相应的操作。
+* 而执行的回调是application中设置的, 此时window就可以在不知道application的存在但是却调用了相关的处理方法, 随后再由application事件传播给layer使用.
+* 需要注意的是事件均是**阻塞事件**. 因为会在栈上构建并且立即调用此函数, 处理此事件的时候会暂时暂停其他事件.
+
+* 扩展方向: 事件队列, 延迟处理
+
+* 对于事件传播layer的设想，layer相当于是一个堆栈, 每个layer都有机会处理到此事件，可以将事件向下传播到每一层, 一旦存在一个layer进行处理, 那么此事件就终止传播
+
+* application -EventListener-> window  
+* application <-OnEvent------- window  
+
+* 事件处理传递的数据就是事件类型, 可以分为多种类型, 并且里面存储着当前事件发生的数据(比如鼠标的坐标......)
+* 后续也可以作为应用程序事件, 执行一些业务功能(渲染事件......)
+
+* 针对于OnEvent, 可能会存在事件分发器, 将不同的事件分发到比如OnMove... 类似的具体事件处理回调
+
+### 事件系统设计
+* 项目文件:
+  * Hazel/Events:
+    * event.h 
+    * keyEvent.h
+    * mouseEvent.h
+    * applicationEvent.h
+
+* 需要一些预编译头来优化整体编译性能
+
+* 事件系统的当前设计是阻塞的, 事件并不是被延迟的, 会立即相应. 未来扩展可以放入某种事件总线中去.
+
+* 存在一个enum class来描述事件类型(EventType). 当前暂时可以分为下面几类:
+  * None = 0 保留字段
+  * Window: Close, Resize, Focus, LostFocus, Moved
+  * App: Tick, Update, Render
+  * Key: Pressed, Released
+  * Mouse: ButtonPressed, ButtonReleased, Moved, Scrolled 
+* 针对上述的事件类型, 可以使用一个事件类别进行分门别类(enum EventCategory), 这里设计使用了位图, 应该是为了方便筛选事件的类别.
+  * None = 0
+  * Application
+  * Input
+  * Keyboard
+  * Mouse
+  * MouseButton
+
+* 定义了EVENT_CLASS_TYPE宏，根据传入的type，方便每个事件实现类实现
+  * GetStaticType() 静态函数，返回具体的事件类型 (不需要事件实例就可以获取事件类型)
+  * GetEventType() 子类重写函数, 里面调用了此静态函数, 并且设计为了可继承 (手中持有的事件对象是一个基类)
+  * GetName() 子类重写函数 返回const char* 事件名字, 写死了, 没有字符串开销
+
+* 定义了EVENT_CLASS_CATEGORY宏, 根据传入的category(类别):
+  * GetCategoryFlags 子类重写函数, 返回当前事件类别
+
+* Event 声明事件基类:
+  * 声明纯虚函数: GetEventType, GetName(可能并不是在所有的配置下均需要使用?), GetCategoryFlags
+  * 实现虚函数: ToString, 返回的是string对象，里面调用GetName(). 可以重写此函数来表示更多的事件细节(也只是提供调试, 所以对性能方面没有关注)(后面对Event实现了ostream流重载, 调用了此函数)
+  * 提供筛选事件类别接口: IsInCategory()
+  * 存在保护字段: handled, 判断此事件是否处理
+
+* 具体的相关事件:
+  * 按键事件
+    * KeyEvent, 按键事件(按下/释放时的按键代码 共同的数据)
+      * 键事件基类, 成员为int类型的keycode, 构造函数是被保护的, 可以设置keycode(因为一个按键事件被确定，keycode一定时固定不可变的), 事件类别时keyboard和input
+    * 释放事件不需要考虑其他的
+    * 按下事件可能需要考虑是否重复按压(多维护了一个int repeatCount字段来表示当前key是否时重复按下(0为第一次按, 1为重复按下))
+  * 鼠标事件(鼠标和输入类别)
+    * MoveEvent, 存储数据字段mouseX, mouseY
+    * ScrolledEvent, 存储数据字段xOffset, yoffset
+    * 鼠标按键基类(和按键事件类似, 但是鼠标按下似乎没有检测重复)
+    * 鼠标按键按下/释放
+  * 应用程序事件(包含App和Window事件, 应用事件类别)
+    * windowClose
+    * windowResize: unsigned int width和height
+    * 不确定的tick, update, render(它们可以被硬编码, 因为这是既定的事实，而不是可能的模块)
+
+* EventDispatcher 声明事件调度器(不对外暴露)
+  *  using EventFn, 使用模板参数来表示对应的事件类型(可以扩展对模板的检查), 使用function包装, 函数处理是bool(EventT&)
+  *  构造函数传递的就是Event& event, 调度器内部存储Event&作为成员
+  *  dispatch的时候, 就可以根据传入的EventFn进行调度. 
+     *  细节: 通过模板EventT, 可以调用事件具体子类的静态函数, 来判断Dispatcher中存储的事件引用类型是否一致(多态函数type调用)
+     *  事件类型一致, 函数回调(调用的时候需要将事件引用类型转换为对应的事件模板类型传递)的返回值作为此事件是否处理.并且返回true表示事件调度成功
+     *  否则调度失败返回false

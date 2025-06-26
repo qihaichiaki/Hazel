@@ -20,3 +20,5 @@
 #else
     #define WINDOWS_USE_UTF8
 #endif
+
+#define BIT(X) (1 << X)
