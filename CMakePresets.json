@@ -1,0 +1,45 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "HazelDebug",
+            "generator": "Visual Studio 17 2022",
+            "description": "测试配置",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "BUILD_CONFIG": "Debug",
+                "BUILD_PLATFROM": "x64"
+            }
+        },
+        {
+            "name": "HazelRelease",
+            "generator": "Visual Studio 17 2022",
+            "description": "发布配置",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "BUILD_CONFIG": "Release",
+                "BUILD_PLATFROM": "x64"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "Debug",
+            "configurePreset": "HazelDebug",
+            "configuration": "Debug"
+        },
+        {
+            "name": "Release",
+            "configurePreset": "HazelRelease",
+            "configuration": "Release"
+        }
+    ]
+}

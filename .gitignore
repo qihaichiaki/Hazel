@@ -1,0 +1,15 @@
+# 构建相关
+build
+thirdparty
+
+# vscode相关
+.vscode
+
+# 资源文件
+resources/*
+assets
+
+# 杂项文件
+*.ini
+*.bkp
+*.drawio
