@@ -7,7 +7,9 @@ extern Hazel::Application* Hazel::createApplication();
 int main(int, char**)
 {
     WINDOWS_USE_UTF8
-    printf("Hazel 引擎");
+    Hazel::Log::init();
+    HZ_CORE_WARN("日志初始化完毕!");
+    HZ_INFO("你好, 世界!");
     auto app = Hazel::createApplication();
     app->run();
     delete app;

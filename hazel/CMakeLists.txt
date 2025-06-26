@@ -18,3 +18,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     -DHZ_PLATFORM_WINDOWS
     -DHZ_BUILD_DLL
 )
+
+# 增加spdlog作为三方依赖->只需要包含头文件即可
+target_include_directories(${PROJECT_NAME} PRIVATE
+    "${CMAKE_SOURCE_DIR}/hazel/vendor/spdlog/include"
+)
