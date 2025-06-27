@@ -178,3 +178,27 @@ Hazel引擎
      *  细节: 通过模板EventT, 可以调用事件具体子类的静态函数, 来判断Dispatcher中存储的事件引用类型是否一致(多态函数type调用)
      *  事件类型一致, 函数回调(调用的时候需要将事件引用类型转换为对应的事件模板类型传递)的返回值作为此事件是否处理.并且返回true表示事件调度成功
      *  否则调度失败返回false
+  
+### 增加预编译头文件
+* 项目文件:
+  * hzpch.h
+  * hzpch.cpp(vs里需要这样支持)
+
+* 增加的预编译头文件:
+  * iostream
+  * memory
+  * utility
+  * algorithm
+  * functional
+  * 下面是容器
+  * sstream
+  * string
+  * vector
+  * unordered_map
+  * unordered_set
+  * Windows特有:Windows.h
+
+* 随后用构建系统指定预编译头
+  * CMAKE里: ``target_precompile_headers(MyApp PRIVATE "pch.h")``
+
+* 需要注意pch文件是每个源文件内的头个头文件

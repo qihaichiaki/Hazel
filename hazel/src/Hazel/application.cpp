@@ -1,3 +1,4 @@
+#include "hzpch.h"
 #include "application.h"
 
 #include "Hazel/Events/application_event.h"

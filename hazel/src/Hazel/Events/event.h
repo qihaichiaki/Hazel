@@ -8,10 +8,6 @@
 
 #include "Hazel/core.h"
 
-#include <string>
-#include <functional>
-#include <sstream>
-
 namespace Hazel
 {
 

@@ -14,6 +14,8 @@ file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
+target_precompile_headers(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/hzpch.h")
+
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     -DHZ_PLATFORM_WINDOWS
     -DHZ_BUILD_DLL
