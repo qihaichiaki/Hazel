@@ -59,7 +59,7 @@ public:
 class HAZEL_API MouseMovedEvent : public Event
 {
 public:
-    MouseMovedEvent(float mouse_x, float mouse_y) : m_mouse_x{mouse_x}, m_mouse_y{mouse_y} {}
+    MouseMovedEvent(float x_pos, float y_pos) : m_x_pos{x_pos}, m_y_pos{y_pos} {}
 
     EVENT_CLASS_TYPE(MouseMoved)
     EVENT_CLASS_CATEGORY(CategoryMouse | CategoryInput)
@@ -67,12 +67,12 @@ public:
     std::string toString() const override
     {
         std::stringstream ss;
-        ss << "MouseMovedEvent: (" << m_mouse_x << ", " << m_mouse_y << ")";
+        ss << "MouseMovedEvent: (" << m_x_pos << ", " << m_y_pos << ")";
         return ss.str();
     }
 
 private:
-    float m_mouse_x, m_mouse_y;
+    float m_x_pos, m_y_pos;
 };
 
 class HAZEL_API MouseScrolledEvent : public Event

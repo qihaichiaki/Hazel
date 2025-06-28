@@ -263,3 +263,26 @@ Hazel引擎
     * 可以在循环中添加glClearColor(1, 0, 1, 1) 设置清屏颜色, glClear(GL_COLOR_BUFFER_BIT)清除颜色缓冲区, 用设定的clear颜色 测试opengl上下文 
 
 * pch中增加日志头文件
+
+### 窗口事件
+* 将window中产生的event抛出，给应用程序进行消费处理
+* 完成 Key, Mouse, Window 事件处理
+* 实际上，window时将事件扔给了上层给window塞入EventCallback的那个处理。
+
+* 在Application中设置函数OnEvent，将其绑定传递给window，window发生事件会传递到此处, 然后又由此处进行派发调度。
+
+* 使用**glfwGetWindowUserPointyer**取出对window存储的用户字段
+* GLFW中设置glfw事件回调
+  * glfwSetWindowSizeCallback(window, void(window, width, height))
+  * glfwSetWindowCloseCallback(window, void(window))
+  * glfwSetKeyCallback(window, void(window, key, scancode, action, mods))  // 需要存在自己的keycode, 不依赖于glfw的keycode
+    * action: GLFW_PRESS,GLFW_RELEASE,GLFW_REPEAT 
+  * glfwSetMouseButtonCallback(window, void(window, action, mods))
+    * GLFW_PRESS, GLFW_RELEASE
+  * glfwSetScrollCallback(window, void(window, double xOffset, yOffset))
+  * glfwSetCursorPosCallback(window, void(window, double xPos, yPos))
+
+* 另外的，可以在初始化时, 想glfw塞入一个错误处理回调: glfwSetErrorCallback void(error, const char description)
+
+* 在application的OnEvent函数中实际利用事件调度器去处理事件
+  * 根据传入的函数指针里的事件类型进行匹配

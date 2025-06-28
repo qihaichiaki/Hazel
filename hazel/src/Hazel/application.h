@@ -6,6 +6,8 @@
 namespace Hazel
 {
 
+class Event;
+class WindowCloseEvent;
 class Application
 {
 public:
@@ -13,6 +15,11 @@ public:
     HAZEL_API virtual ~Application();
 
     HAZEL_API void run();
+
+private:
+    void onEvent(Event&);
+
+    bool onWindowClosed(WindowCloseEvent&);
 
 private:
     std::unique_ptr<Window> m_window;
