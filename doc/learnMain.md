@@ -286,3 +286,52 @@ Hazel引擎
 
 * 在application的OnEvent函数中实际利用事件调度器去处理事件
   * 根据传入的函数指针里的事件类型进行匹配
+
+
+### layer层级支持
+* 层决定了绘制顺序, 也适用于事件, 更新逻辑
+* 层栈是存在顺序的, 可以据此决定渲染的先后。
+* 需要注意的是层级接收事件的顺序和层级渲染的顺序是刚好相反的。层级越晚渲染，则其画面越在上面。而事件触发往往从上往底的去触发(以鼠标点击为例)
+* 对于层栈的处理, 渲染的时候, 从前往后遍历(栈帧是从下往上), 越后的越被渲染, 其画面呈现优先度就越高; 事件处理的时候是从后往前遍历(栈帧是从上往下), 事件越应该被画面优先级越高的进行处理.
+
+* 层是一个抽象的概念, 其是应用程序的一部分, 用来呈现某些类型的内容并接收事件。 
+* 举例: GUI层, UI层, 调试层, 游戏层
+
+* 项目文件:
+  * Hazel/
+    * Layer.h/.cpp
+    * LayerStack.h/.cpp
+
+* HAZEL_API layer抽象:
+  * 构造函数赋值name(默认为Layer)
+  * 保护字段: debugName 层级调试的name (在后续的发布版本中, 不应该以debugname去索引Layer)
+  * 虚函数:
+    * onAttach() 添加到LayerStash的时候被调用
+    * onDetach() 被LayerStash移除的时候被调用
+    * onUpdate() layer更新
+    * onEvent(Event& event) layer响应事件
+  * getName() const 返回debug调试的layer name 
+  * 后续扩展, 层是否启用(控制层是否参与update和renderer)
+
+* HAZEL_API LayerStack实现:
+  * 首先Layer* 存在vector中
+  * 里面保存其iterator 的 layer_insert 迭代器(== layers.begin(), 用来直接插入到栈顶, 常规的入栈操作)
+  * 向外提供容器的begin, end迭代器
+  * 实用功能:
+    * PushLayer(Layer* ) 使用layer_insert插入到栈顶
+    * PushOverlay(Layer* overlay) 插入到栈尾(画面最后渲染, 事件接收最前)
+    * PopLayer(Layer*) -> 这里存在疑问! layer_insert何为--?
+    * PopOverlay(Layer*) -> 同理
+  * LayerStack是由Application所有, 所有权应该在Application中
+  * layer的目的是在给定的时间点上贯穿application的整个生命周期
+    * 当前的所有权语义: 存在vector当中的，只有析构的时候才会delete释放layer资源
+    * 而pop的时候仅仅只是移除layer, 并不会对layer进行摧毁
+
+* Application增加此LayerStack, 并且增加push layer
+  * OnEvent: 事件传播从底向上进行遍历, 并且依次调用其layer的onEvent函数, 并且判断e的handled是否处理, 处理就break; 不会对上面的层级进行调用。
+  * Onupdate: 对层级从上到下进行遍历(常规遍历即可), 调用里面的update方法即可
+
+* 多线程调试版本
+* Hazel.h 公共头文件暴露layer头文件
+* SandboxApp中创建一个示例的layer, 插入到SandBoxApp中去
+  * 下一步计划， 创建一个Imgui layer

@@ -94,6 +94,12 @@ public:
         return getCategoryFlags() & event_category;
     }
 
+    /// @brief 当前事件是否被处理
+    bool isHandled() const
+    {
+        return m_handled;
+    }
+
 protected:
     bool m_handled = false;
 };

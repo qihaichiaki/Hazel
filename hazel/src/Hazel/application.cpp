@@ -19,22 +19,43 @@ void Application::run()
     while (m_running) {
         glClearColor(1, 0, 1, 1);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        // 层级从左往右更新/渲染
+        for (auto& layer : m_layer_stack) {
+            layer->onUpdate();
+        }
+
         m_window->onUpdate();
     }
 }
 
 void Application::onEvent(Event& event)
 {
-    HZ_CORE_TRACE(event.toString());
-
     EventDispatcher dispatcher{event};
     dispatcher.dispatch<WindowCloseEvent>(APP_BIND_FUNC(onWindowClosed));
+
+    for (auto layer_it = m_layer_stack.end(); layer_it != m_layer_stack.begin();) {
+        (*(--layer_it))->onEvent(event);
+        if (event.isHandled()) {
+            break;
+        }
+    }
 }
 
 bool Application::onWindowClosed(WindowCloseEvent&)
 {
     m_running = false;
     return true;
+}
+
+void Application::pushLayer(Layer* layer)
+{
+    m_layer_stack.pushLayer(layer);
+}
+
+void Application::pushOverlay(Layer* overly)
+{
+    m_layer_stack.pushOverlay(overly);
 }
 
 }  // namespace Hazel
