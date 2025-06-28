@@ -5,6 +5,8 @@
 #include "Hazel/Events/key_event.h"
 #include "Hazel/Events/mouse_event.h"
 
+#include <glad/glad.h>
+
 namespace Hazel
 {
 Window* Window::create(const WindowProps& props)
@@ -48,6 +50,9 @@ void WindowsWindow::init(const WindowProps& props)
     HZ_CORE_ASSERT(m_window, "glfwInit初始化失败!")
     // glfw创建当前的上下文
     glfwMakeContextCurrent(m_window);
+    // glad加载所有现代opengl函数
+    int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+    HZ_CORE_ASSERT(status, "gladLoadGLLoader 失败!");
     // 设置用户字段, 方便在glfw触发事件时使用
     glfwSetWindowUserPointer(m_window, &m_data);
 

@@ -335,3 +335,23 @@ Hazel引擎
 * Hazel.h 公共头文件暴露layer头文件
 * SandboxApp中创建一个示例的layer, 插入到SandBoxApp中去
   * 下一步计划， 创建一个Imgui layer
+
+
+### 现代OpenGL和Glad
+* 需要一种将所有现代OpenGL函数从GPU加载到C++中的方式
+* glad: 基于官方规范的多语言gl加载生成器(比glew好一些，更现代一点?)
+* glad的网站配置下载: [glad](https://glad.dav1d.de/)
+  * profile -> core
+  * gl -> core 4.6
+* 将其源码加入hazel/vendor
+  *  将其变为C静态库进行链接即可
+
+* glad库核心:
+  * 调用gladLoadGLLoader(GLADloadproc), 使用拥有的所有的加载类函数
+  * 在glfw初始化opengl当前上下文后就可以调用此api进行工作
+  * 参数给予的是glfwGetProcAddress, 需要转换下函数类型
+
+* 另外，因为存在多个可以引入gl的库, 针对glfw, 可以定义宏来控制glfw不引入gl头文件, 防止和glad之间存在冲突
+  * GLFW_INCLUDE_NONE
+
+* 加载完毕后，使用glGenVertexArrays简单测试下id是否有效

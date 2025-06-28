@@ -2,7 +2,7 @@
 #include "application.h"
 #include "Hazel/Events/application_event.h"
 
-#include <GLFW/glfw3.h>
+#include <glad/glad.h>
 namespace Hazel
 {
 #define APP_BIND_FUNC(x) std::bind(&Application::x, this, std::placeholders::_1)

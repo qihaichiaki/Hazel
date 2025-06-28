@@ -6,6 +6,9 @@ set(GLFW_BUILD_DOCS OFF)
 set(GLFW_INSTALL OFF)
 add_subdirectory(${CMAKE_SOURCE_DIR}/hazel/vendor/glfw)
 
+# 加载glad三方依赖
+add_subdirectory(${CMAKE_SOURCE_DIR}/hazel/vendor/glad)
+
 # dll/lib 文件指明生成位置
 # 跳过MSBuild自动配置子目录
 set(BUILD_PATH "${CMAKE_BINARY_DIR}/bin/${BUILD_CONFIG}-${BUILD_PLATFROM}/${PROJECT_NAME}")
@@ -27,6 +30,11 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     -DHZ_BUILD_DLL
 )
 
+# 一些三方库的宏配置
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    -DGLFW_INCLUDE_NONE
+)
+
 target_include_directories(${PROJECT_NAME} PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
@@ -38,5 +46,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     glfw # 三方跨平台窗口库
+    glad # 三方封装现代opengl库
     opengl32 # opengl
 )
