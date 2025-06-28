@@ -202,3 +202,64 @@ Hazel引擎
   * CMAKE里: ``target_precompile_headers(MyApp PRIVATE "pch.h")``
 
 * 需要注意pch文件是每个源文件内的头个头文件
+
+### 窗口抽象和GLFW
+* 从添加一个窗口开始, 可以提交渲染的任务, 可以可视化一切东西, 开始游戏引擎开发的一切......
+
+* 希望窗口能够支持多平台, 那么就得对窗口类进行抽象
+
+* 使用GLFW简单的跨平台库创建窗口
+  * 前期为了简单适配渲染可以这样做. 比如渲染只有OpenGL. 但是如果后期支持DirectX, 则就需要在windows下调用win32的原始窗口API了
+  * 虽然GLFW是跨平台的, 但是注意抽象可以做到此平台上的GLFW(直接修改等......), 不同平台是可以做出不同的东西的
+
+
+* 抽象window类
+  * struct WindowProps
+    * string Title
+    * unsigned int Width
+    * unsigned int Height
+    * Hazel Engine 1280 720
+  * class HAZEL_API Window
+    * using EventCallBackFn void(Event&)
+    * virtual ~Window() {}
+    * virtual onUpdate() = 0;
+    * virtual Width/Height Get = 0
+    * window -> attributes
+      * virtual SetEventCallBack = 0
+      * virtual SetVSync(bool) = 0
+      * virtual bool IsVSync() const = 0
+    * static Window* Create(....);  窗口唯一的创建接口实现(每个平台实现, 取决于当前编译的平台)
+
+* src/PlatForm/Windows
+  * WindowsWindow.h/.cpp 的平台具体实现
+    * 接口重写
+    * 私有方法: Init(WindowProps&), Shutdown
+    * 私有属性: 
+      * GLFWwindow*
+      * struct WindowData(WindowProps的运行时数据 + VSync, EventCallBackFn 相关字段)
+        * 抽象此字段的目的时可以将其传递给GLFW作为用户自定义数据, 方便修改
+      * WindowData windowData
+  * 相关实现：
+    * Init
+      * data字段赋值
+      * 可能存在多个窗口创建的需求, 存在.cpp里静态字段, 防止glfw初始化过多 **glfwInit()**
+        * 为了检查初始化是否成功, 引入日志断言: HZ_CORE_ASSERT(c) -> core.h
+          * if (!c) { HZ_ERROR("断言失败: {0}", __VA_ARGS__); __debugbreak();}
+          * 使用宏HZ_ENABLE_ASSERTS控制上述的行为
+          * __debugbreak 适用于windows, 相当于调试的断点
+        * glfwCreateWindow 创建窗口, 后面两个字段置空
+        * glfwMakeContextCurrent(window) 将上下文设置为当前
+        * glfwSetWindowUserPointer(window, &m_data); 设置用户自定义数据(方便后续窗口事件触发, 调用用户数据里的事件回调将事件广播出去)
+        * SetVSync(true)
+          * glfwSwapInterval(1) 垂直同步, 即窗口的缓冲区交换是否和显示器的刷新同步(需要激活当前上下文才能开启)
+    * shutDown
+      * glfwDestoryWindow(window) 释放窗口
+    * onUpdate
+      * glfwPollEvents();  glfw轮询事件
+      * glfwSwapBuffers(window); glfw交换缓冲区 -> 双缓冲
+  * 在application中添加此window的唯一指针
+    * 在应用程序构造函数中, 调用Window::Create函数进行构建
+    * 增加running控制循环, 持续更新window的更新
+    * 可以在循环中添加glClearColor(1, 0, 1, 1) 设置清屏颜色, glClear(GL_COLOR_BUFFER_BIT)清除颜色缓冲区, 用设定的clear颜色 测试opengl上下文 
+
+* pch中增加日志头文件

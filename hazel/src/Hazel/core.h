@@ -21,4 +21,21 @@
     #define WINDOWS_USE_UTF8
 #endif
 
+// 设置日志断言
+#ifdef HZ_ENABLE_ASSERTS
+    #define HZ_CORE_ASSERT(c, ...)                       \
+        if (!(c)) {                                      \
+            HZ_CORE_ERROR("断言失败: {0}", __VA_ARGS__); \
+            __debugbreak();                              \
+        }
+    #define HZ_ASSERT(c, ...)                           \
+        if (!(c)) {                                     \
+            HZ_APP_ERROR("断言失败: {0}", __VA_ARGS__); \
+            __debugbreak();                             \
+        }
+#else
+    #define HZ_CORE_ASSERT(c, ...) (void)(c);
+    #define HZ_ASSERT(c, ...) (void)(c);
+#endif
+
 #define BIT(X) (1 << X)

@@ -1,17 +1,22 @@
 #pragma once
 
 #include "core.h"
+#include "window.h"
 
 namespace Hazel
 {
 
-class HAZEL_API Application
+class Application
 {
 public:
-    Application();
-    virtual ~Application();
+    HAZEL_API Application();
+    HAZEL_API virtual ~Application();
 
-    void run();
+    HAZEL_API void run();
+
+private:
+    std::unique_ptr<Window> m_window;
+    bool m_running = true;
 };
 
 Application* createApplication();

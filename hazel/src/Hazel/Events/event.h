@@ -6,6 +6,7 @@
  * 未来的扩展方向是可以将事件加入某种事件总线中去
  */
 
+#include "hzpch.h"
 #include "Hazel/core.h"
 
 namespace Hazel

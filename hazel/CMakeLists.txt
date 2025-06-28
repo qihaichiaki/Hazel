@@ -1,5 +1,11 @@
 project(Hazel)
 
+# 加载glfw三方依赖
+# 设置构建的一些选项
+set(GLFW_BUILD_DOCS OFF)
+set(GLFW_INSTALL OFF)
+add_subdirectory(${CMAKE_SOURCE_DIR}/hazel/vendor/glfw)
+
 # dll/lib 文件指明生成位置
 # 跳过MSBuild自动配置子目录
 set(BUILD_PATH "${CMAKE_BINARY_DIR}/bin/${BUILD_CONFIG}-${BUILD_PLATFROM}/${PROJECT_NAME}")
@@ -28,4 +34,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 # 增加spdlog作为三方依赖->只需要包含头文件即可
 target_include_directories(${PROJECT_NAME} PRIVATE
     "${CMAKE_SOURCE_DIR}/hazel/vendor/spdlog/include"
+)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    glfw # 三方跨平台窗口库
+    opengl32 # opengl
 )
