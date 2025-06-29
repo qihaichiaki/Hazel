@@ -355,3 +355,53 @@ Hazel引擎
   * GLFW_INCLUDE_NONE
 
 * 加载完毕后，使用glGenVertexArrays简单测试下id是否有效
+
+### 引入imgui
+* 目标, imgui后续将使用的是Hazel提供的通用渲染接口, 来在窗口中绘制一些东西出来
+* 同样的, imgui也作为submodule引入到hazel/vendor/imgui
+  * 编译为静态库引入(没有选择后端)
+
+* 项目文件：
+  * hazel/ImGui: imgui_layer.h/.cpp
+
+* 针对于imgui搭建layer对象
+  * 针对于imgui的后端实现文件, impl_opengl3.cpp 放在PlatForm/OpenGL中实现
+    * USE_GL_ES3 -> 定义删除
+    * 命名风格变为: imgui_opengl_renderer
+    * set default opengl loader to be gl3w -> 删除? 
+    * 需要注意包含hzpch.h
+
+
+* 编写imgui layer层:(可以尝试参考: glfw+opengl3的相关示例代码)
+  * onAttach()
+    * ImGui::CreateContext
+    * ImGui::StyleColorDark
+    * GuiIo GetIO()
+      * io.BackedFlags |= ImGuiBackendFlags_HasMouseCursors;
+      * io.BackedFlags |= ImGuiBackendFlags_HasSetMousePos;
+      * 在glfw的后端实现中, 137-> keyboard mapping (临时实现-轮询输入)
+    * ImGui_ImplOpenGL3_Init("#version 410");  // 初始化OpenGL
+  * onUpdate()
+    * io.DisplaySize = ImVec2{Get().GetWindow().GetWidth(), Get().GetWindow().GetHeight()};// 注意增加application初始化时添加application实例的静态指针(单例, 注意断言一下), 然后返回Application& 和 Window& 对象方法  创建新帧前需要设置窗口大小
+    * glfwGetTime() 可以获取delta, 设置到io.DeltaTime(里面time- m_time(上次记录时间戳))
+    * ImGui_ImplOpenGL3_NewFrame()
+    * ImGui::NewFrame()
+    * 临时键入static bool show, 里面增加ImGui::ShowDemoWindow()的演示窗口
+    * ImGui::Render();
+    * ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+
+* hazel.h 中增加imgui/imgui_layer头文件, 方便sandbox添加imgui层
+  * 需要最后渲染, 事件第一个处理, 所以pushOverlay
+
+* application pushlayer的时候需要调用onAttach()
+
+
+* 简单总结
+> 1. 首先引入的imgui是一个后端无关的lib, 只是提供UI层面的逻辑调用
+> 2. 所谓的后端没实现, 则是指需要后端相关函数, 为imgui实现接收窗口事件, io相关设置
+> 3. 最后想要完整的实现窗口+渲染, 也需要后端窗口+渲染的实现
+>   具体表现为, 开始新帧阶段, glfw的实现里是设置窗口相关的信息, 以及按键映射等等, 而opengl则是准备渲染数据
+>   当前项目主要是引用了imgui的opengl的渲染后端实现, 而窗口后端则是自己添加上去的.
+
+* 注意: imgui新版本已经抛弃历史io.KeyMap和io.KeyDown那一套, 需要使用新的AddXXXEvent进行解决

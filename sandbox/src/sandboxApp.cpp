@@ -21,6 +21,8 @@ public:
     SandboxApp()
     {
         pushLayer(new ExampleLayer{});
+        // 添加imgui到覆盖层
+        pushOverlay(new Hazel::ImGuiLayer{});
     }
     ~SandboxApp() {}
 };

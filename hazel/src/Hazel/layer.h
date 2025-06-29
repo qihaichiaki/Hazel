@@ -16,12 +16,20 @@ public:
     HAZEL_API Layer(const std::string& name = "layer");
     HAZEL_API virtual ~Layer();
 
-    virtual void onAttach() {}
-    virtual void onDetach() {}
-    virtual void onUpdate() {}
-    virtual void onEvent(Event&) {}
+    /// @brief layer被push时调用的加载方法
+    HAZEL_API virtual void onAttach() {}
 
-    const std::string& getDebugName() const
+    /// @brief layer被pop时调用的卸载方法
+    HAZEL_API virtual void onDetach() {}
+
+    /// @brief layer的更新动作
+    HAZEL_API virtual void onUpdate() {}
+
+    /// @brief layer的事件处理
+    HAZEL_API virtual void onEvent(Event&) {}
+
+    /// @brief 返回layer层的debug name
+    HAZEL_API const std::string& getDebugName() const
     {
         return m_debug_name;
     }

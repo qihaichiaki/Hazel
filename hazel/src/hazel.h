@@ -5,6 +5,7 @@
 #include "Hazel/application.h"
 #include "Hazel/log.h"
 #include "Hazel/layer.h"
+#include "Hazel/ImGui/imgui_layer.h"
 
 // ==== 入口点 ================
 #include "Hazel/entry_point.h"

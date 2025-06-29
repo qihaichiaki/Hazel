@@ -9,6 +9,9 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/hazel/vendor/glfw)
 # 加载glad三方依赖
 add_subdirectory(${CMAKE_SOURCE_DIR}/hazel/vendor/glad)
 
+# 加载imgui三方依赖
+add_subdirectory(${CMAKE_SOURCE_DIR}/hazel/vendor/imgui)
+
 # dll/lib 文件指明生成位置
 # 跳过MSBuild自动配置子目录
 set(BUILD_PATH "${CMAKE_BINARY_DIR}/bin/${BUILD_CONFIG}-${BUILD_PLATFROM}/${PROJECT_NAME}")
@@ -26,8 +29,9 @@ add_library(${PROJECT_NAME} SHARED ${SOURCES})
 target_precompile_headers(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/hzpch.h")
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
-    -DHZ_PLATFORM_WINDOWS
-    -DHZ_BUILD_DLL
+    -DHZ_PLATFORM_WINDOWS # 平台配置为windows
+    -DHZ_BUILD_DLL # 生成动态库导出信息
+    -DHZ_ENABLE_ASSERTS # 启用宏断点检查
 )
 
 # 一些三方库的宏配置
@@ -48,4 +52,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     glfw # 三方跨平台窗口库
     glad # 三方封装现代opengl库
     opengl32 # opengl
+    imgui
 )

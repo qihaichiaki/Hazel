@@ -7,8 +7,13 @@ namespace Hazel
 {
 #define APP_BIND_FUNC(x) std::bind(&Application::x, this, std::placeholders::_1)
 
+Application* Application::s_instance = nullptr;
+
 Application::Application()
 {
+    HZ_CORE_ASSERT(s_instance == nullptr, "application被创建多次!")
+    s_instance = this;
+
     m_window = std::unique_ptr<Window>(Window::create());
     m_window->setEventCallBack(APP_BIND_FUNC(onEvent));
 }
@@ -50,12 +55,26 @@ bool Application::onWindowClosed(WindowCloseEvent&)
 
 void Application::pushLayer(Layer* layer)
 {
+    layer->onAttach();
     m_layer_stack.pushLayer(layer);
 }
 
 void Application::pushOverlay(Layer* overly)
 {
+    overly->onAttach();
     m_layer_stack.pushOverlay(overly);
+}
+
+void popLayer(Layer* layer)
+{
+    layer->onDetach();
+    // TODO: layer pop待实现
+}
+
+void popOverlay(Layer* overly)
+{
+    overly->onDetach();
+    // TODO: overly pop待实现
 }
 
 }  // namespace Hazel
