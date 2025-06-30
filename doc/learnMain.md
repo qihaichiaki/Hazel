@@ -477,3 +477,16 @@ Hazel引擎
   *  同理: IsMouseButtonPressed(int button); GetMouseX/Y GetMousePosition(pair float-float)
   *  创建静态实例: 暂时直接在WindowInput下直接new即可
 *  由于当前引擎没有设置按钮枚举, 所以只能暂时包含GLFW相关头文件使用key枚举才能使用
+
+
+### 自定义按键代码
+* 之前的输入/事件绑定均有点太依赖GLFW库, 这对未来可扩展(不使用GLFW库)不友好, 需要引擎层自己包装一层按键代码, 来屏蔽掉不同实现的差异
+* hazel.h 增加Input.h
+
+* 参考一种库的实现按钮映射方式, 在其他环境下做静态/动态时的转换即可
+* 当前参考glfw，在Hazel/keyCodes.h 中将对应的按键宏拷贝过来， mouseButtonCode.h 类似  -> input.h
+* 添加完毕后入客户端头文件中即可
+
+* 转换:
+  * 使用宏控制, 在不同平台是对应的那一套平台的按键宏定义(存在问题: 序列化怎么办?)
+  * 使用一个函数->查找  表进行转换

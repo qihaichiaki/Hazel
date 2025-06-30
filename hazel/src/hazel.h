@@ -7,6 +7,9 @@
 #include "Hazel/layer.h"
 #include "Hazel/ImGui/imgui_layer.h"
 
+#include "Hazel/input.h"
+#include "Hazel/input_codes.h"
+
 // ==== 入口点 ================
 #include "Hazel/entry_point.h"
 // ===========================

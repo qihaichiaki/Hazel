@@ -4,14 +4,18 @@ class ExampleLayer : public Hazel::Layer
 {
 public:
     ExampleLayer() : Layer("Example") {}
+
     void onUpdate() override
     {
-        // HZ_INFO("ExampleLayer被更新...");
+        static int index = 1;
+        if (Hazel::Input::isKeyPressed(HZ_KEY_ENTER)) {
+            HZ_INFO("你按下了回车!{0}", index++);
+        }
     }
 
-    void onEvent(Hazel::Event& e) override
+    void onEvent(Hazel::Event&) override
     {
-        HZ_TRACE("{0}", e.toString());
+        // HZ_TRACE("{0}", e.toString());
     }
 };
 
