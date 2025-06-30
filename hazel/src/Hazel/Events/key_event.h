@@ -52,12 +52,27 @@ class HAZEL_API KeyReleasedEvent : public KeyEvent
 public:
     KeyReleasedEvent(int key_code) : KeyEvent{key_code} {}
 
-    EVENT_CLASS_TYPE(KeyPressed)
+    EVENT_CLASS_TYPE(KeyReleased)
 
     std::string toString() const override
     {
         std::stringstream ss;
         ss << "KeyReleasedEvent: " << m_key_code;
+        return ss.str();
+    }
+};
+
+class HAZEL_API KeyTypedEvent : public KeyEvent
+{
+public:
+    KeyTypedEvent(int key_code) : KeyEvent{key_code} {}
+
+    EVENT_CLASS_TYPE(KeyTyped)
+
+    std::string toString() const override
+    {
+        std::stringstream ss;
+        ss << "KeyTypedEvent: " << m_key_code;
         return ss.str();
     }
 };

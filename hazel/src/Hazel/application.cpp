@@ -5,8 +5,6 @@
 #include <glad/glad.h>
 namespace Hazel
 {
-#define APP_BIND_FUNC(x) std::bind(&Application::x, this, std::placeholders::_1)
-
 Application* Application::s_instance = nullptr;
 
 Application::Application()
@@ -15,7 +13,7 @@ Application::Application()
     s_instance = this;
 
     m_window = std::unique_ptr<Window>(Window::create());
-    m_window->setEventCallBack(APP_BIND_FUNC(onEvent));
+    m_window->setEventCallBack(HZ_BIND_EVENT_FN(Application::onEvent));
 }
 Application::~Application() {}
 
@@ -37,7 +35,7 @@ void Application::run()
 void Application::onEvent(Event& event)
 {
     EventDispatcher dispatcher{event};
-    dispatcher.dispatch<WindowCloseEvent>(APP_BIND_FUNC(onWindowClosed));
+    dispatcher.dispatch<WindowCloseEvent>(HZ_BIND_EVENT_FN(Application::onWindowClosed));
 
     for (auto layer_it = m_layer_stack.end(); layer_it != m_layer_stack.begin();) {
         (*(--layer_it))->onEvent(event);

@@ -404,4 +404,58 @@ Hazel引擎
 >   具体表现为, 开始新帧阶段, glfw的实现里是设置窗口相关的信息, 以及按键映射等等, 而opengl则是准备渲染数据
 >   当前项目主要是引用了imgui的opengl的渲染后端实现, 而窗口后端则是自己添加上去的.
 
-* 注意: imgui新版本已经抛弃历史io.KeyMap和io.KeyDown那一套, 需要使用新的AddXXXEvent进行解决
+* 注意: imgui新版本已经抛弃历史io.KeyMap和io.KeysDown那一套, 需要使用新的AddXXXEvent进行解决
+
+### imgui事件
+* 首先根据imgui的事件类型, 整理出全部的onXXXEvent函数, 方便在OnEvent函数中进行处理
+* onXXXEvent整理如下:
+  * 鼠标响应
+  * OnMouseButtonPressedEvent()
+    * io.MouseDown[button] = true
+    * 当前版本: AddMouseButtonEvent(button, true);
+  * OnMouseButtonReleasedEvent()
+    * io.MouseDown[button] = false
+    * 当前版本: AddMouseButtonEvent(button, false);
+  * OnMouseMovedEvent()
+    * io.MousePos = ImVec2
+    * 当前版本: io.AddMousePosEvent
+  * OnMouseScrolledEvent()
+    * io.MouseWheel += x_offset
+    * io.MouseWheelH += y_offset
+    * 当前版本: io.AddMouseWheelEvent
+  * 按键响应
+  * OnKeyPressedEvent()
+    * keysDown = true
+    * 另外需要对修改器键单独处理
+      * KeyCtrl
+      * KeyShift
+      * KeyAlt
+      * KeySuper
+    * 当前版本: io.AddKeyEvent, 似乎不需要特殊处理修改器按钮?
+  * OnKeyReleasedEvent()
+    * KeysDown = false
+  * OnKeyTypedEvent()-> glfw_CharCallback
+    * KeyTypedEvent
+    * 用于在文本框输入类似的东西(io.AddInputCharacter)
+    * 在之前的windowswindow中, 需要向glfw的glfwSetCharCallback注入事件处理回调
+    * 当前版本: io.AddInputCharacter
+  * 窗口响应
+  * OnWindowResizedEvent()
+    * DisplayerSize
+    * DisplayerFramebufferScale = ImVec2{1.0f, 1.0f}
+    * glViewport(0, 0, w, h) 调整渲染视口
+
+* 一个事件进入了层的事件处理, 通过事件调度器, 方便的将事件派发到对应的事件处理函数上消费
+* 可以将塞入函数回调使用绑定的整理为一个宏, 放入core.h的文件中去
+  * HZ_BIND_EVENT_FIN(fn)
+
+* 当前的事件消费处理都暂时设置为false, 即也要传递给下一个layer进行消费事件
+* 后续计划:
+  * Input可以轮询查询, 而不是通过Event的方式
+  * keycode后续替换为hazel自身的
+
+* 遇到问题:
+  1. input字符移动了两次(按键按下事件被处理了两次(释放事件被误写成了按下事件))
+  2. 控制键无法使用(当前解决方案使用IsKeyDown也可)
+  3. 尝试支持中文字符输入(支持, 但是输入法暂时没有解决)
+

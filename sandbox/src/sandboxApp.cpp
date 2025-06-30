@@ -6,7 +6,7 @@ public:
     ExampleLayer() : Layer("Example") {}
     void onUpdate() override
     {
-        HZ_INFO("ExampleLayer被更新...");
+        // HZ_INFO("ExampleLayer被更新...");
     }
 
     void onEvent(Hazel::Event& e) override

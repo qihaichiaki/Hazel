@@ -28,6 +28,7 @@ enum class EventType {
     // 键盘系列
     KeyPressed,
     KeyReleased,
+    KeyTyped,
     // 鼠标系列
     MouseButtonPressed,
     MouseButtonReleased,

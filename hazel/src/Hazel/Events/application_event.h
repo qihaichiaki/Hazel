@@ -27,7 +27,7 @@ public:
         return m_width;
     }
 
-    unsigned int getResizeheight() const
+    unsigned int getResizeHeight() const
     {
         return m_height;
     }

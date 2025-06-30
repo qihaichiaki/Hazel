@@ -71,6 +71,15 @@ public:
         return ss.str();
     }
 
+    float getPosX() const
+    {
+        return m_x_pos;
+    }
+    float getPosY() const
+    {
+        return m_y_pos;
+    }
+
 private:
     float m_x_pos, m_y_pos;
 };
@@ -90,6 +99,15 @@ public:
         std::stringstream ss;
         ss << "MouseScrolledEvent: (" << m_x_offset << ", " << m_y_offset << ")";
         return ss.str();
+    }
+
+    float getOffsetX() const
+    {
+        return m_x_offset;
+    }
+    float getOffsetY() const
+    {
+        return m_y_offset;
     }
 
 private:
