@@ -47,6 +47,9 @@ public:
     /// @brief 是否垂直同步
     virtual bool isVSync() const = 0;
 
+    /// @brief 返回底层窗口句柄
+    virtual void* getNativeWindow() const = 0;
+
 public:
     /// @brief 创建窗口句柄
     /// @param props 窗口创建信息

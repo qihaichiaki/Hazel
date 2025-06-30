@@ -32,6 +32,11 @@ public:
         return m_data.is_vsnc;
     }
 
+    void* getNativeWindow() const override
+    {
+        return m_window;
+    }
+
 private:
     void init(const WindowProps&);
     void shutdown();

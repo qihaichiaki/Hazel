@@ -459,3 +459,21 @@ Hazel引擎
   2. 控制键无法使用(当前解决方案使用IsKeyDown也可)
   3. 尝试支持中文字符输入(支持, 但是输入法暂时没有解决)
 
+### 轮询输入
+* 能够实现在程序的任何询问, 这个键是否按下了
+* 项目文件:
+  * Hazel/input.h
+
+* input应该是全局的, 静态的
+
+* input相关设计
+  * Input设置为静态示例
+  * 静态接口比如 IsKeyPressed(int keycode)， 调用静态示例中的虚函数方法(保护), IsKeyPressedImpl(int keycode) = 0; 即可
+  * 同样的, 在适配平套的Windows下创建windows_input.h/.cpp实现windows下的具体input全局实例
+  * 当前和GLFW集成即可。对于实现可集成/可移植/可扩展的系统, 比如WindowsWindow中的GLFW的window需要暴露出来, 需要设计一个比较强大的接口进行暴露
+    * Window类中声明纯虚函数GetNativeWindow const = 0, 返回实际底层实现窗口句柄void*
+    * 通过app->window->窗口句柄指针->glfw调用 glfwGetKey(glfwwindow, keycode);
+    * return state == GLFW_PRESS || GLFW_REPEAT;
+  *  同理: IsMouseButtonPressed(int button); GetMouseX/Y GetMousePosition(pair float-float)
+  *  创建静态实例: 暂时直接在WindowInput下直接new即可
+*  由于当前引擎没有设置按钮枚举, 所以只能暂时包含GLFW相关头文件使用key枚举才能使用
