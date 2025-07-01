@@ -541,3 +541,9 @@ Hazel引擎
 
 * 问题：
   * imgui作为静态库链接到了Hazel这个动态库, 符号都在里面，为什么现在直接暴露imgui的头文件给sandbox, sandbox无法直接用? 会link错误?(需要增加导出符号?)
+
+
+### 渲染器主题
+[开始一个渲染器](./render/render_head.md)
+
+
