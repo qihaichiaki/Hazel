@@ -1,8 +1,9 @@
 #include "hzpch.h"
 #include "application.h"
 #include "Hazel/Events/application_event.h"
-
 #include "Hazel/input.h"
+#include "Hazel/ImGui/imgui_layer.h"
+
 #include <glad/glad.h>
 namespace Hazel
 {
@@ -15,6 +16,9 @@ Application::Application()
 
     m_window = std::unique_ptr<Window>(Window::create());
     m_window->setEventCallBack(HZ_BIND_EVENT_FN(Application::onEvent));
+
+    m_imgui_layer = new ImGuiLayer{};
+    pushOverlay(m_imgui_layer);
 }
 Application::~Application() {}
 
@@ -28,6 +32,12 @@ void Application::run()
         for (auto& layer : m_layer_stack) {
             layer->onUpdate();
         }
+        // imgui 更新层
+        m_imgui_layer->begin();
+        for (auto& layer : m_layer_stack) {
+            layer->onImGuiRender();
+        }
+        m_imgui_layer->end();
 
         m_window->onUpdate();
     }
@@ -54,14 +64,22 @@ bool Application::onWindowClosed(WindowCloseEvent&)
 
 void Application::pushLayer(Layer* layer)
 {
-    layer->onAttach();
     m_layer_stack.pushLayer(layer);
 }
 
 void Application::pushOverlay(Layer* overly)
 {
-    overly->onAttach();
     m_layer_stack.pushOverlay(overly);
+}
+
+void Application::popLayer(Layer* layer)
+{
+    m_layer_stack.popLayer(layer);
+}
+
+void Application::popOverlay(Layer* overly)
+{
+    m_layer_stack.popOverlay(overly);
 }
 
 void popLayer(Layer* layer)

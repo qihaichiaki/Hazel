@@ -28,6 +28,9 @@ public:
     /// @brief layer的事件处理
     HAZEL_API virtual void onEvent(Event&) {}
 
+    /// @brief layer的imgui更新处理
+    HAZEL_API virtual void onImGuiRender() {}
+
     /// @brief 返回layer层的debug name
     HAZEL_API const std::string& getDebugName() const
     {

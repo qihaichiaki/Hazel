@@ -496,3 +496,48 @@ Hazel引擎
 * 数学库想要运行的更快, 实际上是要利用SSE/SIMD(单指令多数据)
   * 编译器内部函数 - 汇编程序.....
 * 使用[glm](https://github.com/g-truc/glm), 是opengl的数学库. 使用submodule添加它
+
+### IMGUI停靠和窗口
+* 在原本的ImGui模块里, 添加一个ImGuiBuild.cpp 包含需要的build的.cpp后端(opengl3 + glfw)文件
+
+* imgui_layer文件对的修改:
+  * OnEvent全部取消, 由后端glfw直接支持
+  * 将OnUpdate->OnImGuiRender
+  * 原本OpenGL中的平台适配文件需要删除
+  * onAttach 
+    * configFlags: NavEnableKeyboard | DockingEnable | ViewportsEnable
+    * get Style  configFlags & ViewportsEnable
+      * windowRounding = 0.0f
+      * Colors[ImGuiCol_Windowbg].w = 1.0f
+    * init glfw
+    * init opengl
+  * onDetach
+    * opengl/glfw shutdown
+    * DestrtoryContext
+  * Begin()  // 创建窗口
+    * opengl/glfw new frame
+    * ImGui::newFrame
+  * End()
+    * 更新io中的display size
+    * imgui::Render
+    * opengl 绘制数据
+    * configFlags & ViewportsEnable
+      * backup_current_context = glfwGEtCurrentContext()
+      * imgui::updatePlatformwindows()
+      * imgui::renderPlatFormwindowsdefault()
+      * glfwMakeContextCurrent(backup_current_context)
+  * OnImGuiRender() ovrride 此函数是给每一个layer都可以做任何的imgui渲染
+    * 比如showDemo
+
+* 这样写没问题, 因为最终是为每一个平台配置一份imguilayer
+* Application:
+  * 现在不希望imguilayer这一层被游戏/客户端所控制, 直接写在和window同地位的属性上，所有权再layerstack上
+  * 然后在run的时候, 每个layer update后, 再根据imgui的begin、end中间增加每个layer的imguiRender即可
+
+* LayerStackbug修复
+  * 将迭代器换成unsig int , 来控制PushLayer的时候, 总是插到非overlay的layers的最后一个
+  * push ++, pop -- layerInsertIndex
+  * 目的是保证插到覆盖层之前
+
+* 问题：
+  * imgui作为静态库链接到了Hazel这个动态库, 符号都在里面，为什么现在直接暴露imgui的头文件给sandbox, sandbox无法直接用? 会link错误?(需要增加导出符号?)

@@ -9,6 +9,7 @@ namespace Hazel
 
 class Event;
 class WindowCloseEvent;
+class ImGuiLayer;
 class Application
 {
 public:
@@ -40,6 +41,7 @@ private:
 
 private:
     std::unique_ptr<Window> m_window;
+    ImGuiLayer* m_imgui_layer;  // 单独出现一层级
     bool m_running = true;
 
     LayerStack m_layer_stack;

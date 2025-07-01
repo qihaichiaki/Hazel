@@ -34,6 +34,10 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     -DHZ_ENABLE_ASSERTS # 启用宏断点检查
 )
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    -D_CRT_SECURE_NO_WARNINGS # 防止sscanf类似写法警告
+)
+
 # 一些三方库的宏配置
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     -DGLFW_INCLUDE_NONE
@@ -44,12 +48,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
-
-    # 增加spdlog作为三方依赖->只需要包含头文件即可
-    "${CMAKE_SOURCE_DIR}/hazel/vendor/spdlog/include"
-
-    # glm 同理
-    "${CMAKE_SOURCE_DIR}/hazel/vendor/glm"
+    "${CMAKE_SOURCE_DIR}/hazel/vendor/spdlog/include" # 增加spdlog作为三方依赖->只需要包含头文件即可
+    "${CMAKE_SOURCE_DIR}/hazel/vendor/glm" # glm 同理
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE

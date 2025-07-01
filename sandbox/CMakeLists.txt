@@ -19,10 +19,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
-
-    # 增加spdlog作为三方依赖->只需要包含头文件即可
-    "${CMAKE_SOURCE_DIR}/hazel/vendor/spdlog/include"
-    "${CMAKE_SOURCE_DIR}/hazel/vendor/glm"
+    "${CMAKE_SOURCE_DIR}/hazel/vendor/spdlog/include" # 增加spdlog作为三方依赖->只需要包含头文件即可
+    "${CMAKE_SOURCE_DIR}/hazel/vendor/glm" # glm opengl math库同理
+    "${CMAKE_SOURCE_DIR}/hazel/vendor/imgui"
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE

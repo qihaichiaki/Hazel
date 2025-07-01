@@ -1,4 +1,5 @@
 #include <hazel.h>
+// #include <imgui.h>
 
 class ExampleLayer : public Hazel::Layer
 {
@@ -17,6 +18,13 @@ public:
     {
         // HZ_TRACE("{0}", e.toString());
     }
+
+    // void onImGuiRender() override
+    // {
+    //     ImGui::Begin("test");
+    //     ImGui::Text("你好呀~");
+    //     ImGui::End();
+    // }
 };
 
 class SandboxApp : public Hazel::Application
@@ -25,8 +33,6 @@ public:
     SandboxApp()
     {
         pushLayer(new ExampleLayer{});
-        // 添加imgui到覆盖层
-        pushOverlay(new Hazel::ImGuiLayer{});
     }
     ~SandboxApp() {}
 };
