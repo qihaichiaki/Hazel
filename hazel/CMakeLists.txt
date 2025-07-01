@@ -43,9 +43,13 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
 
-# 增加spdlog作为三方依赖->只需要包含头文件即可
 target_include_directories(${PROJECT_NAME} PRIVATE
+
+    # 增加spdlog作为三方依赖->只需要包含头文件即可
     "${CMAKE_SOURCE_DIR}/hazel/vendor/spdlog/include"
+
+    # glm 同理
+    "${CMAKE_SOURCE_DIR}/hazel/vendor/glm"
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
