@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Hazel/window.h"
+#include "Hazel/Renderer/graphics_context.h"
 #include <GLFW/glfw3.h>
 
 namespace Hazel
@@ -43,6 +44,7 @@ private:
 
 private:
     GLFWwindow* m_window;  // glfw窗口句柄
+    std::unique_ptr<GraphicsContext> m_context;
 
     struct WindowData
     {

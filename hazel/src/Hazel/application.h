@@ -43,6 +43,7 @@ private:
     std::unique_ptr<Window> m_window;
     ImGuiLayer* m_imgui_layer;  // 单独出现一层级
     bool m_running = true;
+    unsigned int s_vertex_arr, s_vertex_buffer, s_index_buffer;
 
     LayerStack m_layer_stack;
 

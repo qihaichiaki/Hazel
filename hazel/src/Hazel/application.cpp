@@ -5,6 +5,7 @@
 #include "Hazel/ImGui/imgui_layer.h"
 
 #include <glad/glad.h>
+
 namespace Hazel
 {
 Application* Application::s_instance = nullptr;
@@ -19,7 +20,29 @@ Application::Application()
 
     m_imgui_layer = new ImGuiLayer{};
     pushOverlay(m_imgui_layer);
+
+    // 示例: 使用opengl原生接口渲染三角形
+    // vao
+    glGenVertexArrays(1, &s_vertex_arr);
+    glBindVertexArray(s_vertex_arr);
+
+    glGenBuffers(1, &s_vertex_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, s_vertex_buffer);
+
+    float vertices[3 * 3] = {-0.5f, -0.5f, 0.0f, 0.5f, -0.5f, 0.0f, 0.0f, 0.5f, 0.0f};
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);  // 上传顶点数据到GPU
+
+    // 为shader启动顶点属性
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
+
+    glGenBuffers(1, &s_index_buffer);  // 创建顶点缓冲区
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_index_buffer);
+
+    unsigned int indices[3] = {0, 1, 2};  // 逆时针 绘制顺序
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 }
+
 Application::~Application() {}
 
 void Application::run()
@@ -27,6 +50,9 @@ void Application::run()
     while (m_running) {
         glClearColor(1, 0, 1, 1);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        glBindVertexArray(s_vertex_arr);
+        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
 
         // 层级从左往右更新/渲染
         for (auto& layer : m_layer_stack) {
