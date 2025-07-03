@@ -6,6 +6,7 @@
 
 #include <glad/glad.h>
 
+static unsigned int s_vertex_arr, s_vertex_buffer, s_index_buffer;
 namespace Hazel
 {
 Application* Application::s_instance = nullptr;
@@ -41,6 +42,34 @@ Application::Application()
 
     unsigned int indices[3] = {0, 1, 2};  // 逆时针 绘制顺序
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    // shader对象
+    // vertex shader
+    std::string vertex_shader = R"(
+        #version 330 core
+        layout(location = 0) in vec3 a_Position;
+        out vec3 v_Position;
+
+        void main()
+        {
+            v_Position = a_Position;
+            gl_Position = vec4(a_Position, 1.0);
+        }
+    )";
+
+    // fragment shader
+    std::string fragment_shader = R"(
+        #version 330 core
+        layout(location = 0) out vec4 color;
+        in vec3 v_Position;
+
+        void main()
+        {
+            color = vec4(v_Position * 0.5 + 0.5, 1.0);
+        }
+    )";
+
+    m_shader.reset(new Shader{vertex_shader, fragment_shader});
 }
 
 Application::~Application() {}
@@ -48,11 +77,13 @@ Application::~Application() {}
 void Application::run()
 {
     while (m_running) {
-        glClearColor(1, 0, 1, 1);
+        glClearColor(0.2f, 0.2f, 0.2f, 1);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        m_shader->bind();
         glBindVertexArray(s_vertex_arr);
         glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+        m_shader->unBind();
 
         // 层级从左往右更新/渲染
         for (auto& layer : m_layer_stack) {

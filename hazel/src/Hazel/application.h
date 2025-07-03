@@ -4,6 +4,8 @@
 #include "window.h"
 #include "layer_stack.h"
 
+#include "Hazel/Renderer/shader.h"
+
 namespace Hazel
 {
 
@@ -42,9 +44,9 @@ private:
 private:
     std::unique_ptr<Window> m_window;
     ImGuiLayer* m_imgui_layer;  // 单独出现一层级
-    bool m_running = true;
-    unsigned int s_vertex_arr, s_vertex_buffer, s_index_buffer;
+    std::unique_ptr<Shader> m_shader;
 
+    bool m_running = true;
     LayerStack m_layer_stack;
 
     static Application* s_instance;
