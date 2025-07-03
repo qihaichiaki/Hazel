@@ -276,5 +276,54 @@ void main
 }
 ```
 
-
 * 在绘制前绑定即可
+
+## 渲染接口设计与抽象
+* 对于渲染接口的抽象, 取决于是编译期决定还是运行期决定
+* 本质上是将渲染接口分解为每一个图元对象(各种缓冲区, 纹理类, shader类......)
+  * 对于编译期决定的缺点: 每一个都是一个独立的构建 
+  * 运行期切换： 存在运行期决策
+
+* 文件:
+  * Renderer/Buffer.h/.cpp
+
+* 需要设计为纯虚接口
+* VertexBuffer
+  * ~VertexBuffer() {}
+  * virtual void Bind () const = 0;
+  * virtual void UnBind () const = 0;
+  * static VertexBuffer* create(float* vertices, uint32_t size); (cpp中实现，用来运行中决定创建什么类型的)
+
+* IndexBuffer
+  * ~IndexBuffer() {}
+  * virtual void Bind () const = 0;
+  * virtual void UnBind () const = 0;
+  * static IndexBuffer* create(uint32_t* indices, uint32_t count); (cpp中实现，用来运行中决定创建什么类型的)
+  * virtual uint32_t GetCount() const = 0
+
+* Platform/OpenGL/OpenGLBuffer.h/.cpp
+  * OpenGLxxxBuffer
+  * VertexBuffer
+    * 构造函数: loat* vertices, uint32_t size
+      * // gen and bind gen->Create , 让gl接口保持一致
+      * glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);  // 上传数据
+    * 析构函数
+      * glDeleteBuffers(1, &m_renderID);
+    * Bind
+      * glBindBuffer GL_ARRAY_BUFFER
+    * UnBind
+      * glBindBuffer GL_ARRAY_BUFFER 0
+    * uin32_t renderid;
+
+* index类似
+
+* 在app中添加上唯一指针进行调试运行即可
+
+* 为了让渲染器能够集中管理这些功能, 创建Renderer类
+* enum class RendererAPI
+  * None = 0, OpenGL = 1
+* Renderer class  
+  * static RendererAPI 类型
+  * getAPI -> static 类型的方法返回
+
+* create 据此创建对应的buffer

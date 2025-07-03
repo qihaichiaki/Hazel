@@ -27,21 +27,15 @@ Application::Application()
     glGenVertexArrays(1, &s_vertex_arr);
     glBindVertexArray(s_vertex_arr);
 
-    glGenBuffers(1, &s_vertex_buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, s_vertex_buffer);
-
     float vertices[3 * 3] = {-0.5f, -0.5f, 0.0f, 0.5f, -0.5f, 0.0f, 0.0f, 0.5f, 0.0f};
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);  // 上传顶点数据到GPU
+    m_vertex_buffer.reset(VertexBuffer::create(vertices, sizeof(vertices)));
 
     // 为shader启动顶点属性
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
 
-    glGenBuffers(1, &s_index_buffer);  // 创建顶点缓冲区
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_index_buffer);
-
-    unsigned int indices[3] = {0, 1, 2};  // 逆时针 绘制顺序
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    uint32_t indices[3] = {0, 1, 2};  // 逆时针 绘制顺序
+    m_index_buffer.reset(IndexBuffer::create(indices, sizeof(indices) / sizeof(uint32_t)));
 
     // shader对象
     // vertex shader
