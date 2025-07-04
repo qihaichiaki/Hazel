@@ -3,6 +3,75 @@
 namespace Hazel
 {
 
+/// @brief shader使用数据的类型
+enum class ShaderDataType : uint8_t {
+    None,
+    Float,
+    Float2,
+    Float3,
+    Float4,
+    Int,
+    Int2,
+    Int3,
+    Int4,
+    Mat3,
+    Mat4,
+    Bool
+};
+
+struct BufferElement
+{
+    ShaderDataType type;
+    std::string name;
+    uint32_t offset;
+    uint32_t size;
+    bool normalized;
+
+    BufferElement(ShaderDataType type, const std::string& name, bool normalized = false);
+
+    /// @brief 返回当前数据的最小类型的个数是多少
+    uint32_t getComponentCount() const;
+};
+
+/// @brief 缓冲区布局
+class BufferLayer
+{
+public:
+    BufferLayer() {}
+    BufferLayer(const std::initializer_list<BufferElement>& elements);
+
+    std::vector<BufferElement>::iterator begin()
+    {
+        return m_elements.begin();
+    }
+    std::vector<BufferElement>::iterator end()
+    {
+        return m_elements.end();
+    }
+    std::vector<BufferElement>::const_iterator begin() const
+    {
+        return m_elements.begin();
+    }
+    std::vector<BufferElement>::const_iterator end() const
+    {
+        return m_elements.end();
+    }
+
+    /// @brief 返回当前元素布局的总偏移量
+    uint32_t getStride() const
+    {
+        return m_stride;
+    }
+
+private:
+    /// @brief 计算每个元素的offset
+    void calculateOffsetsAndStride();
+
+private:
+    std::vector<BufferElement> m_elements;  // 当前缓冲区布局的元素们
+    uint32_t m_stride;                      // 当前缓冲区布局所有元素的总偏移量
+};
+
 /// @brief 顶点缓冲区接口
 class VertexBuffer
 {
@@ -14,6 +83,12 @@ public:
 
     /// @brief 当前上下文解绑顶点缓冲区
     virtual void unBind() const = 0;
+
+    /// @brief 设置顶点缓冲区布局
+    virtual void setLayout(const BufferLayer& layout) = 0;
+
+    /// @brief 获取顶点缓冲区布局
+    virtual const BufferLayer& getLayout() const = 0;
 
 public:
     /// @brief 创建顶点缓冲区对象

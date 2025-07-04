@@ -13,8 +13,18 @@ public:
     void bind() const override;
     void unBind() const override;
 
+    void setLayout(const BufferLayer& layout) override
+    {
+        m_layout = layout;
+    }
+    const BufferLayer& getLayout() const override
+    {
+        return m_layout;
+    }
+
 private:
     uint32_t m_rendrer_id;
+    BufferLayer m_layout;
 };
 
 class OpenGLIndexBuffer : public IndexBuffer

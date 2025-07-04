@@ -7,6 +7,29 @@
 #include <glad/glad.h>
 
 static unsigned int s_vertex_arr, s_vertex_buffer, s_index_buffer;
+
+// 临时使用
+static GLenum shaderDataTypeToOpenGLBaseType(Hazel::ShaderDataType type)
+{
+    switch (type) {
+        case Hazel::ShaderDataType::Float:
+        case Hazel::ShaderDataType::Float2:
+        case Hazel::ShaderDataType::Float3:
+        case Hazel::ShaderDataType::Float4:
+            return GL_FLOAT;
+        case Hazel::ShaderDataType::Int:
+        case Hazel::ShaderDataType::Int2:
+        case Hazel::ShaderDataType::Int3:
+        case Hazel::ShaderDataType::Int4:
+            return GL_INT;
+        case Hazel::ShaderDataType::Mat3:
+        case Hazel::ShaderDataType::Mat4:
+            return GL_FLOAT;
+    }
+
+    HZ_CORE_ASSERT(false, "未知的ShaderData类型!");
+    return 0;
+}
 namespace Hazel
 {
 Application* Application::s_instance = nullptr;
@@ -27,12 +50,28 @@ Application::Application()
     glGenVertexArrays(1, &s_vertex_arr);
     glBindVertexArray(s_vertex_arr);
 
-    float vertices[3 * 3] = {-0.5f, -0.5f, 0.0f, 0.5f, -0.5f, 0.0f, 0.0f, 0.5f, 0.0f};
+    // clang-format off
+    float vertices[3 * 7] = {
+        -0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f,
+        0.5f, -0.5f, 0.0f, 0.2f, 0.3f, 0.8f, 1.0f,
+        0.0f, 0.5f, 0.0f, 0.8f, 0.8f, 0.2f, 1.0f
+    };
+    // clang-format on
     m_vertex_buffer.reset(VertexBuffer::create(vertices, sizeof(vertices)));
+    BufferLayer vertex_layer{{ShaderDataType::Float3, "a_Position"},
+                             {ShaderDataType::Float4, "a_Color"}};
 
-    // 为shader启动顶点属性
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
+    m_vertex_buffer->setLayout(vertex_layer);
+    int index = 0;
+    for (const auto& element : m_vertex_buffer->getLayout()) {
+        // 为shader启动顶点属性
+        glEnableVertexAttribArray(index);
+        glVertexAttribPointer(index, element.getComponentCount(),
+                              shaderDataTypeToOpenGLBaseType(element.type),
+                              element.normalized ? GL_TRUE : GL_FALSE, vertex_layer.getStride(),
+                              reinterpret_cast<const void*>((uint16_t)element.offset));
+        index++;
+    }
 
     uint32_t indices[3] = {0, 1, 2};  // 逆时针 绘制顺序
     m_index_buffer.reset(IndexBuffer::create(indices, sizeof(indices) / sizeof(uint32_t)));
@@ -42,11 +81,14 @@ Application::Application()
     std::string vertex_shader = R"(
         #version 330 core
         layout(location = 0) in vec3 a_Position;
+        layout(location = 1) in vec4 a_Color;
         out vec3 v_Position;
+        out vec4 v_Color;
 
         void main()
         {
             v_Position = a_Position;
+            v_Color = a_Color;
             gl_Position = vec4(a_Position, 1.0);
         }
     )";
@@ -56,10 +98,12 @@ Application::Application()
         #version 330 core
         layout(location = 0) out vec4 color;
         in vec3 v_Position;
+        in vec4 v_Color;
 
         void main()
         {
             color = vec4(v_Position * 0.5 + 0.5, 1.0);
+            color = v_Color;
         }
     )";
 
