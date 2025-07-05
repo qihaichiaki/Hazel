@@ -3,8 +3,7 @@
 #include "Hazel/Events/application_event.h"
 #include "Hazel/input.h"
 #include "Hazel/ImGui/imgui_layer.h"
-
-#include <glad/glad.h>
+#include "Hazel/Renderer/renderer.h"
 
 namespace Hazel
 {
@@ -136,20 +135,19 @@ Application::~Application() {}
 void Application::run()
 {
     while (m_running) {
-        glClearColor(0.2f, 0.2f, 0.2f, 1);
-        glClear(GL_COLOR_BUFFER_BIT);
+        RendererCommand::setClearColor({0.2f, 0.2f, 0.2f, 1.0f});
+        RendererCommand::clear();
 
-        // 渲染正方形
-        m_square_shader->bind();
-        m_square_va->bind();
-        glDrawElements(GL_TRIANGLES, m_square_va->getIndexBuffer()->getCount(), GL_UNSIGNED_INT,
-                       nullptr);
-
-        // 渲染三角形
-        m_triangle_shader->bind();
-        m_triangle_va->bind();
-        glDrawElements(GL_TRIANGLES, m_triangle_va->getIndexBuffer()->getCount(), GL_UNSIGNED_INT,
-                       nullptr);
+        Renderer::beginScene();
+        {
+            // 渲染正方形
+            m_square_shader->bind();
+            Renderer::submit(m_square_va);
+            // 渲染三角形
+            m_triangle_shader->bind();
+            Renderer::submit(m_triangle_va);
+        }
+        Renderer::endScene();
 
         // 层级从左往右更新/渲染
         for (auto& layer : m_layer_stack) {
