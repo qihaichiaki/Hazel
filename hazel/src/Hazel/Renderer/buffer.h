@@ -40,6 +40,10 @@ public:
     BufferLayer() {}
     BufferLayer(const std::initializer_list<BufferElement>& elements);
 
+    const std::vector<BufferElement>& getBufferElement() const
+    {
+        return m_elements;
+    }
     std::vector<BufferElement>::iterator begin()
     {
         return m_elements.begin();

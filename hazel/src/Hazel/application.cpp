@@ -6,30 +6,6 @@
 
 #include <glad/glad.h>
 
-static unsigned int s_vertex_arr, s_vertex_buffer, s_index_buffer;
-
-// 临时使用
-static GLenum shaderDataTypeToOpenGLBaseType(Hazel::ShaderDataType type)
-{
-    switch (type) {
-        case Hazel::ShaderDataType::Float:
-        case Hazel::ShaderDataType::Float2:
-        case Hazel::ShaderDataType::Float3:
-        case Hazel::ShaderDataType::Float4:
-            return GL_FLOAT;
-        case Hazel::ShaderDataType::Int:
-        case Hazel::ShaderDataType::Int2:
-        case Hazel::ShaderDataType::Int3:
-        case Hazel::ShaderDataType::Int4:
-            return GL_INT;
-        case Hazel::ShaderDataType::Mat3:
-        case Hazel::ShaderDataType::Mat4:
-            return GL_FLOAT;
-    }
-
-    HZ_CORE_ASSERT(false, "未知的ShaderData类型!");
-    return 0;
-}
 namespace Hazel
 {
 Application* Application::s_instance = nullptr;
@@ -45,40 +21,34 @@ Application::Application()
     m_imgui_layer = new ImGuiLayer{};
     pushOverlay(m_imgui_layer);
 
-    // 示例: 使用opengl原生接口渲染三角形
-    // vao
-    glGenVertexArrays(1, &s_vertex_arr);
-    glBindVertexArray(s_vertex_arr);
+    // triangle render
+    m_triangle_va.reset(VertexArray::create());
 
     // clang-format off
-    float vertices[3 * 7] = {
+    float triangle_vertices[3 * 7] = {
         -0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f,
         0.5f, -0.5f, 0.0f, 0.2f, 0.3f, 0.8f, 1.0f,
         0.0f, 0.5f, 0.0f, 0.8f, 0.8f, 0.2f, 1.0f
     };
     // clang-format on
-    m_vertex_buffer.reset(VertexBuffer::create(vertices, sizeof(vertices)));
-    BufferLayer vertex_layer{{ShaderDataType::Float3, "a_Position"},
-                             {ShaderDataType::Float4, "a_Color"}};
+    std::shared_ptr<VertexBuffer> triangle_vertex_buffer;
+    triangle_vertex_buffer.reset(
+        VertexBuffer::create(triangle_vertices, sizeof(triangle_vertices)));
 
-    m_vertex_buffer->setLayout(vertex_layer);
-    int index = 0;
-    for (const auto& element : m_vertex_buffer->getLayout()) {
-        // 为shader启动顶点属性
-        glEnableVertexAttribArray(index);
-        glVertexAttribPointer(index, element.getComponentCount(),
-                              shaderDataTypeToOpenGLBaseType(element.type),
-                              element.normalized ? GL_TRUE : GL_FALSE, vertex_layer.getStride(),
-                              reinterpret_cast<const void*>((uint16_t)element.offset));
-        index++;
-    }
+    BufferLayer triangle_vertex_layer{{ShaderDataType::Float3, "a_Position"},
+                                      {ShaderDataType::Float4, "a_Color"}};
+    triangle_vertex_buffer->setLayout(triangle_vertex_layer);
+    m_triangle_va->addVertexBuffer(triangle_vertex_buffer);
 
-    uint32_t indices[3] = {0, 1, 2};  // 逆时针 绘制顺序
-    m_index_buffer.reset(IndexBuffer::create(indices, sizeof(indices) / sizeof(uint32_t)));
+    uint32_t triangle_indices[3] = {0, 1, 2};  // 逆时针 绘制顺序
+    std::shared_ptr<IndexBuffer> triangle_index_buffer;
+    triangle_index_buffer.reset(
+        IndexBuffer::create(triangle_indices, sizeof(triangle_indices) / sizeof(uint32_t)));
+    m_triangle_va->setIndexBuffer(triangle_index_buffer);
 
     // shader对象
     // vertex shader
-    std::string vertex_shader = R"(
+    std::string triangle_vertex_shader = R"(
         #version 330 core
         layout(location = 0) in vec3 a_Position;
         layout(location = 1) in vec4 a_Color;
@@ -94,7 +64,7 @@ Application::Application()
     )";
 
     // fragment shader
-    std::string fragment_shader = R"(
+    std::string triangle_fragment_shader = R"(
         #version 330 core
         layout(location = 0) out vec4 color;
         in vec3 v_Position;
@@ -107,7 +77,58 @@ Application::Application()
         }
     )";
 
-    m_shader.reset(new Shader{vertex_shader, fragment_shader});
+    m_triangle_shader.reset(new Shader{triangle_vertex_shader, triangle_fragment_shader});
+
+    // square render
+    m_square_va.reset(VertexArray::create());
+
+    // clang-format off
+    float square_vertices[4 * 3] = {
+        -0.75f, -0.75f, 0.0f, 
+        0.75f, -0.75f, 0.0f, 
+        0.75f, 0.75f, 0.0f, 
+        -0.75f, 0.75f, 0.0f
+    };
+    // clang-format on
+    std::shared_ptr<VertexBuffer> square_vertex_buffer;
+    square_vertex_buffer.reset(VertexBuffer::create(square_vertices, sizeof(square_vertices)));
+
+    square_vertex_buffer->setLayout({{ShaderDataType::Float3, "a_Position"}});
+    m_square_va->addVertexBuffer(square_vertex_buffer);
+
+    uint32_t square_indices[6] = {0, 1, 2, 2, 3, 0};  // 逆时针 绘制顺序
+    std::shared_ptr<IndexBuffer> square_index_buffer;
+    square_index_buffer.reset(
+        IndexBuffer::create(square_indices, sizeof(square_indices) / sizeof(uint32_t)));
+    m_square_va->setIndexBuffer(square_index_buffer);
+
+    // shader对象
+    // vertex shader
+    std::string square_vertex_shader = R"(
+        #version 330 core
+        layout(location = 0) in vec3 a_Position;
+        out vec3 v_Position;
+
+        void main()
+        {
+            v_Position = a_Position;
+            gl_Position = vec4(a_Position, 1.0);
+        }
+    )";
+
+    // fragment shader
+    std::string square_fragment_shader = R"(
+        #version 330 core
+        layout(location = 0) out vec4 color;
+        in vec3 v_Position;
+
+        void main()
+        {
+            color = vec4(v_Position * 0.5 + 0.5, 1.0);
+        }
+    )";
+
+    m_square_shader.reset(new Shader{square_vertex_shader, square_fragment_shader});
 }
 
 Application::~Application() {}
@@ -118,10 +139,17 @@ void Application::run()
         glClearColor(0.2f, 0.2f, 0.2f, 1);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        m_shader->bind();
-        glBindVertexArray(s_vertex_arr);
-        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
-        m_shader->unBind();
+        // 渲染正方形
+        m_square_shader->bind();
+        m_square_va->bind();
+        glDrawElements(GL_TRIANGLES, m_square_va->getIndexBuffer()->getCount(), GL_UNSIGNED_INT,
+                       nullptr);
+
+        // 渲染三角形
+        m_triangle_shader->bind();
+        m_triangle_va->bind();
+        glDrawElements(GL_TRIANGLES, m_triangle_va->getIndexBuffer()->getCount(), GL_UNSIGNED_INT,
+                       nullptr);
 
         // 层级从左往右更新/渲染
         for (auto& layer : m_layer_stack) {

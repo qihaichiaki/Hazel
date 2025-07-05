@@ -103,4 +103,3 @@
 * VectorBuffer
   * virtual SetLayout (const BufferLayout& layout) = 0 设置布局
   * virtual const xxxx const getter = 0 获取布局
-
