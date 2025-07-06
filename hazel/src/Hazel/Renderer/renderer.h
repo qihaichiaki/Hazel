@@ -5,6 +5,8 @@
  */
 
 #include "renderer_command.h"
+#include "shader.h"
+#include "ortho_graphic_camera.h"
 
 namespace Hazel
 {
@@ -13,11 +15,13 @@ class Renderer
 {
 public:
     /// @brief 渲染场景的开始
-    static void beginScene();
+    /// @note 传入相机对象, 备份其投影视图矩阵, 方便用于后续上传数据的使用
+    static void beginScene(const OrthoGraphicCamera& camera);
 
-    /// @brief 上传顶点数组相关数据
+    /// @brief 上传顶点数组相关数据和shader
     /// @note 当前未实现渲染队列, 这里提交相当于实时渲染绘制数据
-    static void submit(const std::shared_ptr<VertexArray>& vertex_array);
+    static void submit(const std::shared_ptr<Shader>& shader,
+                       const std::shared_ptr<VertexArray>& vertex_array);
 
     /// @brief 场景数据准备完毕
     static void endScene();
@@ -27,5 +31,13 @@ public:
     {
         return RendererAPI::getAPI();
     }
+
+private:
+    struct SceneData
+    {
+        glm::mat4 projection_view_matrix;
+    };
+
+    static SceneData* m_scene_data;
 };
 }  // namespace Hazel

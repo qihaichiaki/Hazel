@@ -6,7 +6,7 @@
 
 namespace Hazel
 {
-// TOOD: 临时input 全局初始化
+// TODO: 临时input 全局初始化
 Input* Input::s_instance = new WindowsInput{};
 
 bool WindowsInput::isKeyPressedImpl(int keycode)

@@ -2,6 +2,7 @@
 #include "shader.h"
 
 #include <glad/glad.h>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace Hazel
 {
@@ -124,6 +125,14 @@ void Shader::bind()
 void Shader::unBind()
 {
     glUseProgram(0);
+}
+
+void Shader::uploadUniformMat4(const std::string& uniform_name, const glm::mat4& matrix)
+{
+    // 从shader中找到对应的统一变量
+    // 需要注意, 这里需要使用shader程序, 前面应该要进行绑定
+    auto uniform_location = glGetUniformLocation(m_renderer_id, uniform_name.c_str());
+    glUniformMatrix4fv(uniform_location, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
 }  // namespace Hazel

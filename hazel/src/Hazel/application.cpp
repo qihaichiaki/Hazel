@@ -5,11 +5,13 @@
 #include "Hazel/ImGui/imgui_layer.h"
 #include "Hazel/Renderer/renderer.h"
 
+#include "Hazel/input_codes.h"
+
 namespace Hazel
 {
 Application* Application::s_instance = nullptr;
 
-Application::Application()
+Application::Application() : m_camera{1.6f, -1.6f, -0.9f, 0.9f}
 {
     HZ_CORE_ASSERT(s_instance == nullptr, "application被创建多次!")
     s_instance = this;
@@ -54,11 +56,13 @@ Application::Application()
         out vec3 v_Position;
         out vec4 v_Color;
 
+        uniform mat4 u_ProjectionView;
+
         void main()
         {
             v_Position = a_Position;
             v_Color = a_Color;
-            gl_Position = vec4(a_Position, 1.0);
+            gl_Position = u_ProjectionView * vec4(a_Position, 1.0);
         }
     )";
 
@@ -108,10 +112,12 @@ Application::Application()
         layout(location = 0) in vec3 a_Position;
         out vec3 v_Position;
 
+        uniform mat4 u_ProjectionView;
+
         void main()
         {
             v_Position = a_Position;
-            gl_Position = vec4(a_Position, 1.0);
+            gl_Position = u_ProjectionView * vec4(a_Position, 1.0);
         }
     )";
 
@@ -138,15 +144,31 @@ void Application::run()
         RendererCommand::setClearColor({0.2f, 0.2f, 0.2f, 1.0f});
         RendererCommand::clear();
 
-        Renderer::beginScene();
-        {
-            // 渲染正方形
-            m_square_shader->bind();
-            Renderer::submit(m_square_va);
-            // 渲染三角形
-            m_triangle_shader->bind();
-            Renderer::submit(m_triangle_va);
+        // 简单使用input系统实现相机移动
+        auto& camera_pos = m_camera.getPosition();
+        auto camera_rot = m_camera.getRotation();
+        if (Input::isKeyPressed(HZ_KEY_W)) {
+            m_camera.setPosition({camera_pos.x, camera_pos.y + 0.05f, 0.0f});
         }
+        if (Input::isKeyPressed(HZ_KEY_A)) {
+            m_camera.setPosition({camera_pos.x + 0.05f, camera_pos.y, 0.0f});
+        }
+        if (Input::isKeyPressed(HZ_KEY_S)) {
+            m_camera.setPosition({camera_pos.x, camera_pos.y - 0.05f, 0.0f});
+        }
+        if (Input::isKeyPressed(HZ_KEY_D)) {
+            m_camera.setPosition({camera_pos.x - 0.05f, camera_pos.y, 0.0f});
+        }
+        // 旋转
+        if (Input::isKeyPressed(HZ_KEY_R)) {
+            m_camera.setRotation(camera_rot + 5.0f);  // 每次逆时针旋转30度
+        }
+
+        Renderer::beginScene(m_camera);
+        // 渲染正方形
+        Renderer::submit(m_square_shader, m_square_va);
+        // 渲染三角形
+        Renderer::submit(m_triangle_shader, m_triangle_va);
         Renderer::endScene();
 
         // 层级从左往右更新/渲染

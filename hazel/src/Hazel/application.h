@@ -6,6 +6,7 @@
 
 #include "Hazel/Renderer/shader.h"
 #include "Hazel/Renderer/vertex_array.h"
+#include "Hazel/Renderer/ortho_graphic_camera.h"
 
 namespace Hazel
 {
@@ -53,6 +54,8 @@ private:
 
     std::shared_ptr<Shader> m_square_shader;
     std::shared_ptr<VertexArray> m_square_va;
+
+    OrthoGraphicCamera m_camera;
 
 private:
     static Application* s_instance;

@@ -13,26 +13,31 @@ namespace Hazel
 class HAZEL_API Input
 {
 public:
+    /// @brief 当前按键是否按下
     static bool isKeyPressed(int keycode)
     {
         return s_instance->isKeyPressedImpl(keycode);
     }
 
+    /// @brief 当前鼠标按键是否按下
     static bool isMouseButtonPressed(int button)
     {
         return s_instance->isMouseButtonPressedImpl(button);
     }
 
+    /// @brief 获取当前鼠标坐标
     static std::pair<float, float> getMousePosition()
     {
         return s_instance->getMousePositionImpl();
     }
 
+    /// @brief 获取当前鼠标X坐标
     static float getMouseX()
     {
         return s_instance->getMouseXImpl();
     }
 
+    /// @brief 获取当前鼠标Y坐标
     static float getMouseY()
     {
         return s_instance->getMouseYImpl();
