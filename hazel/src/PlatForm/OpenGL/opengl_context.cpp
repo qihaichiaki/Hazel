@@ -32,7 +32,7 @@ void OpenGlContext::init()
 
 void OpenGlContext::swapBuffer()
 {
-    glfwSwapBuffers(m_window_handle);
+    glfwSwapBuffers(m_window_handle);  // 此处如果设置了垂直同步, 那么会根据屏幕刷新hz进行等待......
 }
 
 }  // namespace Hazel

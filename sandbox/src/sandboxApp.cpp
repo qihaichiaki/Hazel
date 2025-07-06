@@ -122,27 +122,29 @@ public:
         m_square_shader.reset(new Hazel::Shader{square_vertex_shader, square_fragment_shader});
     }
 
-    void onUpdate() override
+    void onUpdate(Hazel::Timestep timestep) override
     {
         Hazel::RendererCommand::setClearColor({0.2f, 0.2f, 0.2f, 1.0f});
         Hazel::RendererCommand::clear();
 
+        HZ_INFO("当前帧间隔: {}s, {}ms", timestep.getSeconds(), timestep.getMilliseconds());
+
         // 简单使用input系统实现相机移动
         if (Hazel::Input::isKeyPressed(HZ_KEY_LEFT)) {
-            m_camera_position.x -= m_camera_move_speed;
+            m_camera_position.x -= m_camera_move_speed * timestep;
         } else if (Hazel::Input::isKeyPressed(HZ_KEY_RIGHT)) {
-            m_camera_position.x += m_camera_move_speed;
+            m_camera_position.x += m_camera_move_speed * timestep;
         }
         if (Hazel::Input::isKeyPressed(HZ_KEY_UP)) {
-            m_camera_position.y -= m_camera_move_speed;
+            m_camera_position.y -= m_camera_move_speed * timestep;
         } else if (Hazel::Input::isKeyPressed(HZ_KEY_DOWN)) {
-            m_camera_position.y += m_camera_move_speed;
+            m_camera_position.y += m_camera_move_speed * timestep;
         }
         // 旋转
         if (Hazel::Input::isKeyPressed(HZ_KEY_A)) {
-            m_camera_rotation += m_camera_rotation_speed;
+            m_camera_rotation += m_camera_rotation_speed * timestep;
         } else if (Hazel::Input::isKeyPressed(HZ_KEY_D)) {
-            m_camera_rotation -= m_camera_rotation_speed;
+            m_camera_rotation -= m_camera_rotation_speed * timestep;
         }
 
         m_camera.setPosition(m_camera_position);
@@ -170,9 +172,9 @@ public:
 
 private:
     glm::vec3 m_camera_position = glm::vec3{0.0f};
-    float m_camera_move_speed = 0.1f;
+    float m_camera_move_speed = 2.5f;
     float m_camera_rotation = 0.0f;
-    float m_camera_rotation_speed = 2.0f;
+    float m_camera_rotation_speed = 30.0f;
 
 private:
     std::shared_ptr<Hazel::Shader> m_triangle_shader;

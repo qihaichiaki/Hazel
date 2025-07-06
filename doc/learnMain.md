@@ -546,3 +546,25 @@ Hazel引擎
 ### 渲染器主题
 [开始一个渲染器](./render/render_head.md)
 
+
+### TimeStep和增量时间
+* 希望移动的时候是基于时间的, 而不会收到帧率的影响
+
+* 如果更新的时候,能够具体知道当前帧间隔, 依据此帧间隔进行移动, 就不会出现上述的问题
+
+* 文件:
+ * Core/Timestep.h/.cpp
+
+* class Timestep(对float包装为时间间隔的东西)
+  * 属性:
+    * float time
+  * 方法
+    * 构造函数: time 初始化0.0f
+    * getSeconds const
+    * getMilliseconds const
+    * operator float() const
+    * 
+
+* app类包含float last_frame_time
+  * 获取当前时间->可以使用标准库的函数获取时间
+  * layer onupdate强制传入TimeStep

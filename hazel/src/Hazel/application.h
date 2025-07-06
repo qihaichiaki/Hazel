@@ -10,6 +10,7 @@ namespace Hazel
 class Event;
 class WindowCloseEvent;
 class ImGuiLayer;
+class Time;
 class Application
 {
 public:
@@ -44,6 +45,8 @@ private:
     ImGuiLayer* m_imgui_layer;  // 单独出现一层级
     bool m_running = true;
     LayerStack m_layer_stack;
+
+    float m_last_frame_time = 0.0f;  // 最后一帧的时间
 
 private:
     static Application* s_instance;

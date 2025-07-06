@@ -3,6 +3,10 @@
 #include "Hazel/Events/application_event.h"
 #include "Hazel/ImGui/imgui_layer.h"
 
+#include "Hazel/Core/timestep.h"
+// TODO: time使用, 临时方案
+#include <GLFW/glfw3.h>
+
 namespace Hazel
 {
 Application* Application::s_instance = nullptr;
@@ -24,9 +28,13 @@ Application::~Application() {}
 void Application::run()
 {
     while (m_running) {
+        float time = static_cast<float>(glfwGetTime());
+        Timestep timestep = time - m_last_frame_time;
+        m_last_frame_time = time;
+
         // 层级从左往右更新/渲染
         for (auto& layer : m_layer_stack) {
-            layer->onUpdate();
+            layer->onUpdate(timestep);
         }
         // imgui 更新层
         m_imgui_layer->begin();

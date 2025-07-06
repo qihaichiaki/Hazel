@@ -6,6 +6,7 @@
 
 #include "core.h"
 #include "Events/event.h"
+#include "Hazel/Core/timestep.h"
 
 namespace Hazel
 {
@@ -23,7 +24,7 @@ public:
     HAZEL_API virtual void onDetach() {}
 
     /// @brief layer的更新动作
-    HAZEL_API virtual void onUpdate() {}
+    HAZEL_API virtual void onUpdate(Timestep) {}
 
     /// @brief layer的事件处理
     HAZEL_API virtual void onEvent(Event&) {}
