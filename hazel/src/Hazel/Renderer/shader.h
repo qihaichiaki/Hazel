@@ -9,7 +9,7 @@
 namespace Hazel
 {
 
-class Shader
+class HAZEL_API Shader
 {
 public:
     /// @brief 将顶点/片段shader编译, 整合到shader程序中, 最后进行链接

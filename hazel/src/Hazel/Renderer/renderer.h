@@ -11,7 +11,7 @@
 namespace Hazel
 {
 
-class Renderer
+class HAZEL_API Renderer
 {
 public:
     /// @brief 渲染场景的开始

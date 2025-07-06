@@ -9,7 +9,7 @@
 namespace Hazel
 {
 
-class RendererCommand
+class HAZEL_API RendererCommand
 {
 public:
     /// @brief 设置清屏颜色

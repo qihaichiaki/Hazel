@@ -4,10 +4,6 @@
 #include "window.h"
 #include "layer_stack.h"
 
-#include "Hazel/Renderer/shader.h"
-#include "Hazel/Renderer/vertex_array.h"
-#include "Hazel/Renderer/ortho_graphic_camera.h"
-
 namespace Hazel
 {
 
@@ -48,14 +44,6 @@ private:
     ImGuiLayer* m_imgui_layer;  // 单独出现一层级
     bool m_running = true;
     LayerStack m_layer_stack;
-
-    std::shared_ptr<Shader> m_triangle_shader;
-    std::shared_ptr<VertexArray> m_triangle_va;
-
-    std::shared_ptr<Shader> m_square_shader;
-    std::shared_ptr<VertexArray> m_square_va;
-
-    OrthoGraphicCamera m_camera;
 
 private:
     static Application* s_instance;

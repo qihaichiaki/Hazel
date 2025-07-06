@@ -68,3 +68,20 @@
 
 
 ## [相机系统](./render_camera.md)
+
+
+## 整理渲染代码待sandbox中
+- 需要暴露给客户端的相关头文件:
+  - Renderer/Renderer.h
+  - Renderer/RendererCommand.h
+  - Renderer/Buffer.h
+  - Renderer/Shader.h
+  - Renderer/VertexArray.h
+  - Renderer/OrthoGraphicCamera.h
+
+- 将之前app内的渲染业务代码整理到sanbox的layer中去
+- 添加事件处理让相机移动起来
+  - keyPressedEvent
+    - 增加相机的坐标和速度设置
+    - 当前没有delta time, 所以相机的速度会随着帧率的影响而影响
+  - 实际上使用事件系统, 如果只是在触发事件的时候移动, 会让其移动不流畅。可以基于状态或者轮询来移动相机

@@ -27,42 +27,42 @@ struct BufferElement
     uint32_t size;
     bool normalized;
 
-    BufferElement(ShaderDataType type, const std::string& name, bool normalized = false);
+    HAZEL_API BufferElement(ShaderDataType type, const std::string& name, bool normalized = false);
 
     /// @brief 返回当前数据的最小类型的个数是多少
-    uint32_t getComponentCount() const;
+    HAZEL_API uint32_t getComponentCount() const;
 };
 
 /// @brief 缓冲区布局
 class BufferLayer
 {
 public:
-    BufferLayer() {}
-    BufferLayer(const std::initializer_list<BufferElement>& elements);
+    HAZEL_API BufferLayer() {}
+    HAZEL_API BufferLayer(const std::initializer_list<BufferElement>& elements);
 
-    const std::vector<BufferElement>& getBufferElement() const
+    HAZEL_API const std::vector<BufferElement>& getBufferElement() const
     {
         return m_elements;
     }
-    std::vector<BufferElement>::iterator begin()
+    HAZEL_API std::vector<BufferElement>::iterator begin()
     {
         return m_elements.begin();
     }
-    std::vector<BufferElement>::iterator end()
+    HAZEL_API std::vector<BufferElement>::iterator end()
     {
         return m_elements.end();
     }
-    std::vector<BufferElement>::const_iterator begin() const
+    HAZEL_API std::vector<BufferElement>::const_iterator begin() const
     {
         return m_elements.begin();
     }
-    std::vector<BufferElement>::const_iterator end() const
+    HAZEL_API std::vector<BufferElement>::const_iterator end() const
     {
         return m_elements.end();
     }
 
     /// @brief 返回当前元素布局的总偏移量
-    uint32_t getStride() const
+    HAZEL_API uint32_t getStride() const
     {
         return m_stride;
     }
@@ -77,7 +77,7 @@ private:
 };
 
 /// @brief 顶点缓冲区接口
-class VertexBuffer
+class HAZEL_API VertexBuffer
 {
 public:
     virtual ~VertexBuffer() {}
@@ -103,7 +103,7 @@ public:
 };
 
 /// @brief 索引缓冲区接口
-class IndexBuffer
+class HAZEL_API IndexBuffer
 {
 public:
     virtual ~IndexBuffer() {}

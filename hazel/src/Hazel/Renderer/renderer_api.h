@@ -11,7 +11,7 @@
 namespace Hazel
 {
 
-class RendererAPI
+class HAZEL_API RendererAPI
 {
 public:
     enum class API { None = 0, OpenGL = 1 };
