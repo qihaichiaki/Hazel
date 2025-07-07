@@ -563,8 +563,8 @@ Hazel引擎
     * getSeconds const
     * getMilliseconds const
     * operator float() const
-    * 
 
 * app类包含float last_frame_time
   * 获取当前时间->可以使用标准库的函数获取时间
   * layer onupdate强制传入TimeStep
+

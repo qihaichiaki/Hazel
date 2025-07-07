@@ -1,10 +1,12 @@
 #include <hazel.h>
 #include <imgui.h>
 
+#include <glm/gtc/matrix_transform.hpp>
+
 class ExampleLayer : public Hazel::Layer
 {
 public:
-    ExampleLayer() : Layer("Example"), m_camera{1.6f, -1.6f, -0.9f, 0.9f}
+    ExampleLayer() : Layer("Example"), m_camera{-1.6f, 1.6f, -0.9f, 0.9f}
     {
         // triangle render
         m_triangle_va.reset(Hazel::VertexArray::create());
@@ -99,11 +101,12 @@ public:
             out vec3 v_Position;
 
             uniform mat4 u_ProjectionView;
+            uniform mat4 u_Transform;
 
             void main()
             {
                 v_Position = a_Position;
-                gl_Position = u_ProjectionView * vec4(a_Position, 1.0);
+                gl_Position = u_ProjectionView * u_Transform * vec4(a_Position, 1.0);
             }
         )";
 
@@ -116,6 +119,7 @@ public:
             void main()
             {
                 color = vec4(v_Position * 0.5 + 0.5, 1.0);
+                //color = vec4(0.2, 0.3, 0.8, 1.0);
             }
         )";
 
@@ -127,7 +131,7 @@ public:
         Hazel::RendererCommand::setClearColor({0.2f, 0.2f, 0.2f, 1.0f});
         Hazel::RendererCommand::clear();
 
-        HZ_INFO("当前帧间隔: {}s, {}ms", timestep.getSeconds(), timestep.getMilliseconds());
+        // HZ_INFO("当前帧间隔: {}s, {}ms", timestep.getSeconds(), timestep.getMilliseconds());
 
         // 简单使用input系统实现相机移动
         if (Hazel::Input::isKeyPressed(HZ_KEY_LEFT)) {
@@ -136,9 +140,9 @@ public:
             m_camera_position.x += m_camera_move_speed * timestep;
         }
         if (Hazel::Input::isKeyPressed(HZ_KEY_UP)) {
-            m_camera_position.y -= m_camera_move_speed * timestep;
-        } else if (Hazel::Input::isKeyPressed(HZ_KEY_DOWN)) {
             m_camera_position.y += m_camera_move_speed * timestep;
+        } else if (Hazel::Input::isKeyPressed(HZ_KEY_DOWN)) {
+            m_camera_position.y -= m_camera_move_speed * timestep;
         }
         // 旋转
         if (Hazel::Input::isKeyPressed(HZ_KEY_A)) {
@@ -147,12 +151,38 @@ public:
             m_camera_rotation -= m_camera_rotation_speed * timestep;
         }
 
+        // 简单让正方形动起来
+        // if (Hazel::Input::isKeyPressed(HZ_KEY_J)) {
+        //     m_square_pos.x -= m_square_speed * timestep;
+        // } else if (Hazel::Input::isKeyPressed(HZ_KEY_L)) {
+        //     m_square_pos.x += m_square_speed * timestep;
+        // }
+        // if (Hazel::Input::isKeyPressed(HZ_KEY_I)) {
+        //     m_square_pos.y += m_square_speed * timestep;
+        // } else if (Hazel::Input::isKeyPressed(HZ_KEY_K)) {
+        //     m_square_pos.y -= m_square_speed * timestep;
+        // }
+
+        // glm::mat4 square_transform = glm::translate(glm::mat4{1.0f}, m_square_pos);
+
         m_camera.setPosition(m_camera_position);
         m_camera.setRotation(m_camera_rotation);
 
         Hazel::Renderer::beginScene(m_camera);
+
+        // 渲染一个20 x 20的正方形网格
+        glm::mat4 scale = glm::scale(glm::mat4{1.0f}, glm::vec3{0.1f});  // 缩放0.1倍
+
+        for (int i = 0; i < 20; i++) {
+            for (int j = 0; j < 20; j++) {
+                glm::vec3 pos{j * 0.18f, i * 0.18f, 0.0f};
+                glm::mat4 transform = glm::translate(glm::mat4{1.0f}, pos) * scale;
+                Hazel::Renderer::submit(m_square_shader, m_square_va, transform);
+            }
+        }
+
         // 渲染正方形
-        Hazel::Renderer::submit(m_square_shader, m_square_va);
+        // Hazel::Renderer::submit(m_square_shader, m_square_va, square_transform);
         // 渲染三角形
         Hazel::Renderer::submit(m_triangle_shader, m_triangle_va);
         Hazel::Renderer::endScene();
@@ -175,6 +205,8 @@ private:
     float m_camera_move_speed = 2.5f;
     float m_camera_rotation = 0.0f;
     float m_camera_rotation_speed = 30.0f;
+    // glm::vec3 m_square_pos = glm::vec3{0.0f};
+    // float m_square_speed = 0.1f;
 
 private:
     std::shared_ptr<Hazel::Shader> m_triangle_shader;

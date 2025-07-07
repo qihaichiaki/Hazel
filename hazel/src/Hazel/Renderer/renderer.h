@@ -21,7 +21,8 @@ public:
     /// @brief 上传顶点数组相关数据和shader
     /// @note 当前未实现渲染队列, 这里提交相当于实时渲染绘制数据
     static void submit(const std::shared_ptr<Shader>& shader,
-                       const std::shared_ptr<VertexArray>& vertex_array);
+                       const std::shared_ptr<VertexArray>& vertex_array,
+                       const glm::mat4& transform = glm::mat4{1.0f});
 
     /// @brief 场景数据准备完毕
     static void endScene();
