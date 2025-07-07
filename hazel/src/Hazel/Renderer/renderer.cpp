@@ -1,6 +1,9 @@
 #include "hzpch.h"
 #include "renderer.h"
 
+// 临时转换
+#include "PlatForm/OpenGL/opengl_shader.h"
+
 namespace Hazel
 {
 
@@ -18,8 +21,9 @@ void Renderer::submit(const std::shared_ptr<Shader>& shader,
 {
     shader->bind();
     // TODO: 硬编码
-    shader->uploadUniformMat4("u_ProjectionView", m_scene_data->projection_view_matrix);
-    shader->uploadUniformMat4("u_Transform", transform);
+    std::static_pointer_cast<OpenGLShader>(shader)->uploadUniformMat4(
+        "u_ProjectionView", m_scene_data->projection_view_matrix);
+    std::static_pointer_cast<OpenGLShader>(shader)->uploadUniformMat4("u_Transform", transform);
     vertex_array->bind();
     RendererCommand::drawIndexed(vertex_array);
 }

@@ -2,6 +2,8 @@
 #include <imgui.h>
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <PlatForm/OpenGL/opengl_shader.h>
+#include <glm/gtc/type_ptr.hpp>
 
 class ExampleLayer : public Hazel::Layer
 {
@@ -67,7 +69,7 @@ public:
         )";
 
         m_triangle_shader.reset(
-            new Hazel::Shader{triangle_vertex_shader, triangle_fragment_shader});
+            Hazel::Shader::create(triangle_vertex_shader, triangle_fragment_shader));
 
         // square render
         m_square_va.reset(Hazel::VertexArray::create());
@@ -116,14 +118,17 @@ public:
             layout(location = 0) out vec4 color;
             in vec3 v_Position;
 
+            uniform vec4 u_Color;
+
             void main()
             {
-                color = vec4(v_Position * 0.5 + 0.5, 1.0);
-                //color = vec4(0.2, 0.3, 0.8, 1.0);
+                // color = vec4(v_Position * 0.5 + 0.5, 1.0);
+                // color = vec4(0.2, 0.3, 0.8, 1.0);
+                color = u_Color;
             }
         )";
 
-        m_square_shader.reset(new Hazel::Shader{square_vertex_shader, square_fragment_shader});
+        m_square_shader.reset(Hazel::Shader::create(square_vertex_shader, square_fragment_shader));
     }
 
     void onUpdate(Hazel::Timestep timestep) override
@@ -173,6 +178,13 @@ public:
         // 渲染一个20 x 20的正方形网格
         glm::mat4 scale = glm::scale(glm::mat4{1.0f}, glm::vec3{0.1f});  // 缩放0.1倍
 
+        // glm::vec4 blue_color{0.2f, 0.3f, 0.8f, 1.0f};
+        // glm::vec4 red_color{0.8f, 0.3f, 0.2f, 1.0f};
+
+        m_square_shader->bind();
+        std::static_pointer_cast<Hazel::OpenGLShader>(m_square_shader)
+            ->uploadUniformFloat4("u_Color", m_square_color);
+
         for (int i = 0; i < 20; i++) {
             for (int j = 0; j < 20; j++) {
                 glm::vec3 pos{j * 0.18f, i * 0.18f, 0.0f};
@@ -195,8 +207,8 @@ public:
 
     void onImGuiRender() override
     {
-        ImGui::Begin("test");
-        ImGui::Text("你好呀~");
+        ImGui::Begin("Settings");
+        ImGui::ColorEdit4("Square Color", glm::value_ptr(m_square_color));
         ImGui::End();
     }
 
@@ -205,6 +217,7 @@ private:
     float m_camera_move_speed = 2.5f;
     float m_camera_rotation = 0.0f;
     float m_camera_rotation_speed = 30.0f;
+    glm::vec4 m_square_color{0.0f};
     // glm::vec3 m_square_pos = glm::vec3{0.0f};
     // float m_square_speed = 0.1f;
 

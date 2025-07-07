@@ -283,3 +283,7 @@ void main
 ## [顶点数组抽象](./render_vertex_array.md)
 
 ## [DrawCall](./render_draw_call.md)
+
+## [材质系统](./render_materials.md)
+
+## [Shader抽象](./render_shader.md)
