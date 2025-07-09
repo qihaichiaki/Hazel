@@ -29,6 +29,7 @@ public:
     /// @param uniform_name 在shader中的统一变量名
     /// @param vec4 待上传的四维变量
     void uploadUniformFloat4(const std::string& uniform_name, const glm::vec4& vec4);
+    void uploadUniformInt(const std::string& uniform_name, int value);
 
 private:
     uint32_t m_renderer_id;

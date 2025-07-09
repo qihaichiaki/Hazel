@@ -10,13 +10,18 @@ namespace Hazel
 // TODO: 临时解决方案?
 Renderer::SceneData* Renderer::m_scene_data = new Renderer::SceneData{};
 
+void Renderer::init()
+{
+    RendererCommand::init();
+}
+
 void Renderer::beginScene(const OrthoGraphicCamera& camera)
 {
     m_scene_data->projection_view_matrix = camera.getProjectionViewMatrix();
 }
 
-void Renderer::submit(const std::shared_ptr<Shader>& shader,
-                      const std::shared_ptr<VertexArray>& vertex_array,
+void Renderer::submit(const Ref<Shader>& shader,
+                      const Ref<VertexArray>& vertex_array,
                       const glm::mat4& transform)
 {
     shader->bind();

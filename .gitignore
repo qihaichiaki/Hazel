@@ -6,8 +6,6 @@ thirdparty
 .vscode
 
 # 资源文件
-resources/*
-assets
 
 # 杂项文件
 *.ini

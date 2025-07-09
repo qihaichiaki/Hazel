@@ -12,6 +12,11 @@ namespace Hazel
 class HAZEL_API RendererCommand
 {
 public:
+    static void init()
+    {
+        s_renderer_api->init();
+    }
+
     /// @brief 设置清屏颜色
     static void setClearColor(const glm::vec4& clear_color)
     {

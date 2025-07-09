@@ -12,6 +12,7 @@ namespace Hazel
 class OpenGLRendererAPI : public RendererAPI
 {
 public:
+    void init() override;
     void setClearColor(const glm::vec4& clear_color) override;
     void clear() override;
     void drawIndexed(const std::shared_ptr<VertexArray>& vertex_array) override;

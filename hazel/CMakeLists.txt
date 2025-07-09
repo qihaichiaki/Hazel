@@ -22,7 +22,10 @@ foreach(CONFIG IN ITEMS DEBUG RELEASE)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${CONFIG} ${BUILD_PATH})
 endforeach()
 
-file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+file(GLOB_RECURSE SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/vendor/stb_image/stb_image.cpp"
+)
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
@@ -50,6 +53,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 target_include_directories(${PROJECT_NAME} PRIVATE
     "${CMAKE_SOURCE_DIR}/hazel/vendor/spdlog/include" # 增加spdlog作为三方依赖->只需要包含头文件即可
     "${CMAKE_SOURCE_DIR}/hazel/vendor/glm" # glm 同理
+    "${CMAKE_SOURCE_DIR}/hazel/vendor/stb_image"
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE

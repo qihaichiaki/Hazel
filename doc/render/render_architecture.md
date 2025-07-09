@@ -287,3 +287,5 @@ void main
 ## [材质系统](./render_materials.md)
 
 ## [Shader抽象](./render_shader.md)
+
+## [纹理抽象](./render_texture.md)

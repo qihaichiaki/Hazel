@@ -19,6 +19,7 @@
 #include "Hazel/Renderer/shader.h"
 #include "Hazel/Renderer/vertex_array.h"
 #include "Hazel/Renderer/ortho_graphic_camera.h"
+#include "Hazel/Renderer/texture.h"
 
 // ===========================
 

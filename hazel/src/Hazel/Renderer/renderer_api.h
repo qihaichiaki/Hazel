@@ -17,6 +17,9 @@ public:
     enum class API { None = 0, OpenGL = 1 };
 
 public:
+    /// @brief renderapi初始化
+    virtual void init() = 0;
+
     /// @brief 设置清屏颜色
     virtual void setClearColor(const glm::vec4& clear_color) = 0;
 

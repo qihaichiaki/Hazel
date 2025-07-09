@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 // 导出导入宏
 #ifdef HZ_PLATFORM_WINDOWS
     #ifdef HZ_BUILD_DLL
@@ -41,3 +43,13 @@
 #define BIT(X) (1 << X)
 
 #define HZ_BIND_EVENT_FN(fn) std::bind(&fn, this, std::placeholders::_1)
+
+// using 资源对象的智能指针, 方便后续确定
+namespace Hazel
+{
+template <typename T>
+using Ref = std::shared_ptr<T>;
+
+template <typename T>
+using Scope = std::unique_ptr<T>;
+}  // namespace Hazel

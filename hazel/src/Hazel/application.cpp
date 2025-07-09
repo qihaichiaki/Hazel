@@ -4,6 +4,7 @@
 #include "Hazel/ImGui/imgui_layer.h"
 
 #include "Hazel/Core/timestep.h"
+#include "Hazel/Renderer/renderer.h"
 // TODO: time使用, 临时方案
 #include <GLFW/glfw3.h>
 
@@ -18,6 +19,8 @@ Application::Application()
 
     m_window = std::unique_ptr<Window>(Window::create());
     m_window->setEventCallBack(HZ_BIND_EVENT_FN(Application::onEvent));
+
+    Renderer::init();
 
     m_imgui_layer = new ImGuiLayer{};
     pushOverlay(m_imgui_layer);

@@ -141,4 +141,10 @@ void OpenGLShader::uploadUniformFloat4(const std::string& uniform_name, const gl
     glUniform4f(uniform_location, vec4.r, vec4.g, vec4.b, vec4.a);
 }
 
+void OpenGLShader::uploadUniformInt(const std::string& uniform_name, int value)
+{
+    auto uniform_location = glGetUniformLocation(m_renderer_id, uniform_name.c_str());
+    glUniform1i(uniform_location, value);
+}
+
 }  // namespace Hazel

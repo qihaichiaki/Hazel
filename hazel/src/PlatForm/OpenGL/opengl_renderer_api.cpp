@@ -5,6 +5,13 @@
 
 namespace Hazel
 {
+void OpenGLRendererAPI::init()
+{
+    // 启用纹理混合
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // 经典混合函数
+}
+
 void OpenGLRendererAPI::setClearColor(const glm::vec4& clear_color)
 {
     glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
