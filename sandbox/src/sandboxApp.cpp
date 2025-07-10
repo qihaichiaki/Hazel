@@ -131,39 +131,8 @@ public:
 
         m_square_shader.reset(Hazel::Shader::create(square_vertex_shader, square_fragment_shader));
 
-        // texture shader
-        std::string texture_vertex_shader = R"(
-            #version 330 core
-            layout(location = 0) in vec3 a_Position;
-            layout(location = 1) in vec2 a_TexCoord;
-            out vec2 v_TexCoord;
-
-            uniform mat4 u_ProjectionView;
-            uniform mat4 u_Transform;
-
-            void main()
-            {
-                v_TexCoord = a_TexCoord;
-                gl_Position = u_ProjectionView * u_Transform * vec4(a_Position, 1.0);
-            }
-        )";
-
-        // fragment shader
-        std::string texture_fragment_shader = R"(
-            #version 330 core
-            layout(location = 0) out vec4 color;
-            in vec2 v_TexCoord;
-            uniform sampler2D u_Texture;
-
-            void main()
-            {
-                // color = vec4(v_TexCoord, 0.0f, 1.0f);  // 测试纹理坐标是否正确
-                color = texture(u_Texture, v_TexCoord);  // 采样器 + 纹理坐标
-            }
-        )";
-
-        m_texture_shader.reset(
-            Hazel::Shader::create(texture_vertex_shader, texture_fragment_shader));
+        // 读取文件创建shader
+        m_texture_shader.reset(Hazel::Shader::create("sandbox/assets/shaders/texture.glsl"));
 
         // 加载纹理图像
         // 1. 加载棋盘纹理

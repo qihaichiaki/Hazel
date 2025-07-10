@@ -20,4 +20,18 @@ Shader* Shader::create(const std::string& vertex_src, const std::string& fragmen
     return nullptr;
 }
 
+Shader* Shader::create(const std::string& file_path)
+{
+    switch (Renderer::getRendererAPI()) {
+        case RendererAPI::API::None:
+            HZ_CORE_ASSERT(false, "尚未支持的RendererAPI渲染");
+            return nullptr;
+        case RendererAPI::API::OpenGL:
+            return new OpenGLShader{file_path};
+    }
+
+    HZ_CORE_ASSERT(false, "RendererAPI 未知选项!");
+    return nullptr;
+}
+
 }  // namespace Hazel
