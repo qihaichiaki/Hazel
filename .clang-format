@@ -9,7 +9,6 @@ AlignEscapedNewlines: Left #  对于被 \ 换行的字符串或宏行，将 \ �
 ColumnLimit: 100 # 单行的长度不超过100字符
 BinPackParameters: false # 禁止将多个函数参数打包进一行，一个参数一行，更清晰
 AlwaysBreakTemplateDeclarations: Yes # 模板函数或类总是换行，不管长度是否超过限制
-;PackConstructorInitializers: Never # 构造函数初始化列表中的多个成员，不打包在同一行，每个成员一行
 BreakConstructorInitializersBeforeComma: false # 初始化列表中，如果有换行，逗号放在行末，而不是新行开头
 IndentPPDirectives: BeforeHash # 让 # 号也一起缩进，默认 #define、#include 会对齐其他代码
 SortIncludes: Never # 不自动排序 #include 文件顺序，保持原样

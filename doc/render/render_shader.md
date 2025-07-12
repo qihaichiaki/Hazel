@@ -67,3 +67,39 @@
 
 * 静态函数 ShaderTypeFromString 根据type返回不同的opengl shader类型: GL_VERTEX_SHADER/ GL_FRAGMEBT_SHADER;  否则请断言
 * 新建函数 compile(const  std::unordered_map<GLenum, std::string>&) 进行处理
+
+
+### 着色器库
+* 做一些基础的游戏时, 可能只需要引擎提供的基础shader就能够完成游戏的搭建
+* 但是一旦进阶起来, 用户需要自定义它们的shader程序, 此时引擎应该能够提供一种较为扩展且强大的方式给予用户自定义, 类似于unity引擎和虚幻引擎
+
+* 优化shader编译时存储shader片段(glCreateShader())id的vector, 因为几个无符号整型, 不需要堆空间进行分配,但是由于是运行时才知道的大小, 通过栈分配相关函数在栈上申请数组即可
+  * pch: array
+  * 断言shader map, <=2 目前只支持编译两个shader
+  * 文件io 读取将第三个参数和第二个合并, 因为是一个位图操作, 不应该有第三个参数
+
+
+* Shader:
+  * GetName()
+  * Create时增加name的传入
+    * 在只传入file_name的情况下, 需要对此文件目录的字符串进行处理 -> 需要注意的是只是提取了文件名, 如果文件名重复还是存在一定的问题
+      * find_last_of("/\\");  // 找到最后一个斜杠或者反斜杠的位置 ->  fin_xx_of 是将给定字符串中的任意字符进行匹配
+      * 存在就是lastSlash +1, 否则就是0
+      * lastDot = rfind('.') 找到扩展名前的那个点(注意也有可能找不到, 因为文件可以没有扩展名)
+      * 根据lastDot是否找到计算文件名的count
+      * substr提取文件名(不包含扩展名)
+  * shader create的时候返回Ref
+
+* ShaderLibrary
+  * 核心: string->Ref<shader>的映射
+  * Load从路径加载shader, 并且返回Ref<Shader>
+    * 默认情况下是将asserts/Texture.glsl这样的路径作为名字
+    * 也可以自己传入一个名字
+  * Get, 通过name检索shader
+    * 断言name是否存在
+    * 不允许存在name不存在的情况, 可以提供一个Exists来判断此name是否存在
+  * Add, 直接将const Ref<Shader>&进行插入
+    * 断言是否存在相同的name传入
+
+* SandBox中使用此shaderlibrary
+  * 以TextureShader为例进行使用

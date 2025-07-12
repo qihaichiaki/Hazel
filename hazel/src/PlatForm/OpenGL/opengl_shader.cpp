@@ -24,7 +24,7 @@ static GLenum shaderTypeFromString(const std::string& type)
 std::string OpenGLShader::readFile(const std::string& file_path)
 {
     std::string source;
-    std::ifstream ifs{file_path, std::ios::in, std::ios::binary};
+    std::ifstream ifs{file_path, std::ios::in | std::ios::binary};
     if (ifs) {
         ifs.seekg(0, std::ios::end);
         source.resize(ifs.tellg());
@@ -65,10 +65,12 @@ void OpenGLShader::compile(const std::unordered_map<GLenum, std::string>& shader
 {
     GLuint program = glCreateProgram();
     m_renderer_id = 0;
-    std::vector<GLuint> shader_ids;
+    HZ_CORE_ASSERT(shader_sources.size() <= 2, "当前不支持解析超过2个shader以上的文件");
+    std::array<GLuint, 2> shader_ids;
+    int shader_index = 0;
     for (const auto& [shader_type, shader_source] : shader_sources) {
         GLuint shader_id = glCreateShader(shader_type);
-        shader_ids.push_back(shader_id);
+        shader_ids[shader_index++] = shader_id;
 
         const GLchar* source = shader_source.c_str();
         glShaderSource(shader_id, 1, &source, 0);
@@ -87,8 +89,8 @@ void OpenGLShader::compile(const std::unordered_map<GLenum, std::string>& shader
             glGetShaderInfoLog(shader_id, maxLength, &maxLength, &infoLog[0]);
 
             // We don't need the shader anymore.
-            for (auto id : shader_ids) {
-                glDeleteShader(id);
+            for (int i = 0; i < shader_index; ++i) {
+                glDeleteShader(shader_ids[i]);
             }
 
             HZ_CORE_ERROR("{}", infoLog.data());
@@ -113,8 +115,8 @@ void OpenGLShader::compile(const std::unordered_map<GLenum, std::string>& shader
         // We don't need the program anymore.
         glDeleteProgram(program);
         // Don't leak shaders either.
-        for (auto id : shader_ids) {
-            glDeleteShader(id);
+        for (int i = 0; i < shader_index; ++i) {
+            glDeleteShader(shader_ids[i]);
         }
 
         HZ_CORE_ERROR("{}", infoLog.data());
@@ -123,13 +125,16 @@ void OpenGLShader::compile(const std::unordered_map<GLenum, std::string>& shader
     }
 
     // Always detach shaders after a successful link.
-    for (auto id : shader_ids) {
-        glDeleteShader(id);
+    for (int i = 0; i < shader_index; ++i) {
+        glDetachShader(program, shader_ids[i]);
     }
     m_renderer_id = program;
 }
 
-OpenGLShader::OpenGLShader(const std::string& vertex_src, const std::string& fragment_src)
+OpenGLShader::OpenGLShader(const std::string& name,
+                           const std::string& vertex_src,
+                           const std::string& fragment_src)
+    : m_name{name}
 {
     std::unordered_map<GLenum, std::string> shader_sources;
     shader_sources[GL_VERTEX_SHADER] = vertex_src;
@@ -142,6 +147,15 @@ OpenGLShader::OpenGLShader(const std::string& file_path)
     std::string source = readFile(file_path);
     auto shader_sources = preProcess(source);
     compile(shader_sources);
+
+    // 编译成功后, 取出文件路径中的文件名
+    auto last_slash = file_path.find_last_of("/\\");  // 匹配最后一个`/`或者`\`
+    last_slash =
+        last_slash == std::string::npos ? 0 : last_slash + 1;  // 找到/texture.shader的t下标位置
+    auto last_dot = file_path.rfind('.');                      // 找到文件扩展名的位置
+    auto count = last_dot == std::string::npos ? file_path.size() - last_slash
+                                               : last_dot - last_slash;  // 计算文件名长度
+    m_name = file_path.substr(last_slash, count);
 }
 
 OpenGLShader::~OpenGLShader()

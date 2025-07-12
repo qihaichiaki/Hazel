@@ -11,3 +11,6 @@ thirdparty
 *.ini
 *.bkp
 *.drawio
+
+# 缓存文件
+.cache

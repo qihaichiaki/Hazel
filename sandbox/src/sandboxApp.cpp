@@ -68,8 +68,8 @@ public:
             }
         )";
 
-        m_triangle_shader.reset(
-            Hazel::Shader::create(triangle_vertex_shader, triangle_fragment_shader));
+        m_triangle_shader =
+            Hazel::Shader::create("triangle", triangle_vertex_shader, triangle_fragment_shader);
 
         // square render
         m_square_va.reset(Hazel::VertexArray::create());
@@ -129,10 +129,11 @@ public:
             }
         )";
 
-        m_square_shader.reset(Hazel::Shader::create(square_vertex_shader, square_fragment_shader));
+        m_square_shader =
+            Hazel::Shader::create("square", square_vertex_shader, square_fragment_shader);
 
         // 读取文件创建shader
-        m_texture_shader.reset(Hazel::Shader::create("sandbox/assets/shaders/texture.glsl"));
+        auto texture_shader = m_texture_shader_lib.load("sandbox/assets/shaders/texture.glsl");
 
         // 加载纹理图像
         // 1. 加载棋盘纹理
@@ -141,8 +142,8 @@ public:
         m_texture_f = Hazel::Texture2D::create("sandbox/assets/textures/namica.png");
 
         // 绑定 m_texture_shader, 指定插槽0为纹理上传位置
-        m_texture_shader->bind();
-        std::static_pointer_cast<Hazel::OpenGLShader>(m_texture_shader)
+        texture_shader->bind();
+        std::static_pointer_cast<Hazel::OpenGLShader>(texture_shader)
             ->uploadUniformInt("u_Texture", 0);
     }
 
@@ -208,10 +209,12 @@ public:
         // 渲染一个用于绘制2d纹理的正方形
         glm::mat4 square_transform = glm::scale(glm::mat4{1.0f}, glm::vec3{1.0f});
 
+        auto texture_shader = m_texture_shader_lib.get("texture");
+
         m_texture_b->bind();
-        Hazel::Renderer::submit(m_texture_shader, m_square_va, square_transform);
+        Hazel::Renderer::submit(texture_shader, m_square_va, square_transform);
         m_texture_f->bind();
-        Hazel::Renderer::submit(m_texture_shader, m_square_va, square_transform);
+        Hazel::Renderer::submit(texture_shader, m_square_va, square_transform);
 
         // 渲染三角形
         // Hazel::Renderer::submit(m_triangle_shader, m_triangle_va);
@@ -246,7 +249,7 @@ private:
     Hazel::Ref<Hazel::Shader> m_square_shader;
     Hazel::Ref<Hazel::VertexArray> m_square_va;
 
-    Hazel::Ref<Hazel::Shader> m_texture_shader;
+    Hazel::ShaderLibrary m_texture_shader_lib;
     Hazel::Ref<Hazel::Texture> m_texture_b;
     Hazel::Ref<Hazel::Texture> m_texture_f;
 
