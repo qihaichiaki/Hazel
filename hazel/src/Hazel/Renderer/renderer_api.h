@@ -30,6 +30,9 @@ public:
     /// @param vertex_array 顶点数组数据
     virtual void drawIndexed(const std::shared_ptr<VertexArray>& vertex_array) = 0;
 
+    /// @brief 设置渲染视口
+    virtual void setViewport(uint32_t width, uint32_t height) = 0;
+
 public:
     /// @brief 获取当前的后端渲染API
     static API getAPI()

@@ -84,14 +84,14 @@ void BufferLayer::calculateOffsetsAndStride()
 }
 
 /////////// VertexBuffer
-VertexBuffer* VertexBuffer::create(float* vertices, uint32_t size)
+Ref<VertexBuffer> VertexBuffer::create(float* vertices, uint32_t size)
 {
     switch (Renderer::getRendererAPI()) {
         case RendererAPI::API::None:
             HZ_CORE_ASSERT(false, "尚未支持的RendererAPI渲染");
             return nullptr;
         case RendererAPI::API::OpenGL:
-            return new OpenGLVertexBuffer{vertices, size};
+            return std::make_shared<OpenGLVertexBuffer>(vertices, size);
     }
 
     HZ_CORE_ASSERT(false, "RendererAPI 未知选项!");
@@ -99,14 +99,14 @@ VertexBuffer* VertexBuffer::create(float* vertices, uint32_t size)
 }
 
 /////////// IndexBuffer
-IndexBuffer* IndexBuffer::create(uint32_t* indices, uint32_t count)
+Ref<IndexBuffer> IndexBuffer::create(uint32_t* indices, uint32_t count)
 {
     switch (Renderer::getRendererAPI()) {
         case RendererAPI::API::None:
             HZ_CORE_ASSERT(false, "尚未支持的RendererAPI渲染");
             return nullptr;
         case RendererAPI::API::OpenGL:
-            return new OpenGLIndexBuffer{indices, count};
+            return std::make_shared<OpenGLIndexBuffer>(indices, count);
     }
 
     HZ_CORE_ASSERT(false, "RendererAPI 未知选项!");

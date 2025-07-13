@@ -35,9 +35,11 @@ void Application::run()
         Timestep timestep = time - m_last_frame_time;
         m_last_frame_time = time;
 
-        // 层级从左往右更新/渲染
-        for (auto& layer : m_layer_stack) {
-            layer->onUpdate(timestep);
+        if (!m_minimized) {
+            // 层级从左往右更新/渲染
+            for (auto& layer : m_layer_stack) {
+                layer->onUpdate(timestep);
+            }
         }
         // imgui 更新层
         m_imgui_layer->begin();
@@ -54,6 +56,7 @@ void Application::onEvent(Event& event)
 {
     EventDispatcher dispatcher{event};
     dispatcher.dispatch<WindowCloseEvent>(HZ_BIND_EVENT_FN(Application::onWindowClosed));
+    dispatcher.dispatch<WindowResizeEvent>(HZ_BIND_EVENT_FN(Application::onWindowResized));
 
     for (auto layer_it = m_layer_stack.end(); layer_it != m_layer_stack.begin();) {
         (*(--layer_it))->onEvent(event);
@@ -67,6 +70,19 @@ bool Application::onWindowClosed(WindowCloseEvent&)
 {
     m_running = false;
     return true;
+}
+
+bool Application::onWindowResized(WindowResizeEvent& e)
+{
+    auto width = e.getResizeWidth();
+    auto height = e.getResizeHeight();
+    if (width == 0 || height == 0) {
+        m_minimized = true;
+        return false;
+    }
+    m_minimized = false;
+    Renderer::onWindowResize(width, height);
+    return false;
 }
 
 void Application::pushLayer(Layer* layer)

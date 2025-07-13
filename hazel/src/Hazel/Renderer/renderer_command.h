@@ -36,6 +36,12 @@ public:
         s_renderer_api->drawIndexed(vertex_array);
     }
 
+    /// @brief 设置渲染器的渲染视图
+    static void setViewport(uint32_t width, uint32_t height)
+    {
+        s_renderer_api->setViewport(width, height);
+    }
+
 private:
     static RendererAPI* s_renderer_api;
 };

@@ -35,6 +35,9 @@ public:
         return RendererAPI::getAPI();
     }
 
+    /// @brief 调整渲染器的渲染缓冲区窗口大小
+    static void onWindowResize(uint32_t width, uint32_t height);
+
 private:
     struct SceneData
     {

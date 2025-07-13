@@ -116,3 +116,77 @@
   * 首先对象基于自身变换, 得到世界坐标(当前就是position)
   * 让对象需要根据相机的视图矩阵进行变换(相机的transform矩阵的逆矩阵, 因为是相机移动/缩放/渲染相反的方向)
   * 然后将视图矩阵和投影矩阵进行变换, 从而映射到屏幕坐标点上进行渲染
+
+
+## 摄像机控制器
+* 封装一个对正交相机的控制器, 方便提供给客户端一个基本的摄像机控制, 而非需要客户端对相机进行脚本处理
+
+* 正交相机类应该完全只是对投影矩阵和视图矩阵的简单表达
+
+* 暂时放在: hazel/OrthoGraphicCameraController.h/.cpp
+
+* OrthoGraphicCamera
+  * setProjection(float left, float right, float bottom, float top);
+
+* class OrthoGraphicCameraController
+  * 属性: 
+    * float m_aspect_ratio;
+    * float zoom_level = 1.0f;  // 缩放级别
+    * OrthoGraphicCamera m_camera;
+    * vec3 m_camera_position;   // 相机位置
+    * float m_camera_rotation;  // 相机旋转角度
+    * float m_camera_translation_speed = 5.0f
+    * float m_camera_rotation_speed = 180.0f;
+  * 构造函数
+    * 垂直方向上: 默认下是存在两个单位的空间
+    * 水平方向上: 宽高比乘以2个单位 -> 正确得到宽高比
+    * OrthoGraphicCameraController(float aspect_ratio);
+      * aspect_ratio = width:height(纵横比)
+      * 初始化正交相机: -aspect_ratio * zoom_level, aspect_ratio * zoom_level, -zoom_level, zoom_level
+
+  * onUpdate(Timestep ts);
+    * 摄像机的上下左右以及旋转均可以采用之前sandbox中的
+    * 键位换成wasd, qe左右旋转
+  * onEvent(Event& e);
+    * 使用调度器调度选择onMouseScrolled和onWindowResized两个自注册事件处理
+  * const getCamera() const {}
+  * private: onMouseScrolled()
+    * zoom_level -= getYOffset * 0.25f  // 往上是在放大显示图像, 摄像机的范围减少, 同理可得往下是缩小显示图像, 摄像机范围增大
+      * max限制在最小为0.25f
+      * 让m_camera_translation_speed速度和zoom_level保持一致, 这样能做到范围变大时, 速度变快, 范围变小时, 速度变小
+    * setProjection, 和构造函数初始化时做一样的操作
+  * private: onWindowResized()
+    * m_aspect_ratio = 1.0f * e.GetWidth() / e.GetHeight();
+    * setProjection
+
+
+* 调整窗口大小
+  * OpenGL会利用渲染缓冲区(像素数据)中的数据通过shader会将其渲染到一个目标上, 缓冲区的大小必须和我们渲染的像素尺寸相匹配
+  * 使用GL viewport 设置正在渲染的视口
+  * 不会直接渲染到屏幕上(不会再opengl环境进行基本渲染), 应该是设置自己的帧缓冲区， 即渲染在一个纹理上, 然后将这个纹理渲染到屏幕上
+  * 另外一个窗口大小需要考虑的是你是在修改范围还是真正的缩放大小
+  * 正交相机应该考虑的是裁剪范围?
+
+* OpenGLRendererAPI: SetViewport
+  * glViewport(x, y, w, h);  ....  // 临时, 后面需要渲染到自定义的缓冲区上
+
+* RedererCommand::SetViewport
+  * render_api -> xxx
+
+* Renderer
+  * static void OnWindowResize(uin32_t width, height);
+    * RedererCommand::SetViewport(0, 0, width, height);  // 设置渲染视口
+
+* Application
+  * 在onEvent中调度新增处理OnWindowResize
+  * 最小化的时候, 窗口的高度和宽度都是被设置为0
+    * 最小化时, 应该让所有layer的更新停止(其中一个任意为0, 都应该停止？)
+      * minimized = true
+      * update控制
+  * Renderer::OnWindowResize(w, h);
+
+* OrthoGraphicCameraController
+  * set/getZoomlevel设置缩放级别
+
+* 上面实现的是场景元素的放大和缩小, 但是真正想实现的是范围的缩放， 所以对相机的投影矩阵的缩放进行变化
+* 上述在宽度的变化中是范围的缩放, 但是在纵向上是元素的放大和缩小

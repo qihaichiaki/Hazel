@@ -28,4 +28,9 @@ void OpenGLRendererAPI::drawIndexed(const std::shared_ptr<VertexArray>& vertex_a
                    nullptr);
 }
 
+void OpenGLRendererAPI::setViewport(uint32_t width, uint32_t height)
+{
+    glViewport(0, 0, width, height);
+}
+
 }  // namespace Hazel

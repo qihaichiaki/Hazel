@@ -5,7 +5,7 @@
  * 全局唯一, 需要不同平台进行实现相关接口
  */
 
-#include "Hazel/core.h"
+#include "Hazel/Core/core.h"
 
 namespace Hazel
 {

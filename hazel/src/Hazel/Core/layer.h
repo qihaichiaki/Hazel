@@ -5,7 +5,7 @@
  */
 
 #include "core.h"
-#include "Events/event.h"
+#include "Hazel/Events/event.h"
 #include "Hazel/Core/timestep.h"
 
 namespace Hazel

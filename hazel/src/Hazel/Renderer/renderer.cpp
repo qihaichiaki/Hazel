@@ -35,4 +35,9 @@ void Renderer::submit(const Ref<Shader>& shader,
 
 void Renderer::endScene() {}
 
+void Renderer::onWindowResize(uint32_t width, uint32_t height)
+{
+    RendererCommand::setViewport(width, height);
+}
+
 }  // namespace Hazel

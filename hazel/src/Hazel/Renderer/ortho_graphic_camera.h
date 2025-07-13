@@ -18,6 +18,9 @@ public:
     HAZEL_API OrthoGraphicCamera(float left, float right, float bottom, float top);
     HAZEL_API ~OrthoGraphicCamera();
 
+    /// @brief 设置投影矩阵
+    void setProjection(float left, float right, float bottom, float top);
+
     /// @brief 返回相机的世界坐标
     HAZEL_API const glm::vec3& getPosition() const
     {

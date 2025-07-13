@@ -32,7 +32,7 @@ std::string OpenGLShader::readFile(const std::string& file_path)
         ifs.read(&source[0], source.size());
         ifs.close();
     } else {
-        HZ_CORE_ASSERT(false, "shader文件:{}读取失败!", file_path);
+        HZ_CORE_ASSERT(false, "shader文件读取失败!");
     }
 
     return source;
@@ -65,7 +65,8 @@ void OpenGLShader::compile(const std::unordered_map<GLenum, std::string>& shader
 {
     GLuint program = glCreateProgram();
     m_renderer_id = 0;
-    HZ_CORE_ASSERT(shader_sources.size() <= 2, "当前不支持解析超过2个shader以上的文件");
+    HZ_CORE_ASSERT(shader_sources.size() <= 2 && shader_sources.size() != 0,
+                   "当前不支持解析超过2个shader或者没有shader标识的文件");
     std::array<GLuint, 2> shader_ids;
     int shader_index = 0;
     for (const auto& [shader_type, shader_source] : shader_sources) {

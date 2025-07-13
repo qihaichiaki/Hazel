@@ -580,3 +580,8 @@ Hazel引擎
   * using 一下, 配合上template -> Core.h
 
 * 未来是资产的类型, 标记用上述类型替换(Buffer... shader.....)
+
+
+### 文件整理
+* 将除开相机控制器的其他文件转移到Core文件夹下
+* 相机控制器暂时放在renderer下面

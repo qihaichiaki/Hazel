@@ -32,7 +32,6 @@ add_library(${PROJECT_NAME} SHARED ${SOURCES})
 target_precompile_headers(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/hzpch.h")
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
-    -DHZ_PLATFORM_WINDOWS # 平台配置为windows
     -DHZ_BUILD_DLL # 生成动态库导出信息
     -DHZ_ENABLE_ASSERTS # 启用宏断点检查
 )

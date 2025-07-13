@@ -3,6 +3,14 @@
 #include <memory>
 
 // 导出导入宏
+#ifdef _WIN32
+    #ifdef _WIN64
+        #define HZ_PLATFORM_WINDOWS
+    #else
+        #error The Windows platform does not support the x86 architecture.
+    #endif
+#endif
+
 #ifdef HZ_PLATFORM_WINDOWS
     #ifdef HZ_BUILD_DLL
         #define HAZEL_API __declspec(dllexport)

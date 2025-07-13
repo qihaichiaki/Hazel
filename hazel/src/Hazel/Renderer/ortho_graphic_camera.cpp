@@ -17,6 +17,12 @@ OrthoGraphicCamera::OrthoGraphicCamera(float left, float right, float bottom, fl
 
 OrthoGraphicCamera::~OrthoGraphicCamera() {}
 
+void OrthoGraphicCamera::setProjection(float left, float right, float bottom, float top)
+{
+    m_projection_matrix = glm::ortho(left, right, bottom, top, -1.0f, 1.0f);
+    m_projection_view_matrix = m_projection_matrix * m_view_matrix;
+}
+
 void OrthoGraphicCamera::recalculateViewMartix()
 {
     // 先计算transform矩阵, 然后执行逆矩阵即可

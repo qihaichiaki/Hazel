@@ -9,6 +9,7 @@ namespace Hazel
 
 class Event;
 class WindowCloseEvent;
+class WindowResizeEvent;
 class ImGuiLayer;
 class Time;
 class Application
@@ -39,11 +40,13 @@ private:
     void onEvent(Event&);
 
     bool onWindowClosed(WindowCloseEvent&);
+    bool onWindowResized(WindowResizeEvent&);
 
 private:
     std::unique_ptr<Window> m_window;
     ImGuiLayer* m_imgui_layer;  // 单独出现一层级
     bool m_running = true;
+    bool m_minimized = false;
     LayerStack m_layer_stack;
 
     float m_last_frame_time = 0.0f;  // 最后一帧的时间

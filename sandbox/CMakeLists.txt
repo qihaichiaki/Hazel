@@ -24,9 +24,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     "${CMAKE_SOURCE_DIR}/hazel/vendor/imgui"
 )
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE
-    -DHZ_PLATFORM_WINDOWS
-)
+target_compile_definitions(${PROJECT_NAME} PRIVATE)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     Hazel

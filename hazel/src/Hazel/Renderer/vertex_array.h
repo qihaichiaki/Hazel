@@ -38,6 +38,6 @@ public:
 public:
     /// @brief 创建顶点数组对象
     /// @note 创建时会根据RenderApi选择创建适合当前的对象
-    static VertexArray* create();
+    static Ref<VertexArray> create();
 };
 }  // namespace Hazel

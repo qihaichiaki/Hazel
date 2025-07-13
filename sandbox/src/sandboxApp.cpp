@@ -1,17 +1,20 @@
 #include <hazel.h>
+#include <Hazel/Core/entry_point.h>
 #include <imgui.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <PlatForm/OpenGL/opengl_shader.h>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "sandbox_2d.h"
+
 class ExampleLayer : public Hazel::Layer
 {
 public:
-    ExampleLayer() : Layer("Example"), m_camera{-1.6f, 1.6f, -0.9f, 0.9f}
+    ExampleLayer() : Layer("Example"), m_camera_controller{1280.0f / 720.0f}
     {
         // triangle render
-        m_triangle_va.reset(Hazel::VertexArray::create());
+        m_triangle_va = Hazel::VertexArray::create();
 
         // clang-format off
         float triangle_vertices[3 * 7] = {
@@ -21,8 +24,8 @@ public:
         };
         // clang-format on
         std::shared_ptr<Hazel::VertexBuffer> triangle_vertex_buffer;
-        triangle_vertex_buffer.reset(
-            Hazel::VertexBuffer::create(triangle_vertices, sizeof(triangle_vertices)));
+        triangle_vertex_buffer =
+            Hazel::VertexBuffer::create(triangle_vertices, sizeof(triangle_vertices));
 
         Hazel::BufferLayer triangle_vertex_layer{{Hazel::ShaderDataType::Float3, "a_Position"},
                                                  {Hazel::ShaderDataType::Float4, "a_Color"}};
@@ -31,8 +34,8 @@ public:
 
         uint32_t triangle_indices[3] = {0, 1, 2};  // 逆时针 绘制顺序
         std::shared_ptr<Hazel::IndexBuffer> triangle_index_buffer;
-        triangle_index_buffer.reset(Hazel::IndexBuffer::create(
-            triangle_indices, sizeof(triangle_indices) / sizeof(uint32_t)));
+        triangle_index_buffer = Hazel::IndexBuffer::create(
+            triangle_indices, sizeof(triangle_indices) / sizeof(uint32_t));
         m_triangle_va->setIndexBuffer(triangle_index_buffer);
 
         // shader对象
@@ -72,7 +75,7 @@ public:
             Hazel::Shader::create("triangle", triangle_vertex_shader, triangle_fragment_shader);
 
         // square render
-        m_square_va.reset(Hazel::VertexArray::create());
+        m_square_va = Hazel::VertexArray::create();
 
         // clang-format off
         float square_vertices[5 * 4] = {
@@ -83,8 +86,8 @@ public:
         };
         // clang-format on
         std::shared_ptr<Hazel::VertexBuffer> square_vertex_buffer;
-        square_vertex_buffer.reset(
-            Hazel::VertexBuffer::create(square_vertices, sizeof(square_vertices)));
+        square_vertex_buffer =
+            Hazel::VertexBuffer::create(square_vertices, sizeof(square_vertices));
 
         square_vertex_buffer->setLayout({{Hazel::ShaderDataType::Float3, "a_Position"},
                                          {Hazel::ShaderDataType::Float2, "a_TexCoord"}});
@@ -92,8 +95,8 @@ public:
 
         uint32_t square_indices[6] = {0, 1, 2, 2, 3, 0};  // 逆时针 绘制顺序
         std::shared_ptr<Hazel::IndexBuffer> square_index_buffer;
-        square_index_buffer.reset(
-            Hazel::IndexBuffer::create(square_indices, sizeof(square_indices) / sizeof(uint32_t)));
+        square_index_buffer =
+            Hazel::IndexBuffer::create(square_indices, sizeof(square_indices) / sizeof(uint32_t));
         m_square_va->setIndexBuffer(square_index_buffer);
 
         // shader对象
@@ -152,25 +155,9 @@ public:
         Hazel::RendererCommand::setClearColor({0.2f, 0.2f, 0.2f, 1.0f});
         Hazel::RendererCommand::clear();
 
-        // HZ_INFO("当前帧间隔: {}s, {}ms", timestep.getSeconds(), timestep.getMilliseconds());
+        m_camera_controller.onUpdate(timestep);
 
-        // 简单使用input系统实现相机移动
-        if (Hazel::Input::isKeyPressed(HZ_KEY_LEFT)) {
-            m_camera_position.x -= m_camera_move_speed * timestep;
-        } else if (Hazel::Input::isKeyPressed(HZ_KEY_RIGHT)) {
-            m_camera_position.x += m_camera_move_speed * timestep;
-        }
-        if (Hazel::Input::isKeyPressed(HZ_KEY_UP)) {
-            m_camera_position.y += m_camera_move_speed * timestep;
-        } else if (Hazel::Input::isKeyPressed(HZ_KEY_DOWN)) {
-            m_camera_position.y -= m_camera_move_speed * timestep;
-        }
-        // 旋转
-        if (Hazel::Input::isKeyPressed(HZ_KEY_A)) {
-            m_camera_rotation += m_camera_rotation_speed * timestep;
-        } else if (Hazel::Input::isKeyPressed(HZ_KEY_D)) {
-            m_camera_rotation -= m_camera_rotation_speed * timestep;
-        }
+        // HZ_INFO("当前帧间隔: {}s, {}ms", timestep.getSeconds(), timestep.getMilliseconds());
 
         // 简单让正方形动起来
         // if (Hazel::Input::isKeyPressed(HZ_KEY_J)) {
@@ -186,10 +173,7 @@ public:
 
         // glm::mat4 square_transform = glm::translate(glm::mat4{1.0f}, m_square_pos);
 
-        m_camera.setPosition(m_camera_position);
-        m_camera.setRotation(m_camera_rotation);
-
-        Hazel::Renderer::beginScene(m_camera);
+        Hazel::Renderer::beginScene(m_camera_controller.getCamera());
 
         // 渲染一个20 x 20的正方形网格
         glm::mat4 scale = glm::scale(glm::mat4{1.0f}, glm::vec3{0.1f});  // 缩放0.1倍
@@ -221,9 +205,9 @@ public:
         Hazel::Renderer::endScene();
     }
 
-    void onEvent(Hazel::Event&) override
+    void onEvent(Hazel::Event& e) override
     {
-        // HZ_TRACE("{0}", e.toString());
+        m_camera_controller.onEvent(e);
     }
 
     void onImGuiRender() override
@@ -234,10 +218,6 @@ public:
     }
 
 private:
-    glm::vec3 m_camera_position = glm::vec3{0.0f};
-    float m_camera_move_speed = 2.5f;
-    float m_camera_rotation = 0.0f;
-    float m_camera_rotation_speed = 30.0f;
     glm::vec4 m_square_color{1.0f};
     // glm::vec3 m_square_pos = glm::vec3{0.0f};
     // float m_square_speed = 0.1f;
@@ -253,7 +233,7 @@ private:
     Hazel::Ref<Hazel::Texture> m_texture_b;
     Hazel::Ref<Hazel::Texture> m_texture_f;
 
-    Hazel::OrthoGraphicCamera m_camera;
+    Hazel::OrthoGraphicCameraController m_camera_controller;
 };
 
 class SandboxApp : public Hazel::Application
@@ -261,7 +241,8 @@ class SandboxApp : public Hazel::Application
 public:
     SandboxApp()
     {
-        pushLayer(new ExampleLayer{});
+        // pushLayer(new ExampleLayer{});
+        pushLayer(new Sandbox2D{});
     }
     ~SandboxApp() {}
 };
