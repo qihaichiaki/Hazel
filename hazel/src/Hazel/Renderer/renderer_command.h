@@ -9,40 +9,40 @@
 namespace Hazel
 {
 
-class HAZEL_API RendererCommand
+class RendererCommand
 {
 public:
-    static void init()
+    HAZEL_API static void init()
     {
         s_renderer_api->init();
     }
 
     /// @brief 设置清屏颜色
-    static void setClearColor(const glm::vec4& clear_color)
+    HAZEL_API static void setClearColor(const glm::vec4& clear_color)
     {
         s_renderer_api->setClearColor(clear_color);
     }
 
     /// @brief 颜色缓冲区和深度缓冲区使用清屏颜色清屏
-    static void clear()
+    HAZEL_API static void clear()
     {
         s_renderer_api->clear();
     }
 
     /// @brief 根据索引绘制
     /// @param vertex_array 顶点数组数据
-    static void drawIndexed(const std::shared_ptr<VertexArray>& vertex_array)
+    HAZEL_API static void drawIndexed(const Ref<VertexArray>& vertex_array)
     {
         s_renderer_api->drawIndexed(vertex_array);
     }
 
     /// @brief 设置渲染器的渲染视图
-    static void setViewport(uint32_t width, uint32_t height)
+    HAZEL_API static void setViewport(uint32_t width, uint32_t height)
     {
         s_renderer_api->setViewport(width, height);
     }
 
 private:
-    static RendererAPI* s_renderer_api;
+    static Scope<RendererAPI> s_renderer_api;
 };
 }  // namespace Hazel

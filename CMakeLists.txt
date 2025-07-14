@@ -15,3 +15,8 @@ endif()
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/hazel)
 add_subdirectory(${CMAKE_SOURCE_DIR}/sandbox)
+
+# 设置vs启动项目
+if(MSVC)
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Sandbox)
+endif()

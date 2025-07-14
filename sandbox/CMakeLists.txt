@@ -29,3 +29,16 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE)
 target_link_libraries(${PROJECT_NAME} PRIVATE
     Hazel
 )
+
+# 为vs项目增加调试环境, 方便直接运行
+if(MSVC)
+    # 为目标设置调试环境变量
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        VS_DEBUGGER_ENVIRONMENT "PATH=${CMAKE_SOURCE_DIR}/build/bin/${BUILD_CONFIG}-${BUILD_PLATFROM}/Hazel"
+    )
+
+    # 设置调试时的工作目录
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+endif()

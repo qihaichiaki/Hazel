@@ -329,3 +329,6 @@ void main
 
 * 实现2DRenderer的第一步!
 
+* 需要性能分析工具, 并且在引擎内可见
+
+## [2DRenderer](./render_renderer2d.md)

@@ -17,6 +17,8 @@ public:
     enum class API { None = 0, OpenGL = 1 };
 
 public:
+    virtual ~RendererAPI() {}
+
     /// @brief renderapi初始化
     virtual void init() = 0;
 
@@ -28,7 +30,7 @@ public:
 
     /// @brief 根据索引绘制
     /// @param vertex_array 顶点数组数据
-    virtual void drawIndexed(const std::shared_ptr<VertexArray>& vertex_array) = 0;
+    virtual void drawIndexed(const Ref<VertexArray>& vertex_array) = 0;
 
     /// @brief 设置渲染视口
     virtual void setViewport(uint32_t width, uint32_t height) = 0;

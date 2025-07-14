@@ -1,7 +1,9 @@
 #include "hzpch.h"
 #include "renderer.h"
 
-// 临时转换
+#include "renderer_2d.h"
+
+// TODO: 临时转换
 #include "PlatForm/OpenGL/opengl_shader.h"
 
 namespace Hazel
@@ -13,6 +15,8 @@ Renderer::SceneData* Renderer::m_scene_data = new Renderer::SceneData{};
 void Renderer::init()
 {
     RendererCommand::init();
+    // TODO: renderer初始化时带上2d渲染器初始化, 但是没有手动shutdown
+    Renderer2D::init();
 }
 
 void Renderer::beginScene(const OrthoGraphicCamera& camera)
