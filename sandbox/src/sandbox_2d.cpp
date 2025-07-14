@@ -1,6 +1,5 @@
 #include "sandbox_2d.h"
 
-#include <PlatForm/OpenGL/opengl_shader.h>
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 

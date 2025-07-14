@@ -34,6 +34,9 @@ public:
         return m_name;
     }
 
+    void setMat4(const std::string& name, const glm::mat4& value) override;
+    void setFloat4(const std::string& name, const glm::vec4& value) override;
+
     /// @brief 上传指定名字的统一变量到shader中去
     /// @param uniform_name 在shader中的统一变量名
     /// @param matrix 待上传的矩阵
@@ -42,6 +45,7 @@ public:
     /// @param uniform_name 在shader中的统一变量名
     /// @param vec4 待上传的四维变量
     HAZEL_API void uploadUniformFloat4(const std::string& uniform_name, const glm::vec4& vec4);
+
     HAZEL_API void uploadUniformInt(const std::string& uniform_name, int value);
 
 private:

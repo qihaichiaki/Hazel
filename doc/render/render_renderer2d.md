@@ -9,6 +9,9 @@
     - why? 管理数据, 执行opengl指令，是一个全局的概念
 
 * Renderer 3drender init里可以支持Renderer2d的init
+* Shader 
+  * SetMat4 抽象
+  * SetF0loat4 抽象
 
 1. Init();
     - 初始化顶点数组相关

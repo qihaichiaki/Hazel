@@ -4,6 +4,8 @@
  * shader抽象类
  */
 
+#include <glm/glm.hpp>
+
 namespace Hazel
 {
 
@@ -19,6 +21,15 @@ public:
 
     /// @brief 返回shader标识
     virtual const std::string& getName() const = 0;
+
+    /// @brief shader设置4x4矩阵统一变量
+    /// @param name 变量名
+    /// @param value Mat4值
+    virtual void setMat4(const std::string& name, const glm::mat4& value) = 0;
+    /// @brief shader设置4维坐标统一变量
+    /// @param name 变量名
+    /// @param value vec4值
+    virtual void setFloat4(const std::string& name, const glm::vec4& value) = 0;
 
 public:
     /// @brief 将顶点/片段shader编译, 整合到shader程序中, 最后进行链接

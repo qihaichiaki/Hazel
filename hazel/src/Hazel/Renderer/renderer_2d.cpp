@@ -7,9 +7,6 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-// TODO: 临时直接转为opengl shader
-#include "PlatForm/OpenGL/opengl_shader.h"
-
 namespace Hazel
 {
 
@@ -63,8 +60,7 @@ void Renderer2D::beginScene(const OrthoGraphicCamera& camera)
 {
     // 上传pv矩阵
     s_data->FlatColorShader->bind();
-    std::static_pointer_cast<OpenGLShader>(s_data->FlatColorShader)
-        ->uploadUniformMat4("u_ProjectionView", camera.getProjectionViewMatrix());
+    s_data->FlatColorShader->setMat4("u_ProjectionView", camera.getProjectionViewMatrix());
 }
 
 void Renderer2D::endScene() {}
@@ -77,10 +73,8 @@ void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, cons
 
     // 2. 上传transform, color 矩阵到shader中去
     s_data->FlatColorShader->bind();
-    std::static_pointer_cast<OpenGLShader>(s_data->FlatColorShader)
-        ->uploadUniformMat4("u_Transform", transform);
-    std::static_pointer_cast<OpenGLShader>(s_data->FlatColorShader)
-        ->uploadUniformFloat4("u_Color", color);
+    s_data->FlatColorShader->setMat4("u_Transform", transform);
+    s_data->FlatColorShader->setFloat4("u_Color", color);
 
     // 3. 调用渲染命令进行实时绘制
     s_data->QuadVertexArray->bind();
