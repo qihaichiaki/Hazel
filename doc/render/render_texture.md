@@ -23,9 +23,12 @@
   * virtual uint32_t GetWidth() const = 0;
   * virtual uint32_t GetHeight() const = 0;
   * virtual void Bind(uint32_t slot = 0) const = 0;
+  * virtual void setData(void* data, uint32_t size) = 0
+    * 将一个指针指向一块内存, 将其上传到gpu
 
 * class Texture2d
   * static Ref<Texture2D> Create(const std::string& path);  // 类似之前的renderer类实现
+  * Create(uint32_t width, uint32_t height);
 
 * Platform/OpenGL/OpenGLTexture2d
   * 属性:
@@ -46,12 +49,20 @@
       - GL_LINEAR(不处理mipmaps不需要), 线性插值计算我们想要什么颜色
     * glTextureParameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR)  // 使用这样的过滤进行放大
       - GL_NEAREST, 让图像放大不模糊(使用线性会模糊)
+    * glTextureParameteri(GL_TEXTURE_WRAP_S, GL_REPEAT)  // 超出0到1的纹理坐标系统, GL_REPEAT重复, GL_CLAMP_TO_EDGE -无限重复边缘像素
+    * glTextureParameteri(GL_TEXTURE_WRAP_T, GL_REPEAT)  
     * glTextureSubImage2D(id, 0级别, xoffset = 0, yoffset=0, width, height, GL_RGB(也可以由前面的通道获得), GL_UNSIGNED_BYTE, data);  // 上传纹理数据
     * stbi_image_free(data);  // cpu 上的内存释放
   * 析构函数
     * deleteTexctures, 删除id
   * Bind(uint32_t slot)
     - glBindTextureUint(slot, id);  // 在槽slot绑定
+  * 构造函数(uint32_t width, uint32_t height)
+    * 指定RGBA的格式创建纹理并且设置存储, 以及放大和缩小的过滤器设置
+  * void setData(void* data, uint32_t size)
+    * 使用glTextureSubImage2D
+    * 其中internalformat(内部存储格式), dataformat(上传格式)可以成为成员变量存储起来‘
+    * 断言检查size == width * height * (RGBA? 4 : 3)
 
 * sanbox中创建assets/textures/.png
   * 首先hazel包含texture的头文件

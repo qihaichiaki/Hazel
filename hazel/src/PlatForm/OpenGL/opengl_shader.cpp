@@ -184,6 +184,11 @@ void OpenGLShader::setFloat4(const std::string& name, const glm::vec4& value)
     uploadUniformFloat4(name, value);
 }
 
+void OpenGLShader::setInt(const std::string& name, int value)
+{
+    uploadUniformInt(name, value);
+}
+
 void OpenGLShader::uploadUniformMat4(const std::string& uniform_name, const glm::mat4& matrix)
 {
     // 从shader中找到对应的统一变量

@@ -14,6 +14,7 @@ public:
 
 private:
     Hazel::OrthoGraphicCameraController m_camera_controller;
+    Hazel::Ref<Hazel::Texture2D> m_texture;
 
     glm::vec4 m_square_color{1.0f};
 };

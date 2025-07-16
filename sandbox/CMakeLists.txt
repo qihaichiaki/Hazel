@@ -39,6 +39,6 @@ if(MSVC)
 
     # 设置调试时的工作目录
     set_target_properties(${PROJECT_NAME} PROPERTIES
-        VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/sandbox"
     )
 endif()

@@ -36,6 +36,7 @@ public:
 
     void setMat4(const std::string& name, const glm::mat4& value) override;
     void setFloat4(const std::string& name, const glm::vec4& value) override;
+    void setInt(const std::string& name, int value) override;
 
     /// @brief 上传指定名字的统一变量到shader中去
     /// @param uniform_name 在shader中的统一变量名

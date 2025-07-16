@@ -30,6 +30,10 @@ public:
     /// @param name 变量名
     /// @param value vec4值
     virtual void setFloat4(const std::string& name, const glm::vec4& value) = 0;
+    /// @brief shader设置整数统一变量
+    /// @param name 统一变量名
+    /// @param value int值
+    virtual void setInt(const std::string& name, int value) = 0;
 
 public:
     /// @brief 将顶点/片段shader编译, 整合到shader程序中, 最后进行链接

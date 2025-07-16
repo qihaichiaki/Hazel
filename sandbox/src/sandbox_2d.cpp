@@ -5,9 +5,15 @@
 
 Sandbox2D::Sandbox2D() : Layer{"Sandbox2D"}, m_camera_controller{1280.0f / 720.0f} {}
 
-void Sandbox2D::onAttach() {}
+void Sandbox2D::onAttach()
+{
+    m_texture = Hazel::Texture2D::create("assets/textures/Checkerboard.png");
+}
 
-void Sandbox2D::onDetach() {}
+void Sandbox2D::onDetach()
+{
+    m_texture = nullptr;
+}
 
 void Sandbox2D::onUpdate(Hazel::Timestep ts)
 {
@@ -17,8 +23,9 @@ void Sandbox2D::onUpdate(Hazel::Timestep ts)
 
     Hazel::Renderer2D::beginScene(m_camera_controller.getCamera());
     // TODO: z轴存在问题
-    Hazel::Renderer2D::drawQuad({0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.8f, 0.4f, 0.2f, 1.0f});
-    Hazel::Renderer2D::drawQuad({0.23f, 0.14f}, {1.0f, 2.0f}, {0.2f, 0.8f, 0.2f, 1.0f});
+    Hazel::Renderer2D::drawQuad({0.0f, 0.0f, 0.1f}, {1.0f, 1.0f}, {0.8f, 0.4f, 0.2f, 1.0f});
+    Hazel::Renderer2D::drawQuad({1.23f, 0.14f, 0.0f}, {1.0f, 2.0f}, {0.2f, 0.8f, 0.2f, 1.0f});
+    Hazel::Renderer2D::drawQuad({0.0f, 0.0f, -0.1f}, {10.0f, 10.0f}, m_texture);
 
     Hazel::Renderer2D::endScene();
 }

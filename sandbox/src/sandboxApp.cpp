@@ -136,13 +136,13 @@ public:
             Hazel::Shader::create("square", square_vertex_shader, square_fragment_shader);
 
         // 读取文件创建shader
-        auto texture_shader = m_texture_shader_lib.load("sandbox/assets/shaders/texture.glsl");
+        auto texture_shader = m_texture_shader_lib.load("assets/shaders/texture.glsl");
 
         // 加载纹理图像
         // 1. 加载棋盘纹理
-        m_texture_b = Hazel::Texture2D::create("sandbox/assets/textures/Checkerboard.png");
+        m_texture_b = Hazel::Texture2D::create("assets/textures/Checkerboard.png");
         // 2. 加载前景图
-        m_texture_f = Hazel::Texture2D::create("sandbox/assets/textures/namica.png");
+        m_texture_f = Hazel::Texture2D::create("assets/textures/namica.png");
 
         // 绑定 m_texture_shader, 指定插槽0为纹理上传位置
         texture_shader->bind();

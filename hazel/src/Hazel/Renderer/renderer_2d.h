@@ -5,6 +5,7 @@
  */
 
 #include "ortho_graphic_camera.h"
+#include "texture.h"
 
 namespace Hazel
 {
@@ -36,5 +37,20 @@ public:
     HAZEL_API static void drawQuad(const glm::vec2& position,
                                    const glm::vec2& size,
                                    const glm::vec4& color);
+
+    /// @brief 在给出的四边形上实时绘制出一个加载的纹理
+    /// @param position 当前四边形的世界坐标(2d渲染中z标识图层高度)
+    /// @param size 当前四边形的大小
+    /// @param texture 2d纹理数据
+    HAZEL_API static void drawQuad(const glm::vec3& position,
+                                   const glm::vec2& size,
+                                   const Ref<Texture2D>& texture);
+    /// @brief 在给出的四边形上实时绘制出一个加载的纹理
+    /// @param position 当前四边形的世界坐标(z图层默认为0)
+    /// @param size 当前四边形的大小
+    /// @param texture 2d纹理数据
+    HAZEL_API static void drawQuad(const glm::vec2& position,
+                                   const glm::vec2& size,
+                                   const Ref<Texture2D>& texture);
 };
 }  // namespace Hazel
