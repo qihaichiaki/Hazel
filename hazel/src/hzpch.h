@@ -18,6 +18,7 @@
 #include <unordered_set>
 
 #include "Hazel/Core/log.h"
+#include "Hazel/Debug/instrumentor.h"
 
 #ifdef _WIN32
     #include <Windows.h>

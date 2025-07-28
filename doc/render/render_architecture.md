@@ -332,3 +332,55 @@ void main
 * 需要性能分析工具, 并且在引擎内可见
 
 ## [2DRenderer](./render_renderer2d.md)
+
+
+## 引擎性能分析
+* 一帧CPU实际使用需要多长时间?
+* 摄像头更新需要多长时间?
+* 清除帧需要多长时间?
+* 渲染花费的时间是多少?
+
+* 得到数据 -> 将数据进行可视化
+
+
+* 设计一个timer类, 用于在其生命周期内进行一个计时单位是ms, 利用的库是C++标准库·中的chrono::high_resolution_clock::now() Timer(steady_clock) 计时器 
+* 封装stop函数, 可以将对象用于主动计时或者生命周期结束自动计时
+
+* 需要将获取间隔时间改为微秒的接口, 便于测试更加精确(microsecond), 再将其转换为毫秒接口这样会更加精确(小数保留等)
+
+* 将上述的测试信息打印到控制台内会不好看, 所以需要imgui将其数据进行可视化出来
+* 创建一个Struct ProFileResult, const char* Name and Time
+* Vector 动态数组包含此类型, 当一个timer结束测量的时候将内容推送到此vector中去
+
+* imgui部分:
+  * 遍历结果列表
+  * Text使用label标注, ProFileResult name(label 50缓冲区, 利用strcpy函数将结果中的内容拷贝到缓冲区中 随后将其利用strcat函数进行字符串拼接" %.3fms"(后面的值进行格式化), 提供给imgui展示)
+  * 遍历完成后, profile的Vector进行清除
+
+* 使用模板参数传入lambda表达式, 最后调用传参的时候直接构造struct对象{} 进行传递即可 (function对象存在动态开销)
+* 对于Timer的使用可以定义一个宏PROFILE_SCOPE(name) Timer timer##__LINE__(name, lambda) 进行使用
+
+## 可视化性能分析
+* 上面的计时器不错, 但是只是显示一帧时的数据, 没有整体的去分析
+* 想要基于整体, 又落实于各个部分的数据分析， 以图表的方式再imgui中进行呈现
+
+* 文件: Hazel/Debug/Instrumentor.h(C++中的可视化基准测试里的内容)
+* pch进行包含
+
+* Instrumentor.h
+  * 里面首先包含分析写出类
+  * 利用宏配置, 确保发布版本不包含这些内容的使用
+  * __FUNCTION__ 函数名称
+  * __FUNCSIG__ 函数签名
+
+
+* 数据分析处理:
+  * 再app创建和run运行:
+    * BEGIN_SESSION("Startup", "HazekProfile-Startup.json")
+    * BEGIN_SESSION("Runtime", "HazekProfile-Runtime.json")
+    * BEGIN_SESSION("Startup", "HazekProfile-Shutdown.json")
+
+### 仪器测量
+* 思考: 写入到文件是否是一个很好的做法?
+* 游戏引擎力每秒大致60帧, 如果全写到文件内去, 则会产生大量空间并且不豪整体分析
+* 可以只是分析一个片段, 比如只分析1s内的60帧
