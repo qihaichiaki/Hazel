@@ -35,7 +35,11 @@ public:
 
     void bind() const override;
     void unBind() const override;
-    uint32_t getCount() const override;
+
+    uint32_t OpenGLIndexBuffer::getCount() const override
+    {
+        return m_count;
+    }
 
 private:
     uint32_t m_rendrer_id;

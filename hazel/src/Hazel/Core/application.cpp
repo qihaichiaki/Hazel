@@ -14,6 +14,8 @@ Application* Application::s_instance = nullptr;
 
 Application::Application()
 {
+    HZ_PROFILE_FUNCTION();
+
     HZ_CORE_ASSERT(s_instance == nullptr, "application被创建多次!")
     s_instance = this;
 
@@ -30,23 +32,36 @@ Application::~Application() {}
 
 void Application::run()
 {
+    HZ_PROFILE_FUNCTION();
+
     while (m_running) {
+        HZ_PROFILE_SCOPE("RunLoop");
+
         float time = static_cast<float>(glfwGetTime());
         Timestep timestep = time - m_last_frame_time;
         m_last_frame_time = time;
 
         if (!m_minimized) {
-            // 层级从左往右更新/渲染
-            for (auto& layer : m_layer_stack) {
-                layer->onUpdate(timestep);
+            {
+                HZ_PROFILE_SCOPE("LayerStack onUpdate");
+
+                // 层级从左往右更新/渲染
+                for (auto& layer : m_layer_stack) {
+                    layer->onUpdate(timestep);
+                }
             }
+
+            // imgui 更新层
+            m_imgui_layer->begin();
+            {
+                HZ_PROFILE_SCOPE("LayerStack onImGuiRender");
+
+                for (auto& layer : m_layer_stack) {
+                    layer->onImGuiRender();
+                }
+            }
+            m_imgui_layer->end();
         }
-        // imgui 更新层
-        m_imgui_layer->begin();
-        for (auto& layer : m_layer_stack) {
-            layer->onImGuiRender();
-        }
-        m_imgui_layer->end();
 
         m_window->onUpdate();
     }
@@ -54,6 +69,8 @@ void Application::run()
 
 void Application::onEvent(Event& event)
 {
+    HZ_PROFILE_FUNCTION();
+
     EventDispatcher dispatcher{event};
     dispatcher.dispatch<WindowCloseEvent>(HZ_BIND_EVENT_FN(Application::onWindowClosed));
     dispatcher.dispatch<WindowResizeEvent>(HZ_BIND_EVENT_FN(Application::onWindowResized));
@@ -74,6 +91,8 @@ bool Application::onWindowClosed(WindowCloseEvent&)
 
 bool Application::onWindowResized(WindowResizeEvent& e)
 {
+    HZ_PROFILE_FUNCTION();
+
     auto width = e.getResizeWidth();
     auto height = e.getResizeHeight();
     if (width == 0 || height == 0) {
@@ -87,21 +106,31 @@ bool Application::onWindowResized(WindowResizeEvent& e)
 
 void Application::pushLayer(Layer* layer)
 {
+    HZ_PROFILE_FUNCTION();
+
     m_layer_stack.pushLayer(layer);
+    layer->onAttach();
 }
 
 void Application::pushOverlay(Layer* overly)
 {
+    HZ_PROFILE_FUNCTION();
+
     m_layer_stack.pushOverlay(overly);
+    overly->onAttach();
 }
 
 void Application::popLayer(Layer* layer)
 {
+    HZ_PROFILE_FUNCTION();
+
     m_layer_stack.popLayer(layer);
 }
 
 void Application::popOverlay(Layer* overly)
 {
+    HZ_PROFILE_FUNCTION();
+
     m_layer_stack.popOverlay(overly);
 }
 }  // namespace Hazel

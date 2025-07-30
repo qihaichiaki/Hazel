@@ -17,6 +17,8 @@ OrthoGraphicCameraController::~OrthoGraphicCameraController() {}
 
 void OrthoGraphicCameraController::onUpdate(Timestep ts)
 {
+    HZ_PROFILE_FUNCTION();
+
     // 简单使用input系统实现相机移动
     if (Hazel::Input::isKeyPressed(HZ_KEY_A)) {
         m_camera_position.x -=
@@ -59,6 +61,8 @@ void OrthoGraphicCameraController::onUpdate(Timestep ts)
 
 void OrthoGraphicCameraController::onEvent(Event& e)
 {
+    HZ_PROFILE_FUNCTION();
+
     EventDispatcher event_dispatcher{e};
 
     event_dispatcher.dispatch<MouseScrolledEvent>(
@@ -69,6 +73,8 @@ void OrthoGraphicCameraController::onEvent(Event& e)
 
 bool OrthoGraphicCameraController::onMouseScrolled(MouseScrolledEvent& e)
 {
+    HZ_PROFILE_FUNCTION();
+
     m_zoom_level -= e.getOffsetY() * 0.25f;
     m_zoom_level = std::max(m_zoom_level, 0.25f);
     m_camera_translation_speed = m_zoom_level;
@@ -78,6 +84,8 @@ bool OrthoGraphicCameraController::onMouseScrolled(MouseScrolledEvent& e)
 }
 bool OrthoGraphicCameraController::onWindowResized(WindowResizeEvent& e)
 {
+    HZ_PROFILE_FUNCTION();
+
     m_aspect_ratio = 1.0f * e.getResizeWidth() / e.getResizeHeight();
     m_camera.setProjection(-m_aspect_ratio * m_zoom_level, m_aspect_ratio * m_zoom_level,
                            -m_zoom_level, m_zoom_level);

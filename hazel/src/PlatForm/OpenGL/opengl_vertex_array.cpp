@@ -30,26 +30,36 @@ namespace Hazel
 {
 OpenGLVertexArray::OpenGLVertexArray()
 {
+    HZ_PROFILE_FUNCTION();
+
     glCreateVertexArrays(1, &m_vertex_array_id);
 }
 
 OpenGLVertexArray::~OpenGLVertexArray()
 {
+    HZ_PROFILE_FUNCTION();
+
     glDeleteVertexArrays(1, &m_vertex_array_id);
 }
 
 void OpenGLVertexArray::bind() const
 {
+    HZ_PROFILE_FUNCTION();
+
     glBindVertexArray(m_vertex_array_id);
 }
 
 void OpenGLVertexArray::unBind() const
 {
+    HZ_PROFILE_FUNCTION();
+
     glBindVertexArray(0);
 }
 
 void OpenGLVertexArray::addVertexBuffer(const std::shared_ptr<VertexBuffer>& vertex_buffer)
 {
+    HZ_PROFILE_FUNCTION();
+
     auto& buffer_layer = vertex_buffer->getLayout();
     HZ_CORE_ASSERT(buffer_layer.getBufferElement().size(), "当前添加的顶点缓冲区未设置布局!");
 
@@ -73,6 +83,8 @@ void OpenGLVertexArray::addVertexBuffer(const std::shared_ptr<VertexBuffer>& ver
 
 void OpenGLVertexArray::setIndexBuffer(const std::shared_ptr<IndexBuffer>& index_buffer)
 {
+    HZ_PROFILE_FUNCTION();
+
     glBindVertexArray(m_vertex_array_id);
     index_buffer->bind();
 

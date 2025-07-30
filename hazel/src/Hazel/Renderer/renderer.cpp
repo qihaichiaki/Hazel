@@ -14,6 +14,8 @@ Renderer::SceneData* Renderer::m_scene_data = new Renderer::SceneData{};
 
 void Renderer::init()
 {
+    HZ_PROFILE_FUNCTION();
+
     RendererCommand::init();
     // TODO: renderer初始化时带上2d渲染器初始化, 但是没有手动shutdown
     Renderer2D::init();

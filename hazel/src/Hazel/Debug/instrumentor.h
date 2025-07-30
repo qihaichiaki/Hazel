@@ -4,6 +4,7 @@
  * instrumentor 仪表器, 简单用于生成分析运行效率的工具
  * 使用地址: chrome://tracing
  */
+#include "Hazel/Core/core.h"
 #include <fstream>
 
 namespace Hazel
@@ -24,34 +25,34 @@ struct InstrumentationSession
 class Instrumentor
 {
 public:
-    Instrumentor() : m_current_session{nullptr}, m_profile_count{0} {}
+    HAZEL_API Instrumentor() : m_current_session{nullptr}, m_profile_count{0} {}
 
-    static Instrumentor& get()
+    HAZEL_API static Instrumentor& get()
     {
         static Instrumentor instance;
         return instance;
     }
 
-    void writeHeader()
+    HAZEL_API void writeHeader()
     {
         m_output_stream << "{\"otherData\":{},\"traceEvents\":[";
         m_output_stream.flush();
     }
 
-    void beginSession(const std::string& name, const std::string& path = "results.json")
+    HAZEL_API void beginSession(const std::string& name, const std::string& path = "results.json")
     {
         m_output_stream.open(path);
         writeHeader();
         m_current_session = new InstrumentationSession{name};
     }
 
-    void writeFooter()
+    HAZEL_API void writeFooter()
     {
         m_output_stream << "]}";
         m_output_stream.flush();
     }
 
-    void endSession()
+    HAZEL_API void endSession()
     {
         writeFooter();
         m_output_stream.close();
@@ -62,7 +63,7 @@ public:
         m_profile_count = 0;
     }
 
-    void writeProfile(const ProfileResult& result)
+    HAZEL_API void writeProfile(const ProfileResult& result)
     {
         if (m_profile_count++ > 0) {
             m_output_stream << ", ";
@@ -94,19 +95,19 @@ private:
 class InstrumentationTimer
 {
 public:
-    InstrumentationTimer(const char* name) : m_name{name}, m_stopped{false}
+    HAZEL_API InstrumentationTimer(const char* name) : m_name{name}, m_stopped{false}
     {
         m_start_time_point = std::chrono::high_resolution_clock::now();
     }
 
-    ~InstrumentationTimer()
+    HAZEL_API ~InstrumentationTimer()
     {
         if (!m_stopped) {
             stop();
         }
     }
 
-    void stop()
+    HAZEL_API void stop()
     {
         if (m_stopped) return;
 
@@ -139,7 +140,7 @@ private:
     #define HZ_PROFILE_BEGIN_SESSION(name, file_path) \
         ::Hazel::Instrumentor::get().beginSession(name, file_path)
     #define HZ_PROFILE_END_SESSION() ::Hazel::Instrumentor::get().endSession()
-    #define HZ_PROFILE_SCOPE(name) ::Hazel::InstrumentationTimer __LINE__timer(name)
+    #define HZ_PROFILE_SCOPE(name) ::Hazel::InstrumentationTimer __LINE__##timer(name)
     #define HZ_PROFILE_FUNCTION() HZ_PROFILE_SCOPE(__FUNCSIG__)
 #else
     #define HZ_PROFILE_BEGIN_SESSION(name, file_path)

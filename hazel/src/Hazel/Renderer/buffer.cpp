@@ -91,7 +91,7 @@ Ref<VertexBuffer> VertexBuffer::create(float* vertices, uint32_t size)
             HZ_CORE_ASSERT(false, "尚未支持的RendererAPI渲染");
             return nullptr;
         case RendererAPI::API::OpenGL:
-            return std::make_shared<OpenGLVertexBuffer>(vertices, size);
+            return createRef<OpenGLVertexBuffer>(vertices, size);
     }
 
     HZ_CORE_ASSERT(false, "RendererAPI 未知选项!");

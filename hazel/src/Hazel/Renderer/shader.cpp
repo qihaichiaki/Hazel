@@ -29,7 +29,7 @@ Ref<Shader> Shader::create(const std::string& file_path)
             HZ_CORE_ASSERT(false, "尚未支持的RendererAPI渲染");
             return nullptr;
         case RendererAPI::API::OpenGL:
-            return std::make_shared<OpenGLShader>(file_path);
+            return createRef<OpenGLShader>(file_path);
     }
 
     HZ_CORE_ASSERT(false, "RendererAPI 未知选项!");

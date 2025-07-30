@@ -16,6 +16,8 @@ ImGuiLayer::~ImGuiLayer() {}
 
 void ImGuiLayer::onAttach()
 {
+    HZ_PROFILE_FUNCTION();
+
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui::StyleColorsDark();  // 风格设置
@@ -43,6 +45,8 @@ void ImGuiLayer::onAttach()
 
 void ImGuiLayer::onDetach()
 {
+    HZ_PROFILE_FUNCTION();
+
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
@@ -50,12 +54,16 @@ void ImGuiLayer::onDetach()
 
 void ImGuiLayer::onImGuiRender()
 {
+    HZ_PROFILE_FUNCTION();
+
     static bool is_show_demo = true;
     ImGui::ShowDemoWindow(&is_show_demo);
 }
 
 void ImGuiLayer::begin()
 {
+    HZ_PROFILE_FUNCTION();
+
     ImGui_ImplGlfw_NewFrame();
     ImGui_ImplOpenGL3_NewFrame();
     ImGui::NewFrame();
@@ -63,6 +71,8 @@ void ImGuiLayer::begin()
 
 void ImGuiLayer::end()
 {
+    HZ_PROFILE_FUNCTION();
+
     // 更新窗口大小
     auto& io = ImGui::GetIO();
     auto& window = Application::get().getWindow();

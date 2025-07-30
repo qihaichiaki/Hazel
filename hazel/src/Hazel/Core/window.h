@@ -54,6 +54,6 @@ public:
     /// @brief 创建窗口句柄
     /// @param props 窗口创建信息
     /// @return 相应平台的window示例
-    static Window* create(const WindowProps& props = WindowProps{});
+    static Scope<Window> create(const WindowProps& props = WindowProps{});
 };
 }  // namespace Hazel

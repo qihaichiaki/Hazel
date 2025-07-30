@@ -11,22 +11,30 @@ namespace Hazel
 
 OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, uint32_t size)
 {
+    HZ_PROFILE_FUNCTION();
+
     glCreateBuffers(1, &m_rendrer_id);
     glBindBuffer(GL_ARRAY_BUFFER, m_rendrer_id);
     glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
 }
 OpenGLVertexBuffer::~OpenGLVertexBuffer()
 {
+    HZ_PROFILE_FUNCTION();
+
     glDeleteBuffers(1, &m_rendrer_id);
 }
 
 void OpenGLVertexBuffer::bind() const
 {
+    HZ_PROFILE_FUNCTION();
+
     glBindBuffer(GL_ARRAY_BUFFER, m_rendrer_id);
 }
 
 void OpenGLVertexBuffer::unBind() const
 {
+    HZ_PROFILE_FUNCTION();
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 ////////////////////////////////////////////////////////////
@@ -36,6 +44,8 @@ void OpenGLVertexBuffer::unBind() const
 
 OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t* indices, uint32_t count) : m_count{count}
 {
+    HZ_PROFILE_FUNCTION();
+
     glCreateBuffers(1, &m_rendrer_id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_rendrer_id);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_count * sizeof(uint32_t), indices, GL_STATIC_DRAW);
@@ -43,22 +53,23 @@ OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t* indices, uint32_t count) : m_coun
 
 OpenGLIndexBuffer::~OpenGLIndexBuffer()
 {
+    HZ_PROFILE_FUNCTION();
+
     glDeleteBuffers(1, &m_rendrer_id);
 }
 
 void OpenGLIndexBuffer::bind() const
 {
+    HZ_PROFILE_FUNCTION();
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_rendrer_id);
 }
 
 void OpenGLIndexBuffer::unBind() const
 {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
+    HZ_PROFILE_FUNCTION();
 
-uint32_t OpenGLIndexBuffer::getCount() const
-{
-    return m_count;
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 ////////////////////////////////////////////////////////////
 

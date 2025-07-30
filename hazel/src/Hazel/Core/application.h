@@ -43,7 +43,7 @@ private:
     bool onWindowResized(WindowResizeEvent&);
 
 private:
-    std::unique_ptr<Window> m_window;
+    Scope<Window> m_window;
     ImGuiLayer* m_imgui_layer;  // 单独出现一层级
     bool m_running = true;
     bool m_minimized = false;

@@ -15,6 +15,8 @@ OpenGlContext::~OpenGlContext() {}
 
 void OpenGlContext::init()
 {
+    HZ_PROFILE_FUNCTION();
+
     // glfw创建当前的上下文
     glfwMakeContextCurrent(m_window_handle);
     // glad加载所有现代opengl函数
@@ -32,6 +34,8 @@ void OpenGlContext::init()
 
 void OpenGlContext::swapBuffer()
 {
+    HZ_PROFILE_FUNCTION();
+
     glfwSwapBuffers(m_window_handle);  // 此处如果设置了垂直同步, 那么会根据屏幕刷新hz进行等待......
 }
 

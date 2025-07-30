@@ -7,6 +7,8 @@ namespace Hazel
 {
 OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height) : m_width(width), m_height(height)
 {
+    HZ_PROFILE_FUNCTION();
+
     glCreateTextures(GL_TEXTURE_2D, 1, &m_renderer_id);
     m_internal_format = GL_RGBA8;
     m_data_format = GL_RGBA;
@@ -24,10 +26,17 @@ OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height) : m_width(widt
 
 OpenGLTexture2D::OpenGLTexture2D(const std::string& path) : m_path(path)
 {
+    HZ_PROFILE_FUNCTION();
+
     stbi_set_flip_vertically_on_load(1);  // 翻转读取图片缓冲区
     int width, height;
     int channels;  // 通道数
-    stbi_uc* data = stbi_load(m_path.c_str(), &width, &height, &channels, 0);
+
+    stbi_uc* data = nullptr;
+    {
+        HZ_PROFILE_SCOPE("stbi_load - OpenGLTexture2D::OpenGLTexture2D(const std::string&)");
+        data = stbi_load(m_path.c_str(), &width, &height, &channels, 0);
+    }
     HZ_CORE_ASSERT(data, "OpenGLTexture2D 加载纹理失败!");
     m_width = width;
     m_height = height;
@@ -66,16 +75,22 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string& path) : m_path(path)
 
 OpenGLTexture2D::~OpenGLTexture2D()
 {
+    HZ_PROFILE_FUNCTION();
+
     glDeleteTextures(1, &m_renderer_id);
 }
 
 void OpenGLTexture2D::bind(uint32_t slot) const
 {
+    HZ_PROFILE_FUNCTION();
+
     glBindTextureUnit(slot, m_renderer_id);  // 将纹理数据绑定到slot插槽
 }
 
 void OpenGLTexture2D::setData(void* data, uint32_t size)
 {
+    HZ_PROFILE_FUNCTION();
+
     HZ_CORE_ASSERT((size == m_width * m_height * (m_data_format == GL_RGBA ? 4 : 3)),
                    "当前纹理设置的数据和宽度高度不匹配");
 

@@ -16,14 +16,12 @@ LayerStack::~LayerStack()
 
 void LayerStack::pushLayer(Layer* layer)
 {
-    layer->onAttach();
     m_layers.emplace(m_layers.begin() + m_layer_insert_index, layer);
     m_layer_insert_index++;
 }
 
 void LayerStack::pushOverlay(Layer* overly)
 {
-    overly->onAttach();
     m_layers.emplace_back(overly);
 }
 

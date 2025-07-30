@@ -9,18 +9,22 @@
 
 namespace Hazel
 {
-Window* Window::create(const WindowProps& props)
+Scope<Window> Window::create(const WindowProps& props)
 {
-    return new WindowsWindow{props};
+    return createScope<WindowsWindow>(props);
 }
 
 WindowsWindow::WindowsWindow(const WindowProps& props)
 {
+    HZ_PROFILE_FUNCTION();
+
     init(props);
 }
 
 WindowsWindow::~WindowsWindow()
 {
+    HZ_PROFILE_FUNCTION();
+
     shutdown();
 }
 
@@ -33,20 +37,29 @@ static void glfwErrorCallBack(int error, const char* description)
 
 void WindowsWindow::init(const WindowProps& props)
 {
+    HZ_PROFILE_FUNCTION();
+
     m_data.title = props.title;
     m_data.width = props.width;
     m_data.height = props.height;
 
     if (!s_is_window_init) {
-        int is_init = glfwInit();
+        int is_init = 0;
+        {
+            HZ_PROFILE_SCOPE("glfwInit");
+            is_init = glfwInit();
+        }
         HZ_CORE_ASSERT(is_init, "glfwInit初始化失败!")
 
         glfwSetErrorCallback(glfwErrorCallBack);
         s_is_window_init = true;  // 窗口只初始化一次
     }
     // 通过glfw创建窗口
-    m_window =
-        glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
+    {
+        HZ_PROFILE_SCOPE("glfwCreateWindow");
+        m_window =
+            glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
+    }
     HZ_CORE_ASSERT(m_window, "glfwInit初始化失败!")
 
     m_context = std::make_unique<OpenGlContext>(m_window);
@@ -141,12 +154,16 @@ void WindowsWindow::init(const WindowProps& props)
 
 void WindowsWindow::shutdown()
 {
+    HZ_PROFILE_FUNCTION();
+
     glfwDestroyWindow(m_window);
     m_window = nullptr;
 }
 
 void WindowsWindow::onUpdate()
 {
+    HZ_PROFILE_FUNCTION();
+
     // glfw轮询事件
     glfwPollEvents();
     // 图形上下文交换
@@ -155,6 +172,8 @@ void WindowsWindow::onUpdate()
 
 void WindowsWindow::setVSync(bool enable)
 {
+    HZ_PROFILE_FUNCTION();
+
     if (enable) {
         glfwSwapInterval(1);
     } else {

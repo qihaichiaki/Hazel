@@ -21,6 +21,8 @@ static Renderer2DStorage* s_data = nullptr;
 
 void Renderer2D::init()
 {
+    HZ_PROFILE_FUNCTION();
+
     s_data = new Renderer2DStorage{};
 
     // 1. 创建quad顶点数组对象
@@ -63,21 +65,30 @@ void Renderer2D::init()
 
 void Renderer2D::shutdown()
 {
+    HZ_PROFILE_FUNCTION();
+
     delete s_data;
     s_data = nullptr;
 }
 
 void Renderer2D::beginScene(const OrthoGraphicCamera& camera)
 {
+    HZ_PROFILE_FUNCTION();
+
     // 上传pv矩阵
     s_data->TextureShader->bind();
     s_data->TextureShader->setMat4("u_ProjectionView", camera.getProjectionViewMatrix());
 }
 
-void Renderer2D::endScene() {}
+void Renderer2D::endScene()
+{
+    HZ_PROFILE_FUNCTION();
+}
 
 void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
 {
+    HZ_PROFILE_FUNCTION();
+
     // 1. 处理transform 矩阵 -> 对象当前的模型矩阵
     glm::mat4 transform = glm::translate(glm::mat4{1.0f}, position) *
                           glm::scale(glm::mat4{1.0f}, glm::vec3{size.x, size.y, 1.0f});
@@ -102,6 +113,8 @@ void Renderer2D::drawQuad(const glm::vec3& position,
                           const glm::vec2& size,
                           const Ref<Texture2D>& texture)
 {
+    HZ_PROFILE_FUNCTION();
+
     glm::mat4 transform = glm::translate(glm::mat4{1.0f}, position) *
                           glm::scale(glm::mat4{1.0f}, glm::vec3{size.x, size.y, 1.0f});
 
