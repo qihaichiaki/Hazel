@@ -3,7 +3,8 @@ build
 thirdparty
 
 # vscode相关
-.vscode
+.vscode/*
+!.vscode/launch.json
 
 # 资源文件
 
@@ -14,3 +15,6 @@ thirdparty
 
 # 缓存文件
 .cache
+
+# hazel相关profile文件
+HazelProfile*
