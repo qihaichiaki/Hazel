@@ -17,4 +17,12 @@ This is the learning game engine project Hazel Engine based on TheCherno's game 
 #### Window
 * 游戏引擎的窗口基类, 负责创建窗口应用程序，并且监听窗口事件传回应用程序
 * 存在平台适配, 下面只是具体实现了windows平台下的窗口示例
-
+* 构造初始化(仅仅初始化一次)：
+  - glfwInit()
+  - 设置glfw的错误回调
+  - 创建窗口句柄glfwCreateWindow(可优化到单独创建window里面)
+  - 将窗口句柄传入OpenGlContext,OpenGlContext进行init(同上) 
+  - 设置垂直同步setVSync(glfwSwapInterval(1)) (必须要设置吗?)
+  - 往glfw注册用户数据, 后续设置窗口事件回调, 方便使用数据填充
+  - 设置窗口事件回调, 具体为:窗口大小调整, 窗口关闭, 键盘按键/文本输入, 鼠标按键/滚轮/坐标  
+* 更新函数
