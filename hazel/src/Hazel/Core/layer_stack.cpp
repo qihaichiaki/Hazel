@@ -38,7 +38,7 @@ void LayerStack::popLayer(Layer* layer)
 void LayerStack::popOverlay(Layer* overly)
 {
     auto it = std::find(m_layers.begin(), m_layers.end(), overly);
-    if (it != m_layers.end()) {
+    if (it != m_layers.end() && m_layers.size() > m_layer_insert_index + 1) {
         overly->onDetach();
         m_layers.erase(it);
     }

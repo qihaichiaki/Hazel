@@ -19,7 +19,7 @@ Application::Application()
     HZ_CORE_ASSERT(s_instance == nullptr, "application被创建多次!")
     s_instance = this;
 
-    m_window = std::unique_ptr<Window>(Window::create());
+    m_window = Window::create();
     m_window->setEventCallBack(HZ_BIND_EVENT_FN(Application::onEvent));
 
     Renderer::init();

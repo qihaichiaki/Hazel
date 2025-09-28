@@ -62,7 +62,7 @@ void WindowsWindow::init(const WindowProps& props)
     }
     HZ_CORE_ASSERT(m_window, "glfwInit初始化失败!")
 
-    m_context = std::make_unique<OpenGlContext>(m_window);
+    m_context = createScope<OpenGlContext>(m_window);
     m_context->init();
 
     // 设置用户字段, 方便在glfw触发事件时使用
