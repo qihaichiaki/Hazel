@@ -11,7 +11,10 @@ void OpenGLRendererAPI::init()
 
     // 启用纹理混合
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // 经典混合函数
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // 经典混合函数, 实现透明效果
+    // Final = Src.RGB * sfactor + Dst.RGB * dfactor
+    // sfactor = Src.A
+    // dfactor = (1 - src.A)
 
     // 启用深度测试
     glEnable(GL_DEPTH_TEST);

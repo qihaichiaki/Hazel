@@ -11,8 +11,9 @@ This is the learning game engine project Hazel Engine based on TheCherno's game 
 #### Application 
 * 游戏引擎的应用程序基类, 其包含了引擎内各个组件的初始化以及相关的环境准备。
 * 构造初始化:
-   - Window::create()
-   - 设置window事件回调
+   - Window::create(), 创建窗口对象
+   - 设置window事件回调，方便将窗口捕获的事件发送到application, 随后由application从栈顶往下传播
+   -  Renderer::init() 渲染初始化
 
 #### Window
 * 游戏引擎的窗口基类, 负责创建窗口应用程序，并且监听窗口事件传回应用程序
@@ -26,3 +27,19 @@ This is the learning game engine project Hazel Engine based on TheCherno's game 
   - 往glfw注册用户数据, 后续设置窗口事件回调, 方便使用数据填充
   - 设置窗口事件回调, 具体为:窗口大小调整, 窗口关闭, 键盘按键/文本输入, 鼠标按键/滚轮/坐标  
 * 更新函数
+
+#### Renderer
+* 游戏的渲染器类. 由于当前引擎适配的是2D渲染, 所以实际内部调用是渲染命令初始化和2d渲染器初始化.
+* 当前引擎的思路是，底层渲染接口 -> 渲染命令 -> 2d/3d渲染器封装。除开底层外, 其余均以static的方法向外提供, 只是渲染命令内部存储的RendererAPI为对象, 作为底层实现的对象。
+
+##### RendererCommand
+* 渲染命令, 方便给上层提供适配好各个api的渲染封装命令可以直接调用, 并且无需依赖实例
+* init()
+  - renderer_api->init()
+
+##### RendererAPI
+* 底层适配RendererAPI对象，下面以OpenGL为例
+* init()
+  * ``glEnable(GL_BLEND)`` 启用纹理混合, 即当前片段颜色(src)和帧缓冲中存在的颜色(dst)按照某个公式混合在一起, 而不是帧缓冲直接覆盖
+  * ``glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);``混合函数设置, 告诉渲染接口如何将src和dst颜色进行混合. 此时启用经典的混合函数, 方便实现透明的效果
+  * ``glEnable(GL_DEPTH_TEST);`` 启用深度测试, 让片段最终的z坐标可以决定渲染前后而不依赖绘制顺序
