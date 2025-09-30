@@ -13,7 +13,8 @@ This is the learning game engine project Hazel Engine based on TheCherno's game 
 * 构造初始化:
    - Window::create(), 创建窗口对象
    - 设置window事件回调，方便将窗口捕获的事件发送到application, 随后由application从栈顶往下传播
-   -  Renderer::init() 渲染初始化
+   - Renderer::init() 渲染初始化
+   - 创建第一个覆盖层: imguilayer 将其pushOverlay入, 并且调用器attach相关方法
 
 #### Window
 * 游戏引擎的窗口基类, 负责创建窗口应用程序，并且监听窗口事件传回应用程序
@@ -35,7 +36,17 @@ This is the learning game engine project Hazel Engine based on TheCherno's game 
   * RendererCommand::init()
   * Renderer2D::init()
 
-#### 
+#### Renderer2D
+* 2d渲染类
+* init()
+  * 准备四边形的基础像素块渲染对象。
+  * 首先创建顶点数组对象
+  * 然后创建顶点缓冲区, 存在基础坐标(限制在-1, 1)和纹理uv坐标(0, 0 -> 1, 1), 据此设置顶点缓冲区的布局
+  * 创建索引缓冲区, 四边形由两个三角形组成, 并且依据右手定则确定好方向
+  * 上传到顶点数组对象中
+  * 从文件加载texture的shader, 并且创建shader程序对象
+  * 创建单位白色纹理
+  * 使用shader程序, 并且指定纹理槽为0
 
 ##### RendererCommand
 * 渲染命令, 方便给上层提供适配好各个api的渲染封装命令可以直接调用, 并且无需依赖实例
