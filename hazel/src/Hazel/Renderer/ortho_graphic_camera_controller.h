@@ -31,7 +31,7 @@ private:
     bool onWindowResized(WindowResizeEvent&);
 
 private:
-    float m_aspect_ratio;       // 纵横比
+    float m_aspect_ratio;       // 宽高比
     float m_zoom_level = 1.0f;  // 缩放级别
     OrthoGraphicCamera m_camera;
 

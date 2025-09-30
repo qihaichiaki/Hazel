@@ -25,5 +25,5 @@ uniform vec4 u_Color;
 
 void main()
 {
-    color=texture(u_Texture,v_TexCoord*10.f)*u_Color;// 采样器 + 纹理坐标 * 混合颜色
+    color=texture(u_Texture,v_TexCoord*1.f)*u_Color;// 采样器 + 纹理坐标 * 混合颜色
 }
