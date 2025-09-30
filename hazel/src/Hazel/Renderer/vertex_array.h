@@ -24,16 +24,16 @@ public:
     /// @brief 顶点数组中增加顶点缓冲区
     /// @warning VertexBuffer应该在添加之前设置布局, 否则不会生效
     /// @note 如果添加时没有setLayout会触发断言
-    virtual void addVertexBuffer(const std::shared_ptr<VertexBuffer>& vertex_buffer) = 0;
+    virtual void addVertexBuffer(const Ref<VertexBuffer>& vertex_buffer) = 0;
 
     /// @brief 返回当前顶点数组中的所有顶点缓冲区
-    virtual const std::vector<std::shared_ptr<VertexBuffer>>& getVertexBuffers() const = 0;
+    virtual const std::vector<Ref<VertexBuffer>>& getVertexBuffers() const = 0;
 
     /// @brief 为顶点数组设置索引缓冲区
-    virtual void setIndexBuffer(const std::shared_ptr<IndexBuffer>& index_buffer) = 0;
+    virtual void setIndexBuffer(const Ref<IndexBuffer>& index_buffer) = 0;
 
     /// @brief 返回顶点数组的索引缓冲区
-    virtual std::shared_ptr<IndexBuffer> getIndexBuffer() const = 0;
+    virtual Ref<IndexBuffer> getIndexBuffer() const = 0;
 
 public:
     /// @brief 创建顶点数组对象

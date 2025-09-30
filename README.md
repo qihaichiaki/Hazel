@@ -31,6 +31,11 @@ This is the learning game engine project Hazel Engine based on TheCherno's game 
 #### Renderer
 * 游戏的渲染器类. 由于当前引擎适配的是2D渲染, 所以实际内部调用是渲染命令初始化和2d渲染器初始化.
 * 当前引擎的思路是，底层渲染接口 -> 渲染命令 -> 2d/3d渲染器封装。除开底层外, 其余均以static的方法向外提供, 只是渲染命令内部存储的RendererAPI为对象, 作为底层实现的对象。
+* init()
+  * RendererCommand::init()
+  * Renderer2D::init()
+
+#### 
 
 ##### RendererCommand
 * 渲染命令, 方便给上层提供适配好各个api的渲染封装命令可以直接调用, 并且无需依赖实例

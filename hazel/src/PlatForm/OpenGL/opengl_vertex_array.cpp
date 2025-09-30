@@ -11,15 +11,14 @@ static GLenum shaderDataTypeToOpenGLBaseType(Hazel::ShaderDataType type)
         case Hazel::ShaderDataType::Float2:
         case Hazel::ShaderDataType::Float3:
         case Hazel::ShaderDataType::Float4:
+        case Hazel::ShaderDataType::Mat3:
+        case Hazel::ShaderDataType::Mat4:
             return GL_FLOAT;
         case Hazel::ShaderDataType::Int:
         case Hazel::ShaderDataType::Int2:
         case Hazel::ShaderDataType::Int3:
         case Hazel::ShaderDataType::Int4:
             return GL_INT;
-        case Hazel::ShaderDataType::Mat3:
-        case Hazel::ShaderDataType::Mat4:
-            return GL_FLOAT;
     }
 
     HZ_CORE_ASSERT(false, "未知的ShaderData类型!");

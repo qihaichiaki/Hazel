@@ -46,6 +46,7 @@ uint32_t BufferElement::getComponentCount() const
     switch (type) {
         case ShaderDataType::Float:
         case ShaderDataType::Int:
+        case ShaderDataType::Bool:
             return 1;
         case ShaderDataType::Float2:
         case ShaderDataType::Int2:
@@ -60,8 +61,6 @@ uint32_t BufferElement::getComponentCount() const
             return 3 * 3;
         case ShaderDataType::Mat4:
             return 4 * 4;
-        case ShaderDataType::Bool:
-            return 1;
     }
 
     HZ_CORE_ASSERT(false, "未知的ShaderData类型!");

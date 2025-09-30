@@ -29,7 +29,7 @@ struct BufferElement
 
     HAZEL_API BufferElement(ShaderDataType type, const std::string& name, bool normalized = false);
 
-    /// @brief 返回当前数据的最小类型的个数是多少
+    /// @brief 返回当前数据类型的个数是多少
     HAZEL_API uint32_t getComponentCount() const;
 };
 
