@@ -33,7 +33,12 @@ public:
     /// @brief shader设置整数统一变量
     /// @param name 统一变量名
     /// @param value int值
+    /// @note opengl中,可为shader中的纹理采样器绑定纹理槽
     virtual void setInt(const std::string& name, int value) = 0;
+    /// @brief shader设置浮点数统一变量
+    /// @param name 统一变量名
+    /// @param value float值
+    virtual void setFloat(const std::string& name, float value) = 0;
 
 public:
     /// @brief 将顶点/片段shader编译, 整合到shader程序中, 最后进行链接

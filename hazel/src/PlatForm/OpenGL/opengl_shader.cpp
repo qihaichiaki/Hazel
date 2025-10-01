@@ -211,6 +211,13 @@ void OpenGLShader::setInt(const std::string& name, int value)
     uploadUniformInt(name, value);
 }
 
+void OpenGLShader::setFloat(const std::string& name, float value)
+{
+    HZ_PROFILE_FUNCTION();
+
+    uploadUniformFloat(name, value);
+}
+
 void OpenGLShader::uploadUniformMat4(const std::string& uniform_name, const glm::mat4& matrix)
 {
     // 从shader中找到对应的统一变量
@@ -229,6 +236,12 @@ void OpenGLShader::uploadUniformInt(const std::string& uniform_name, int value)
 {
     auto uniform_location = glGetUniformLocation(m_renderer_id, uniform_name.c_str());
     glUniform1i(uniform_location, value);
+}
+
+void OpenGLShader::uploadUniformFloat(const std::string& uniform_name, float value)
+{
+    auto uniform_location = glGetUniformLocation(m_renderer_id, uniform_name.c_str());
+    glUniform1f(uniform_location, value);
 }
 
 }  // namespace Hazel

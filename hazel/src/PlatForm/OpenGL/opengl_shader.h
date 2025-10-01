@@ -37,6 +37,7 @@ public:
     void setMat4(const std::string& name, const glm::mat4& value) override;
     void setFloat4(const std::string& name, const glm::vec4& value) override;
     void setInt(const std::string& name, int value) override;
+    void setFloat(const std::string& name, float value) override;
 
     /// @brief 上传指定名字的统一变量到shader中去
     /// @param uniform_name 在shader中的统一变量名
@@ -46,8 +47,8 @@ public:
     /// @param uniform_name 在shader中的统一变量名
     /// @param vec4 待上传的四维变量
     HAZEL_API void uploadUniformFloat4(const std::string& uniform_name, const glm::vec4& vec4);
-
     HAZEL_API void uploadUniformInt(const std::string& uniform_name, int value);
+    HAZEL_API void uploadUniformFloat(const std::string& uniform_name, float value);
 
 private:
     std::string readFile(const std::string& file_path);  // 读取文件内容到字符缓冲区中

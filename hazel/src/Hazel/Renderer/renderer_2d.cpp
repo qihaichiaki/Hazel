@@ -96,6 +96,7 @@ void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, cons
     // 2. 上传transform, color 矩阵到shader中去
     s_data->TextureShader->setMat4("u_Transform", transform);
     s_data->TextureShader->setFloat4("u_Color", color);
+    s_data->TextureShader->setFloat("u_TilingFactor", 1.0f);
 
     s_data->WhiteTexure->bind();
 
@@ -111,7 +112,9 @@ void Renderer2D::drawQuad(const glm::vec2& position, const glm::vec2& size, cons
 
 void Renderer2D::drawQuad(const glm::vec3& position,
                           const glm::vec2& size,
-                          const Ref<Texture2D>& texture)
+                          const Ref<Texture2D>& texture,
+                          const glm::vec4& tint_color,
+                          float tiling_factor)
 {
     HZ_PROFILE_FUNCTION();
 
@@ -119,7 +122,8 @@ void Renderer2D::drawQuad(const glm::vec3& position,
                           glm::scale(glm::mat4{1.0f}, glm::vec3{size.x, size.y, 1.0f});
 
     s_data->TextureShader->setMat4("u_Transform", transform);
-    s_data->TextureShader->setFloat4("u_Color", glm::vec4{1.0f});
+    s_data->TextureShader->setFloat4("u_Color", tint_color);
+    s_data->TextureShader->setFloat("u_TilingFactor", tiling_factor);
 
     texture->bind();
     s_data->QuadVertexArray->bind();
@@ -128,8 +132,76 @@ void Renderer2D::drawQuad(const glm::vec3& position,
 
 void Renderer2D::drawQuad(const glm::vec2& position,
                           const glm::vec2& size,
-                          const Ref<Texture2D>& texture)
+                          const Ref<Texture2D>& texture,
+                          const glm::vec4& tint_color,
+                          float tiling_factor)
 {
-    drawQuad(glm::vec3{position.x, position.y, 0.0f}, size, texture);
+    drawQuad(glm::vec3{position.x, position.y, 0.0f}, size, texture, tint_color, tiling_factor);
+}
+
+//// 旋转绘制, 多计算一次旋转矩阵
+void Renderer2D::drawRotatedQuad(const glm::vec3& position,
+                                 const glm::vec2& size,
+                                 float rotation,
+                                 const glm::vec4& color)
+{
+    HZ_PROFILE_FUNCTION();
+
+    // 1. 处理transform 矩阵 -> 对象当前的模型矩阵
+    glm::mat4 transform = glm::translate(glm::mat4{1.0f}, position) *
+                          glm::rotate(glm::mat4{1.0f}, rotation, glm::vec3{0.0f, 0.0f, 1.0f}) *
+                          glm::scale(glm::mat4{1.0f}, glm::vec3{size.x, size.y, 1.0f});
+
+    // 2. 上传transform, color 矩阵到shader中去
+    s_data->TextureShader->setMat4("u_Transform", transform);
+    s_data->TextureShader->setFloat4("u_Color", color);
+    s_data->TextureShader->setFloat("u_TilingFactor", 1.0f);
+
+    s_data->WhiteTexure->bind();
+
+    // 3. 调用渲染命令进行实时绘制
+    s_data->QuadVertexArray->bind();
+    RendererCommand::drawIndexed(s_data->QuadVertexArray);
+}
+
+void Renderer2D::drawRotatedQuad(const glm::vec2& position,
+                                 const glm::vec2& size,
+                                 float rotation,
+                                 const glm::vec4& color)
+{
+    drawRotatedQuad({position.x, position.y, 0.0f}, size, rotation, color);
+}
+
+void Renderer2D::drawRotatedQuad(const glm::vec3& position,
+                                 const glm::vec2& size,
+                                 float rotation,
+                                 const Ref<Texture2D>& texture,
+                                 const glm::vec4& tint_color,
+                                 float tiling_factor)
+{
+    HZ_PROFILE_FUNCTION();
+
+    glm::mat4 transform = glm::translate(glm::mat4{1.0f}, position) *
+                          glm::rotate(glm::mat4{1.0f}, rotation, glm::vec3{0.0f, 0.0f, 1.0f}) *
+                          glm::scale(glm::mat4{1.0f}, glm::vec3{size.x, size.y, 1.0f});
+
+    s_data->TextureShader->setMat4("u_Transform", transform);
+    s_data->TextureShader->setFloat4("u_Color", tint_color);
+    s_data->TextureShader->setFloat("u_TilingFactor", tiling_factor);
+
+    texture->bind();
+    s_data->QuadVertexArray->bind();
+    RendererCommand::drawIndexed(s_data->QuadVertexArray);
+}
+
+void Renderer2D::drawRotatedQuad(const glm::vec2& position,
+                                 const glm::vec2& size,
+                                 float rotation,
+                                 const Ref<Texture2D>& texture,
+                                 const glm::vec4& tint_color,
+                                 float tiling_factor)
+{
+    drawRotatedQuad(glm::vec3{position.x, position.y, 0.0f}, size, rotation, texture, tint_color,
+                    tiling_factor);
 }
 }  // namespace Hazel

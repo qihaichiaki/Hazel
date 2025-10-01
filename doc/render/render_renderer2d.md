@@ -79,3 +79,19 @@
 - Renderer2DStorage中添加Texture WhiteTexture
   - 设置为1x1
   - data数据就是 => uint32_t whiteTextureData = 0xffffffff;
+
+
+## 优化2d渲染API
+* textureshader中, 新增新的uniform float u_TilingFactor, 它将与在纹理取值中的纹理坐标进行相乘
+  * 默认给1.0f
+* shader 新增SetFloat -> 上传共享变量float
+* 在渲染纹理的相关api中, 新增平铺因子整个默认形参 -> 默认值为1.0f
+
+* 此时取决于纹理采样超出纹理坐标值之后应该怎么做，当前设置的是平铺
+  * glTextureParameteri(m_renderer_id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+
+* 添加旋转 -> z轴方向 float rotation(弧度值)
+* 旋转需要额外处理选准矩阵，最好和其他的api分开 DrawRotatedQuad
+
+* 为绘制纹理的api增加colcor设置
+  * vec4 tintColor = 1.0f
