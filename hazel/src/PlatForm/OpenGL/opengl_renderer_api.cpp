@@ -30,10 +30,10 @@ void OpenGLRendererAPI::clear()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void OpenGLRendererAPI::drawIndexed(const Ref<VertexArray>& vertex_array)
+void OpenGLRendererAPI::drawIndexed(const Ref<VertexArray>& vertex_array, uint32_t index_count)
 {
-    glDrawElements(GL_TRIANGLES, vertex_array->getIndexBuffer()->getCount(), GL_UNSIGNED_INT,
-                   nullptr);
+    index_count = index_count == 0 ? vertex_array->getIndexBuffer()->getCount() : index_count;
+    glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, nullptr);
     glBindTexture(GL_TEXTURE_2D, 0);  // 清空绑定纹理槽
 }
 

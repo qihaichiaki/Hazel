@@ -20,7 +20,9 @@ public:
     /// @brief 2d渲染器开始场景. 准备/上传当前绘制场景公共的数据
     /// @param camera 正交摄像机对象, 准备上传其投影矩阵和视图矩阵数据
     HAZEL_API static void beginScene(const OrthoGraphicCamera& camera);
-    /// @brief 2d渲染器结束场景, 当前实时渲染没有做任何动作
+    /// @brief 2d渲染器刷新场景->绘制数据
+    HAZEL_API static void flush();
+    /// @brief 2d渲染器结束场景
     HAZEL_API static void endScene();
 
     /// 绘制非旋转的四边形

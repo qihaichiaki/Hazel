@@ -8,10 +8,13 @@ class OpenGLVertexBuffer : public VertexBuffer
 {
 public:
     OpenGLVertexBuffer(float* vertices, uint32_t size);
+    OpenGLVertexBuffer(uint32_t size);
     ~OpenGLVertexBuffer();
 
     void bind() const override;
     void unBind() const override;
+
+    void setData(const void* data, uint32_t size) override;
 
     void setLayout(const BufferLayer& layout) override
     {

@@ -17,6 +17,14 @@ OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, uint32_t size)
     glBindBuffer(GL_ARRAY_BUFFER, m_rendrer_id);
     glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
 }
+OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size)
+{
+    HZ_PROFILE_FUNCTION();
+
+    glCreateBuffers(1, &m_rendrer_id);
+    glBindBuffer(GL_ARRAY_BUFFER, m_rendrer_id);
+    glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);  // 动态顶点数据
+}
 OpenGLVertexBuffer::~OpenGLVertexBuffer()
 {
     HZ_PROFILE_FUNCTION();
@@ -36,6 +44,14 @@ void OpenGLVertexBuffer::unBind() const
     HZ_PROFILE_FUNCTION();
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void OpenGLVertexBuffer::setData(const void* data, uint32_t size)
+{
+    HZ_PROFILE_FUNCTION();
+
+    glBindBuffer(GL_ARRAY_BUFFER, m_rendrer_id);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
 }
 ////////////////////////////////////////////////////////////
 

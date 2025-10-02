@@ -97,6 +97,20 @@ Ref<VertexBuffer> VertexBuffer::create(float* vertices, uint32_t size)
     return nullptr;
 }
 
+Ref<VertexBuffer> VertexBuffer::create(uint32_t size)
+{
+    switch (Renderer::getRendererAPI()) {
+        case RendererAPI::API::None:
+            HZ_CORE_ASSERT(false, "尚未支持的RendererAPI渲染");
+            return nullptr;
+        case RendererAPI::API::OpenGL:
+            return createRef<OpenGLVertexBuffer>(size);
+    }
+
+    HZ_CORE_ASSERT(false, "RendererAPI 未知选项!");
+    return nullptr;
+}
+
 /////////// IndexBuffer
 Ref<IndexBuffer> IndexBuffer::create(uint32_t* indices, uint32_t count)
 {

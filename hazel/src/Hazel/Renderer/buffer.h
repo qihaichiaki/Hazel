@@ -88,6 +88,11 @@ public:
     /// @brief 当前上下文解绑顶点缓冲区
     virtual void unBind() const = 0;
 
+    /// @brief 往动态顶点缓冲区对象内填充数据
+    /// @param data 顶点数据
+    /// @param size 顶点数据大小
+    virtual void setData(const void* data, uint32_t size) = 0;
+
     /// @brief 设置顶点缓冲区布局
     virtual void setLayout(const BufferLayer& layout) = 0;
 
@@ -95,11 +100,16 @@ public:
     virtual const BufferLayer& getLayout() const = 0;
 
 public:
-    /// @brief 创建顶点缓冲区对象
+    /// @brief 创建静态顶点缓冲区对象
     /// @param vertices 顶点们
     /// @param size 顶点缓冲区大小
-    /// @return 顶点缓冲区对象, new, 注意防止内存泄漏
+    /// @return 顶点缓冲区对象
     static Ref<VertexBuffer> create(float* vertices, uint32_t size);
+
+    /// @brief 创建动态顶点缓冲区对象
+    /// @param size 顶点缓冲区大小
+    /// @return 顶点缓冲区对象
+    static Ref<VertexBuffer> create(uint32_t size);
 };
 
 /// @brief 索引缓冲区接口

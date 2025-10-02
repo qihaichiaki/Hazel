@@ -95,3 +95,76 @@
 
 * 为绘制纹理的api增加colcor设置
   * vec4 tintColor = 1.0f
+
+
+## renderer2d 批绘制处理
+* 创建一个动态的顶点缓冲对象
+
+* struct QuadVertex
+  * glm::vec3 Position;  // 位置
+  * glm::vec4 Color;      // 颜色
+  * glm::vec2 TexCoord;  // 纹理坐标
+  * //TODO: texid
+
+* Renderer2DStorage -> Renderer2DData(将其之前由堆空间分配直接改为静态数据对象)
+  * const uint32_t MaxQuads = 10000;  // 最多1w个四边形的同时绘制
+  * const uint32_t MaxVerteices = MaxQuads * 4;  // 最多4w个顶点的同时绘制 
+  * const uint32_t MaxIndices = MaxQuads * 3 * 2;  // 最多6w个索引的同时绘制(一个四边形存在两个三角形, 每个三角形存在3个索引个数)
+  * Ref<VertexBuffer> QuadVertexBuffer;
+  * uint32_t QuadIndexCount = 0; 
+  * QuadVertex* QuadVertexBufferBase = nullptr;
+  * QuadVertex* QuadVertexBufferPtr = nullptr;
+
+
+### VertexBuffer
+* Create(uint32_t size); ->不传入具体的顶点缓冲数据创建
+  - OpenGLVertexBuffer: 创建buffer, 绑定ARRAY_BUFFER, 传入数据(区分在于数据并不直接传入, 而是传入一个空指针, 并且不再是静态绘制数据, 而是动态绘制数据GL_DYNAMIC_DRAW)
+* SetData(const void*, uint32_t size)
+  - OpenGLVertexBuffer:
+    - 绑定当前顶点缓冲区
+    - glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
+
+
+### IndexBuffer
+* 注意当前hazel只支持32-bit的索引缓冲区
+
+
+### Renderer2D::init()
+* 创建一个顶点数组对象VertexArray
+* 创建一个固定大小的顶点缓冲区, 动态的改变buffer内容: 大小为MaxVertices * sizeof(QuadVertex)
+* 其中将squareVB->quadVB
+* 布局如QuadVertex, 并且将其添加到VertexArray中
+* 初始化数据内的四边形对象数组QuadVertexBufferBase, new QuadVertex[MaxVertices];
+* 创建索引数组, new uint32_t[MaxIndices], 大概240kb大小
+* 创建顶点buffer, 个数为MaxIndices
+* 初始化索引数组: 遍历所有的索引数组值, 以6个为一组, 012, 230, 增加offset(offset + 1...), 标识不同的索引值, 最后offset+=4.
+* 设置到顶点数组对象中, 然后释放掉索引数组的内容(由于当前是单线程调用, 所以没有管很多细节)
+* 创建单位白色像纹理, 读取纹理shader，设置其使用纹理采用器绑定到0号槽位
+
+### Renderer2D::BeginScene
+* 绑定纹理shader, 上传相机的pv矩阵(投影矩阵 * 视图矩阵)
+* QuadIndexCount = 0;
+* 将当前renderer数据的四边形buffer指针指向base地址
+
+### Renderer2D::DrawQuad
+* 将当前的四边形顶点对象(QuadVertexBufferPtr)中的位置, 颜色，纹理坐标(0,0)
+  * 重复四遍, 以传入的点为左下角开始计算, 逆时针旋转
+* QuadIndexCount++;
+* 批处理开始, 此处并不会去绘制索引, 也就是说这里就只是单纯的数据准备
+
+
+### RendererAPI::DrawIndexed(VertexArray, uint32_t indexCount = 0)
+* 扩展此接口, 如果 indexCount = 0就使用完整的index缓冲区内的所有索引, 否则使用指定的
+- OpenGLRendererAPI:
+  - count = ....
+  - glDrawElements...
+
+### Renderer2D::Flush
+* RenderCommand::DrawIndexed(QuadVertexArray, QuadIndexCount * 6);
+
+### Renderer2D::EndScene
+* 实际上在此处应该进行渲染，处于性能分析的缘故, 会增加一个函数flush进行渲染
+* 将所有使用到的数据进行上传
+* QuadVertexBuffer->SetData(QuadVertexBufferBase, (uint8_t*)QuadVertexBufferPtr - (uint8_t*)QuadVertexBufferBase);
+
+* 修改shader, 和布局一致即可

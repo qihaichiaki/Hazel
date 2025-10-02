@@ -30,7 +30,8 @@ public:
 
     /// @brief 根据索引绘制
     /// @param vertex_array 顶点数组数据
-    virtual void drawIndexed(const Ref<VertexArray>& vertex_array) = 0;
+    /// @param index_count 指定绘制多少索引值, 为0则绘制顶点数组对象中索引buffer的全部索引
+    virtual void drawIndexed(const Ref<VertexArray>& vertex_array, uint32_t index_count = 0) = 0;
 
     /// @brief 设置渲染视口
     virtual void setViewport(uint32_t width, uint32_t height) = 0;
