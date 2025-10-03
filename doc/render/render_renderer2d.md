@@ -149,8 +149,15 @@
 ### Renderer2D::DrawQuad
 * 将当前的四边形顶点对象(QuadVertexBufferPtr)中的位置, 颜色，纹理坐标(0,0)
   * 重复四遍, 以传入的点为左下角开始计算, 逆时针旋转
+  * 修正方案: 计算变换矩阵, 以单位矩形的坐标去乘
 * QuadIndexCount++;
 * 批处理开始, 此处并不会去绘制索引, 也就是说这里就只是单纯的数据准备
+
+### Renderer2D::DrawQuad -> 纹理
+* 需要注意到纹理在CPU中的最大绑定槽的个数, 假定为32, 那么单次绘制的时候绑定的纹理就不能超过32个.
+* 一旦超过, 就需要下次绘制调用进行处理
+* 传入纹理时, 需要查看是否复用. 当前根据创建纹理的opengl中的标识符进行判断
+* 绘制纹理时, 得到当前想要应用的纹理槽id, 写入顶点数据中, 方便shader从顶点shader传递到片段shader, 在采样器中选择对应的纹理进行采样
 
 
 ### RendererAPI::DrawIndexed(VertexArray, uint32_t indexCount = 0)

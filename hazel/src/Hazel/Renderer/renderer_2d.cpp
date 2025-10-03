@@ -16,6 +16,7 @@ struct QuadVertex
     glm::vec3 Position;
     glm::vec4 Color;
     glm::vec2 TexCoord;
+    float TexId;
 };
 
 struct Renderer2DData
@@ -28,10 +29,21 @@ struct Renderer2DData
     const uint32_t MaxQuads = 10000;               // 允许的最大四边形绘制数量
     const uint32_t MaxVertices = MaxQuads * 4;     // 允许的最大绘制顶点个数
     const uint32_t MaxIndices = MaxQuads * 3 * 2;  // 允许的最大绘制索引个数
+    static const uint32_t MaxTextureSolts = 32;    // 允许的最大绑定纹理槽数量
 
     QuadVertex* QuadVertexBufferBase = nullptr;  // 顶点数组实际准备数据
     QuadVertex* QuadVertexBufferPtr = nullptr;   // 顶点数组当前顶点数据
     uint32_t QuadIndexCount = 0;                 // 四边形绘制个数
+
+    std::array<Ref<Texture2D>, MaxTextureSolts> QuadTextureSolts;
+    uint32_t QuadTextureSoltCount = 0;  // 四边形槽占用数
+
+    const glm::vec4 RefPositions[4] = {
+        glm::vec4{-0.5f, -0.5f, 0.0f, 1.0f}, glm::vec4{0.5f, -0.5f, 0.0f, 1.0f},
+        glm::vec4{0.5f, 0.5f, 0.0f, 1.0f},
+        glm::vec4{-0.5f, 0.5f, 0.0f, 1.0f}};  // 参照坐标, 坐标的transform依据此进行变换
+    const glm::vec2 RefTexCoords[4] = {glm::vec2{0.0f, 0.0f}, glm::vec2{1.0f, 0.0f},
+                                       glm::vec2{1.0f, 1.0f}, glm::vec2{0.0f, 1.0f}};  // 参照UV坐标
 };
 
 static Renderer2DData s_data;
@@ -48,7 +60,8 @@ void Renderer2D::init()
     // 3. quad设置布局 -> vertex shader如何读取顶点数据
     s_data.QuadVertexBuffer->setLayout({{ShaderDataType::Float3, "a_Position"},
                                         {ShaderDataType::Float4, "a_Color"},
-                                        {ShaderDataType::Float2, "a_TexCoord"}});
+                                        {ShaderDataType::Float2, "a_TexCoord"},
+                                        {ShaderDataType::Float, "a_TexId"}});
     // 4. 设置到顶点数组对象中去
     s_data.QuadVertexArray->addVertexBuffer(s_data.QuadVertexBuffer);
 
@@ -82,8 +95,15 @@ void Renderer2D::init()
     uint32_t data = 0xffffffff;  // 纯白
     s_data.WhiteTexure->setData(&data, sizeof(data));
 
+    s_data.QuadTextureSolts[0] = s_data.WhiteTexure;  // 0号位绑定纯白纹理
+    s_data.QuadTextureSoltCount = 1;
+
     s_data.TextureShader->bind();
-    s_data.TextureShader->setInt("u_Texture", 0);  // 设置绑定的纹理槽为0
+    int texture_solts[s_data.MaxTextureSolts];
+    for (int i = 0; i < s_data.MaxTextureSolts; ++i) {
+        texture_solts[i] = i;
+    }
+    s_data.TextureShader->setIntArray("u_Textures", texture_solts, s_data.MaxTextureSolts);
 }
 
 void Renderer2D::shutdown()
@@ -102,12 +122,21 @@ void Renderer2D::beginScene(const OrthoGraphicCamera& camera)
     s_data.TextureShader->bind();
     s_data.TextureShader->setMat4("u_ProjectionView", camera.getProjectionViewMatrix());
 
+    // 四边形绘制重置
     s_data.QuadIndexCount = 0;
     s_data.QuadVertexBufferPtr = s_data.QuadVertexBufferBase;
+
+    // 绑定纹理槽重置
+    s_data.QuadTextureSoltCount = 1;  // 0号始终由白色纹理占用
 }
 
 void Renderer2D::flush()
 {
+    // 绑定纹理槽
+    for (uint32_t i = 0; i < s_data.QuadTextureSoltCount; ++i) {
+        s_data.QuadTextureSolts[i]->bind(i);
+    }
+
     s_data.QuadVertexArray->bind();
     RendererCommand::drawIndexed(s_data.QuadVertexArray, s_data.QuadIndexCount * 6);
 }
@@ -129,47 +158,23 @@ void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, cons
 {
     HZ_PROFILE_FUNCTION();
 
+    const float white_texure_id = 0;
     // 多批次渲染, 准备数据
     // 3 ----- 2
     // |   /   |
     // 0 ----- 1
-    s_data.QuadVertexBufferPtr->Position = position;
-    s_data.QuadVertexBufferPtr->Color = color;
-    s_data.QuadVertexBufferPtr->TexCoord = {0.0f, 0.0f};
-    s_data.QuadVertexBufferPtr++;
-
-    s_data.QuadVertexBufferPtr->Position = {position.x + size.x, position.y, position.z};
-    s_data.QuadVertexBufferPtr->Color = color;
-    s_data.QuadVertexBufferPtr->TexCoord = {1.0f, 0.0f};
-    s_data.QuadVertexBufferPtr++;
-
-    s_data.QuadVertexBufferPtr->Position = {position.x + size.x, position.y + size.y, position.z};
-    s_data.QuadVertexBufferPtr->Color = color;
-    s_data.QuadVertexBufferPtr->TexCoord = {1.0f, 1.0f};
-    s_data.QuadVertexBufferPtr++;
-
-    s_data.QuadVertexBufferPtr->Position = {position.x, position.y + size.y, position.z};
-    s_data.QuadVertexBufferPtr->Color = color;
-    s_data.QuadVertexBufferPtr->TexCoord = {0.0f, 1.0f};
-    s_data.QuadVertexBufferPtr++;
+    // 准备变换矩阵
+    glm::mat4 transform = glm::translate(glm::mat4{1.0f}, position) *
+                          glm::scale(glm::mat4{1.0f}, {size.x, size.y, 1.0f});
+    for (int i = 0; i < 4; ++i) {
+        s_data.QuadVertexBufferPtr->Position = transform * s_data.RefPositions[i];
+        s_data.QuadVertexBufferPtr->Color = color;
+        s_data.QuadVertexBufferPtr->TexCoord = s_data.RefTexCoords[i];
+        s_data.QuadVertexBufferPtr->TexId = white_texure_id;
+        s_data.QuadVertexBufferPtr++;
+    }
 
     s_data.QuadIndexCount++;
-
-    // 单批次渲染
-    // // 1. 处理transform 矩阵 -> 对象当前的模型矩阵
-    // glm::mat4 transform = glm::translate(glm::mat4{1.0f}, position) *
-    //                       glm::scale(glm::mat4{1.0f}, glm::vec3{size.x, size.y, 1.0f});
-
-    // // 2. 上传transform, color 矩阵到shader中去
-    // s_data.TextureShader->setMat4("u_Transform", transform);
-    // s_data.TextureShader->setFloat4("u_Color", color);
-    // s_data.TextureShader->setFloat("u_TilingFactor", 1.0f);
-
-    // s_data.WhiteTexure->bind();
-
-    // // 3. 调用渲染命令进行实时绘制
-    // s_data.QuadVertexArray->bind();
-    // RendererCommand::drawIndexed(s_data.QuadVertexArray);
 }
 
 void Renderer2D::drawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
@@ -185,16 +190,29 @@ void Renderer2D::drawQuad(const glm::vec3& position,
 {
     HZ_PROFILE_FUNCTION();
 
+    float texure_id = 0.0f;
+    for (uint32_t i = 0; i < s_data.QuadTextureSoltCount; ++i) {
+        if (s_data.QuadTextureSolts[i]->isEqual(*texture)) {
+            break;
+        }
+        texure_id = (float)(i + 1);
+    }
+
+    if (texure_id == (float)s_data.QuadTextureSoltCount) {
+        s_data.QuadTextureSolts[s_data.QuadTextureSoltCount++] = texture;
+    }
+
     glm::mat4 transform = glm::translate(glm::mat4{1.0f}, position) *
                           glm::scale(glm::mat4{1.0f}, glm::vec3{size.x, size.y, 1.0f});
 
-    s_data.TextureShader->setMat4("u_Transform", transform);
-    s_data.TextureShader->setFloat4("u_Color", tint_color);
-    s_data.TextureShader->setFloat("u_TilingFactor", tiling_factor);
-
-    texture->bind();
-    s_data.QuadVertexArray->bind();
-    RendererCommand::drawIndexed(s_data.QuadVertexArray);
+    for (int i = 0; i < 4; ++i) {
+        s_data.QuadVertexBufferPtr->Position = transform * s_data.RefPositions[i];
+        s_data.QuadVertexBufferPtr->Color = tint_color;
+        s_data.QuadVertexBufferPtr->TexCoord = s_data.RefTexCoords[i];
+        s_data.QuadVertexBufferPtr->TexId = texure_id;
+        s_data.QuadVertexBufferPtr++;
+    }
+    s_data.QuadIndexCount++;
 }
 
 void Renderer2D::drawQuad(const glm::vec2& position,

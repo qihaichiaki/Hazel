@@ -35,6 +35,11 @@ public:
     /// @param value int值
     /// @note opengl中,可为shader中的纹理采样器绑定纹理槽
     virtual void setInt(const std::string& name, int value) = 0;
+    /// @brief shader设置整数数组统一变量
+    /// @param name 统一变量名
+    /// @param value 数组地址
+    /// @param count 数组个数
+    virtual void setIntArray(const std::string& name, int* value, uint32_t count) = 0;
     /// @brief shader设置浮点数统一变量
     /// @param name 统一变量名
     /// @param value float值

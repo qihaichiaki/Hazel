@@ -26,6 +26,9 @@ public:
     /// @param data 纹理数据, 注意宽度和高度需要和当前纹理一致
     /// @param size 当前的纹理数据字节大小
     virtual void setData(void* data, uint32_t size) = 0;
+
+    /// @brief 判断两个纹理是否一致
+    virtual bool isEqual(const Texture&) = 0;
 };
 
 class HAZEL_API Texture2D : public Texture

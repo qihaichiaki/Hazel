@@ -25,6 +25,8 @@ public:
 
     void setData(void* data, uint32_t size) override;
 
+    bool isEqual(const Texture& other) override;
+
 private:
     std::string m_path;  // 文件路径保存
 

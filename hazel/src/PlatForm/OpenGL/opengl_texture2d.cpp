@@ -98,4 +98,9 @@ void OpenGLTexture2D::setData(void* data, uint32_t size)
                         data);
 }
 
+bool OpenGLTexture2D::isEqual(const Texture& other)
+{
+    return ((const OpenGLTexture2D&)other).m_renderer_id == m_renderer_id;
+}
+
 }  // namespace Hazel
