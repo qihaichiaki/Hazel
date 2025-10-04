@@ -175,3 +175,16 @@
 * QuadVertexBuffer->SetData(QuadVertexBufferBase, (uint8_t*)QuadVertexBufferPtr - (uint8_t*)QuadVertexBufferBase);
 
 * 修改shader, 和布局一致即可
+
+* 主要修改：
+```shader
+layout(location=0)in vec3 a_Position;
+layout(location=1)in vec4 a_Color;
+layout(location=2)in vec2 a_TexCoord;
+layout(location=3)in float a_TexId;
+layout(location=4)in float a_TilingFactor;
+```
+* 将上述数据均变成了shader输入的顶点数据
+* 纹理坐标采样通过下标进行传递
+
+* 增加renderer2d的状态统计: 绘制drawcalls调用次数, 四边形渲染次数. 计算渲染四边形顶点次数, 计算渲染四边形索引次数

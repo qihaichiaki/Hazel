@@ -112,5 +112,30 @@ public:
                                           const Ref<Texture2D>& texture,
                                           const glm::vec4& tint_color = glm::vec4{1.0f},
                                           float tiling_factor = 1.0f);
+
+    // Stats
+    struct HAZEL_API Statistics
+    {
+        uint32_t DrawCalls = 0;
+        uint32_t QuadCount = 0;
+
+        uint32_t getTotalVertexCount()
+        {
+            return QuadCount * 4;
+        }
+        uint32_t getTotalIndexCount()
+        {
+            return QuadCount * 6;
+        }
+    };
+
+    /// @brief 获取当前渲染器的调用状态
+    HAZEL_API static Statistics getStats();
+
+    /// @brief 重置当前渲染器的调用状态
+    HAZEL_API static void resetStats();
+
+private:
+    static void flushAndReset();
 };
 }  // namespace Hazel
