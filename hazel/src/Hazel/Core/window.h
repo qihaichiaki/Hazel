@@ -19,8 +19,8 @@ struct WindowProps
     unsigned int width, height;
 
     WindowProps(const std::string& title = "Hazel Engine",
-                unsigned int width = 1280,
-                unsigned int height = 720)
+                unsigned int width = 1536,
+                unsigned int height = 960)
         : title{title}, width{width}, height{height}
     {
     }

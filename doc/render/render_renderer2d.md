@@ -188,3 +188,75 @@ layout(location=4)in float a_TilingFactor;
 * 纹理坐标采样通过下标进行传递
 
 * 增加renderer2d的状态统计: 绘制drawcalls调用次数, 四边形渲染次数. 计算渲染四边形顶点次数, 计算渲染四边形索引次数
+
+## 简易粒子系统
+* Random类 , 封装stl库, 实现返回0~1之间的随机浮点数
+  * 使用mt19937 s_RandomEngine
+  * uniform_int_distribution<std::mt19937::result_type> s_Distribution;
+* init: 初始化时, 使用s_RandomEngine.seed(std::random_device()());
+* 使用的时候: float(): (float)s_Distribution(s_RandomEngine) / (float)std::numeric_limits<unit32_t>::max();
+
+* 创建粒子对象结构类: ParticleProps
+  * vec2 position
+  * vec2 velocity, velocityVariation(速度变化)
+  * vec4 colorBegin, colorEnd
+  * float sizeBegion, sizeEnd, sizeVariation
+  * float lifeTime = 1.0f;  // s?
+
+
+* ParticleSystem 粒子系统
+  * Particle 私有对象类型
+    * 位置, 速度, 启示/终止颜色, 旋转弧度值, 起始/终止size大小(float), lifetime, lifeRemaing, active(bool, 判断是否存活) 
+    * vector<Particle> pool粒子池子
+    * poolIndex = 999; // 从后往前赋予每个发射粒子的启用index
+    * resize(1000)
+  * OnUpdate(Timestep ts);
+    * 从左到右按顺序遍历, 如果不存活直接跳过
+    * 判断如果粒子剩余的生命周期小于0.0f, 则不再更新并且active置为false
+    * 更新粒子的剩余生命周期: lifeRemaing -= ts;
+    * 更新粒子的世界坐标: Position += velocity * ts;
+    * 更新粒子的旋转弧度值: Rotation += 0.01f * ts;  // 硬编码
+  * OnRender(OrthographicCamera& camera);
+    * 依旧向前遍历 -> 内存访问会更好?
+    * 计算剩余生存时间占生命周期的比重, 插值color, a*life
+    * 插值size
+    * renderer 提交渲染任务
+  * Emit(const ParticleProps&);  // 发射粒子
+    * 通过下标取出对应的粒子对象
+    * 激活
+    * 位置赋予
+    * !旋转弧度硬编码: Float() * 2.0f * glm::pi<float>(); 0 ~ 2pi
+    * 速度赋予:
+      * 基准速度赋予
+      * x/y += x/y方向的速度变化值 * (Float() - 0.5f) -> *(-0.5f, 0.5f)
+    * 颜色赋予
+    * 生存时间, 剩余生存时间赋予
+    * SizeBegin = 基准SizeBegin + 大小变化值 * (-0.5f, 0.5f); SizeEnd = SizeEnd;
+    * index = --index % size();
+
+* 使用:
+  * 初始化ParticleProps结构体
+  * ColorBegin = {254/255.0f, 212 / 255.0f, 123 / 255.0f, 1.0f};
+  * ColorEnd = {254/255.0f, 109 / 255.0f, 41 / 255.0f, 1.0f};
+  * SizeBegin = 0.5f;
+  * sizeVariation = 0.3f;
+  * SizeEnd = 0.0f;
+  * LifeTime = 1.0f;
+  * velocity = 0.0f
+  * velocityVariation = {3.0f, 1.0f};
+  * position = 0.0f;
+
+* 更新位置(演示): 将鼠标的屏幕坐标转换为世界坐标
+  * 获取鼠标的位置 m_x, m_y
+  * 获取屏幕的大小 s_w, s_h;
+  * 获取相机的Bounds
+  * 获取相机的位置 c_pos
+  * dx = (x / s_w) * Bounds.w - Bounds.w * 0.5f
+  * dy = Bounds.h * 0.5f - (y / s_h) * Bounds.h
+  * pos.x = c_pos.x + dx;
+  * pos.y = c_pos.y + dy;
+  * 每帧发射五个
+
+* 增加一些gui控制粒子参数
+  * 起始终止颜色
+  * 生命周期调整; DragFLoat, 参数设置为0.1f, 0.0f, 1000.0f;

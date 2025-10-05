@@ -23,6 +23,7 @@
 
 // windows 平台将控制台程序设置为utf_8编码
 #ifdef _WIN32
+    #define NOMINMAX
     #include <windows.h>
     #define WINDOWS_USE_UTF8         \
         SetConsoleOutputCP(CP_UTF8); \

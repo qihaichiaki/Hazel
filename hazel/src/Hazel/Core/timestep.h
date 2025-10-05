@@ -5,6 +5,8 @@
  * 只是为了更好的使用delta time
  */
 
+#include "core.h"
+
 namespace Hazel
 {
 

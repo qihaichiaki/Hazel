@@ -1,9 +1,10 @@
 #include "sandbox_2d.h"
+#include "random.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 
-Sandbox2D::Sandbox2D() : Layer{"Sandbox2D"}, m_camera_controller{1280.0f / 720.0f} {}
+Sandbox2D::Sandbox2D() : Layer{"Sandbox2D"}, m_camera_controller{2560.0f / 1600.0f} {}
 
 void Sandbox2D::onAttach()
 {
@@ -11,6 +12,17 @@ void Sandbox2D::onAttach()
 
     m_texture = Hazel::Texture2D::create("assets/textures/Checkerboard.png");
     m_texture_2 = Hazel::Texture2D::create("assets/textures/namica.png");
+
+    Random::init();
+    particle_props.ColorBegin = {254 / 255.0f, 212 / 255.0f, 123 / 255.0f, 1.0f};
+    particle_props.ColorEnd = {254 / 255.0f, 109 / 255.0f, 41 / 255.0f, 1.0f};
+    particle_props.SizeBegin = 0.5f;
+    particle_props.SizeVariation = 0.3f;
+    particle_props.SizeEnd = 0.0f;
+    particle_props.LifeTime = 10.0f;
+    particle_props.Velocity = {0.0f, 0.0f};
+    particle_props.VelocityVariation = {3.0f, 3.0f};
+    particle_props.Position = {10.0f, 0.0f};
 }
 
 void Sandbox2D::onDetach()
@@ -26,6 +38,9 @@ void Sandbox2D::onUpdate(Hazel::Timestep ts)
 
     // update
     m_camera_controller.onUpdate(ts);
+    particle_system.onUpdate(ts);
+
+    Hazel::Renderer2D::resetStats();
 
     // render
     {
@@ -33,8 +48,6 @@ void Sandbox2D::onUpdate(Hazel::Timestep ts)
         Hazel::RendererCommand::setClearColor({0.2f, 0.2f, 0.2f, 1.0f});
         Hazel::RendererCommand::clear();
     }
-
-    Hazel::Renderer2D::resetStats();
 
     static float rotation = 0.0f;
     float rotation_speed = 1.5f;
@@ -54,6 +67,7 @@ void Sandbox2D::onUpdate(Hazel::Timestep ts)
         // 绘制马赛克背景
         Hazel::Renderer2D::drawQuad({0.0f, 0.0f, -0.9f}, {20.0f, 20.0f}, m_texture, glm::vec4{1.0f},
                                     10.0f);
+
         // 绘制nanamichiaki
         Hazel::Renderer2D::drawQuad({2.0f, 3.0f, 0.5f}, {2.0f, 2.0f}, m_texture_2,
                                     glm::vec4{0.8f, 1.0f, 0.9f, 1.0f});
@@ -65,6 +79,12 @@ void Sandbox2D::onUpdate(Hazel::Timestep ts)
                 Hazel::Renderer2D::drawQuad({x, y, -0.5}, {0.45f, 0.45f}, color);
             }
         }
+
+        for (uint32_t i = 0; i < 5; i++) {
+            particle_system.emit(particle_props);
+        }
+
+        particle_system.onRender();
         Hazel::Renderer2D::endScene();
     }
 }
