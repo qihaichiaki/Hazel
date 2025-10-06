@@ -6,9 +6,10 @@
 #define GLM_ENABLE_EXPERIMENTAL  // 实验模块包含
 #include <glm/gtx/compatibility.hpp>
 
-ParticleSystem::ParticleSystem()
+ParticleSystem::ParticleSystem(uint32_t particle_index_max)
+    : m_particle_index{particle_index_max - 1}
 {
-    m_particle_pool.resize(1000);  // 硬编码1000个粒子
+    m_particle_pool.resize(particle_index_max);
 }
 
 ParticleSystem::~ParticleSystem() {}
@@ -31,8 +32,9 @@ void ParticleSystem::onUpdate(Hazel::Timestep ts)
     }
 }
 
-void ParticleSystem::onRender()
+void ParticleSystem::onRender(const Hazel::OrthoGraphicCamera& camera)
 {
+    Hazel::Renderer2D::beginScene(camera);
     for (auto& particle : m_particle_pool) {
         if (!particle.Active) {
             continue;
@@ -48,6 +50,7 @@ void ParticleSystem::onRender()
         Hazel::Renderer2D::drawRotatedQuad(particle.Position, {size, size}, particle.Rotation,
                                            color);
     }
+    Hazel::Renderer2D::endScene();
 }
 
 void ParticleSystem::emit(const ParticleProps& particle_props)

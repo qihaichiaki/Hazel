@@ -45,6 +45,12 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     -DGLFW_INCLUDE_NONE
 )
 
+# debug宏设置
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+
+    # -DHZ_PROFILE
+)
+
 target_include_directories(${PROJECT_NAME} PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )

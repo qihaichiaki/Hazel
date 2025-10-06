@@ -8,8 +8,9 @@ namespace Hazel
 {
 OrthoGraphicCameraController::OrthoGraphicCameraController(float aspect_ratio)
     : m_aspect_ratio{aspect_ratio},
-      m_camera{-aspect_ratio * m_zoom_level, aspect_ratio * m_zoom_level, -m_zoom_level,
-               m_zoom_level}
+      m_bounds{-aspect_ratio * m_zoom_level, aspect_ratio * m_zoom_level, -m_zoom_level,
+               m_zoom_level},
+      m_camera{m_bounds.Left, m_bounds.Right, m_bounds.Bottom, m_bounds.Top}
 {
 }
 
@@ -78,8 +79,9 @@ bool OrthoGraphicCameraController::onMouseScrolled(MouseScrolledEvent& e)
     m_zoom_level -= e.getOffsetY() * 0.25f;
     m_zoom_level = std::max(m_zoom_level, 0.25f);
     m_camera_translation_speed = m_zoom_level;
-    m_camera.setProjection(-m_aspect_ratio * m_zoom_level, m_aspect_ratio * m_zoom_level,
-                           -m_zoom_level, m_zoom_level);
+    m_bounds = {-m_aspect_ratio * m_zoom_level, m_aspect_ratio * m_zoom_level, -m_zoom_level,
+                m_zoom_level};
+    m_camera.setProjection(m_bounds.Left, m_bounds.Right, m_bounds.Bottom, m_bounds.Top);
     return false;
 }
 bool OrthoGraphicCameraController::onWindowResized(WindowResizeEvent& e)
@@ -87,8 +89,9 @@ bool OrthoGraphicCameraController::onWindowResized(WindowResizeEvent& e)
     HZ_PROFILE_FUNCTION();
 
     m_aspect_ratio = 1.0f * e.getResizeWidth() / e.getResizeHeight();
-    m_camera.setProjection(-m_aspect_ratio * m_zoom_level, m_aspect_ratio * m_zoom_level,
-                           -m_zoom_level, m_zoom_level);
+    m_bounds = {-m_aspect_ratio * m_zoom_level, m_aspect_ratio * m_zoom_level, -m_zoom_level,
+                m_zoom_level};
+    m_camera.setProjection(m_bounds.Left, m_bounds.Right, m_bounds.Bottom, m_bounds.Top);
     return false;
 }
 

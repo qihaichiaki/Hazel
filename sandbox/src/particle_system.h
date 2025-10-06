@@ -29,11 +29,11 @@ struct ParticleProps
 class ParticleSystem
 {
 public:
-    ParticleSystem();
+    ParticleSystem(uint32_t particle_index_max = 100000);
     ~ParticleSystem();
 
     void onUpdate(Hazel::Timestep ts);
-    void onRender();
+    void onRender(const Hazel::OrthoGraphicCamera& camera);
 
     /// @brief 发射粒子
     void emit(const ParticleProps& particle_props);
@@ -55,5 +55,5 @@ private:
     };
 
     std::vector<Particle> m_particle_pool;
-    uint32_t m_particle_index = 999;  // 当前需要激活的粒子对象下标
+    uint32_t m_particle_index;  // 当前需要激活的粒子对象下标
 };

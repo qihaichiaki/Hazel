@@ -12,6 +12,21 @@
 namespace Hazel
 {
 
+struct OrthoGraphicCameraBounds
+{
+    float Left, Right;
+    float Bottom, Top;
+
+    float getWidth() const
+    {
+        return Right - Left;
+    }
+    float getHeight() const
+    {
+        return Top - Bottom;
+    };
+};
+
 class OrthoGraphicCameraController
 {
 public:
@@ -26,6 +41,11 @@ public:
         return m_camera;
     }
 
+    HAZEL_API const OrthoGraphicCameraBounds& getBounds() const
+    {
+        return m_bounds;
+    }
+
 private:
     bool onMouseScrolled(MouseScrolledEvent&);
     bool onWindowResized(WindowResizeEvent&);
@@ -33,6 +53,7 @@ private:
 private:
     float m_aspect_ratio;       // 宽高比
     float m_zoom_level = 1.0f;  // 缩放级别
+    OrthoGraphicCameraBounds m_bounds;
     OrthoGraphicCamera m_camera;
 
     glm::vec3 m_camera_position{0.0f};        // 相机的世界坐标

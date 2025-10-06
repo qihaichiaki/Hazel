@@ -134,8 +134,6 @@ private:
 };
 }  // namespace Hazel
 
-#define HZ_PROFILE 1
-
 #if HZ_PROFILE
     #define HZ_PROFILE_BEGIN_SESSION(name, file_path) \
         ::Hazel::Instrumentor::get().beginSession(name, file_path)

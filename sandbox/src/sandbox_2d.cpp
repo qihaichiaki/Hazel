@@ -38,7 +38,6 @@ void Sandbox2D::onUpdate(Hazel::Timestep ts)
 
     // update
     m_camera_controller.onUpdate(ts);
-    particle_system.onUpdate(ts);
 
     Hazel::Renderer2D::resetStats();
 
@@ -79,13 +78,27 @@ void Sandbox2D::onUpdate(Hazel::Timestep ts)
                 Hazel::Renderer2D::drawQuad({x, y, -0.5}, {0.45f, 0.45f}, color);
             }
         }
-
-        for (uint32_t i = 0; i < 5; i++) {
-            particle_system.emit(particle_props);
-        }
-
-        particle_system.onRender();
         Hazel::Renderer2D::endScene();
+    }
+
+    {
+        if (Hazel::Input::isMouseButtonPressed(HZ_MOUSE_BUTTON_LEFT)) {
+            auto [pos_x, pos_y] = Hazel::Input::getMousePosition();  // 获取鼠标的坐标
+            auto& window = Hazel::Application::get().getWindow();
+            const auto& bounds = m_camera_controller.getBounds();
+            auto camera_pos = m_camera_controller.getCamera().getPosition();
+
+            float dx = (pos_x / window.getWidth()) * bounds.getWidth() - bounds.getWidth() * 0.5f;
+            float dy =
+                bounds.getHeight() * 0.5f - (pos_y / window.getHeight()) * bounds.getHeight();
+
+            particle_props.Position = {camera_pos.x + dx, camera_pos.y + dy};
+            for (uint32_t i = 0; i < 5; i++) {
+                particle_system.emit(particle_props);
+            }
+        }
+        particle_system.onUpdate(ts);
+        particle_system.onRender(m_camera_controller.getCamera());
     }
 }
 
