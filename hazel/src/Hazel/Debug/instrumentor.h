@@ -4,7 +4,7 @@
  * instrumentor 仪表器, 简单用于生成分析运行效率的工具
  * 使用地址: chrome://tracing
  */
-#include "Hazel/Core/core.h"
+#include "Hazel/Core/base.h"
 #include <fstream>
 
 namespace Hazel

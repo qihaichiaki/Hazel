@@ -44,7 +44,7 @@ Hazel引擎
 * 切入点：主函数的流程控制希望是从**引擎的角度**去提供的，而非应用程序。
 
 * 项目文件: 
-	1. core.h 定义一些宏的地方(比如导出导入宏)
+	1. base.h 定义一些宏的地方(比如导出导入宏)
 	2. appliaction.h/.cpp 引擎层抽象应用程序类，让真正的应用程序继承自此类, 自定义东西, 但是应用程序的流程可以做到在引擎层的main中进行控制 
 	3. 应用层sandbox定义sandboxApp.cpp 继承自Application
 
@@ -243,7 +243,7 @@ Hazel引擎
     * Init
       * data字段赋值
       * 可能存在多个窗口创建的需求, 存在.cpp里静态字段, 防止glfw初始化过多 **glfwInit()**
-        * 为了检查初始化是否成功, 引入日志断言: HZ_CORE_ASSERT(c) -> core.h
+        * 为了检查初始化是否成功, 引入日志断言: HZ_CORE_ASSERT(c) -> base.h
           * if (!c) { HZ_ERROR("断言失败: {0}", __VA_ARGS__); __debugbreak();}
           * 使用宏HZ_ENABLE_ASSERTS控制上述的行为
           * __debugbreak 适用于windows, 相当于调试的断点
@@ -446,7 +446,7 @@ Hazel引擎
     * glViewport(0, 0, w, h) 调整渲染视口
 
 * 一个事件进入了层的事件处理, 通过事件调度器, 方便的将事件派发到对应的事件处理函数上消费
-* 可以将塞入函数回调使用绑定的整理为一个宏, 放入core.h的文件中去
+* 可以将塞入函数回调使用绑定的整理为一个宏, 放入base.h的文件中去
   * HZ_BIND_EVENT_FIN(fn)
 
 * 当前的事件消费处理都暂时设置为false, 即也要传递给下一个layer进行消费事件
@@ -577,7 +577,7 @@ Hazel引擎
 * render流程: 1. 延迟渲染 2. 多线程-渲染线程 3. 渲染器同时处理和渲染前一帧的数据
 * 对于资产对象(shader......)，渲染线程实际上对这些对象存在强引用
 * 封装共享指针:Ref和唯一指针:Scope
-  * using 一下, 配合上template -> Core.h
+  * using 一下, 配合上template -> base.h
 
 * 未来是资产的类型, 标记用上述类型替换(Buffer... shader.....)
 

@@ -3,7 +3,7 @@
 /**
  * 层栈结构, 从左往右遍历时渲染更新, 从右往左遍历是事件更新
  */
-#include "core.h"
+#include "base.h"
 #include "layer.h"
 
 namespace Hazel

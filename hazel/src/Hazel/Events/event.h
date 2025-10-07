@@ -7,7 +7,7 @@
  */
 
 #include "hzpch.h"
-#include "Hazel/Core/core.h"
+#include "Hazel/Core/base.h"
 
 namespace Hazel
 {
