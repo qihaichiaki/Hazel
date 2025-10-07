@@ -14,11 +14,11 @@ public:
     ~WindowsWindow();
 
     void onUpdate() override;
-    unsigned int getWidth() const override
+    uint32_t getWidth() const override
     {
         return m_data.width;
     }
-    unsigned int getHeight() const override
+    uint32_t getHeight() const override
     {
         return m_data.height;
     }
@@ -49,7 +49,7 @@ private:
     struct WindowData
     {
         std::string title;
-        unsigned int width, height;
+        uint32_t width, height;
         bool is_vsnc;
         EventCallBackFn event_call_back;
     };

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <hazel.h>
 
 #include "particle_system.h"

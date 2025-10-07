@@ -592,3 +592,15 @@ Hazel引擎
 * 使用批量渲染, 让引擎快速正确的渲染2D图形(Renderer2D -> 批处理渲染器)
 * 场景, ECS, 数据序列化, 用户UI, 脚本系统......
 
+
+### 编辑器主题
+* 设置停靠空间, 将所有显示组件挡住一块可以拖动的区域
+* 需要将渲染内容渲染到一张纹理上, 然后将纹理绘制到一个窗口上
+
+* [帧缓冲区](./render/render_frame_buffers.md)
+* 新建HazelEditor项目
+  * HazelEditorApp.cpp
+  * EditorLayer.cpp/.h
+  * HazelEditor 也存在于Hazel命名空间内
+
+* 创建application时默认给予一个名字, 方便给主窗口进行命名?

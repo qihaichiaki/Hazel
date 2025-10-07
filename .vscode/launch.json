@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${command:cmake.launchTargetPath}",
             "args": [],
-            "cwd": "${workspaceRoot}/sandbox",
+            "cwd": "${workspaceRoot}/hazel-editor",
             "stopAtEntry": false,
             "console": "externalTerminal",
             "environment": [

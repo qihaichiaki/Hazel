@@ -12,14 +12,14 @@ namespace Hazel
 {
 Application* Application::s_instance = nullptr;
 
-Application::Application()
+Application::Application(const std::string& main_window_name)
 {
     HZ_PROFILE_FUNCTION();
 
     HZ_CORE_ASSERT(s_instance == nullptr, "application被创建多次!")
     s_instance = this;
 
-    m_window = Window::create();
+    m_window = Window::create(WindowProps{main_window_name});
     m_window->setEventCallBack(HZ_BIND_EVENT_FN(Application::onEvent));
 
     Renderer::init();

@@ -16,11 +16,11 @@ namespace Hazel
 struct WindowProps
 {
     std::string title;
-    unsigned int width, height;
+    uint32_t width, height;
 
     WindowProps(const std::string& title = "Hazel Engine",
-                unsigned int width = 1536,
-                unsigned int height = 960)
+                uint32_t width = 1536,
+                uint32_t height = 960)
         : title{title}, width{width}, height{height}
     {
     }
@@ -36,9 +36,9 @@ public:
     /// @brief 窗口事件派发以及交换缓冲区
     virtual void onUpdate() = 0;
     /// @brief 窗口宽度
-    virtual unsigned int getWidth() const = 0;
+    virtual uint32_t getWidth() const = 0;
     /// @brief 窗口高度
-    virtual unsigned int getHeight() const = 0;
+    virtual uint32_t getHeight() const = 0;
 
     /// @brief 设置窗口事件处理回调
     virtual void setEventCallBack(EventCallBackFn call_back) = 0;

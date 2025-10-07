@@ -15,7 +15,7 @@ class Time;
 class Application
 {
 public:
-    HAZEL_API Application();
+    HAZEL_API Application(const std::string& main_window_name = "Hazel引擎");
     HAZEL_API virtual ~Application();
 
     HAZEL_API void run();
@@ -24,6 +24,11 @@ public:
     HAZEL_API void pushOverlay(Layer* overly);
     HAZEL_API void popLayer(Layer* layer);
     HAZEL_API void popOverlay(Layer* overly);
+
+    HAZEL_API void close()
+    {
+        m_running = false;
+    }
 
     HAZEL_API Window& getWindow()
     {

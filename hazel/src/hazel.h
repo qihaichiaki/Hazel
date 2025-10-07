@@ -19,6 +19,7 @@
 #include "Hazel/Renderer/renderer.h"
 #include "Hazel/Renderer/renderer_command.h"
 #include "Hazel/Renderer/buffer.h"
+#include "Hazel/Renderer/framebuffer.h"
 #include "Hazel/Renderer/shader.h"
 #include "Hazel/Renderer/vertex_array.h"
 #include "Hazel/Renderer/texture.h"
