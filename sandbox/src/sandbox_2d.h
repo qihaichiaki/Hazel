@@ -20,6 +20,7 @@ private:
     Hazel::Ref<Hazel::Texture2D> m_texture_2;
 
     glm::vec4 m_square_color{1.0f};
-    ParticleSystem particle_system;
-    ParticleProps particle_props;
+    ParticleSystem m_particle_system;
+    ParticleProps m_particle_props;
+    int m_particle_count = 5;
 };

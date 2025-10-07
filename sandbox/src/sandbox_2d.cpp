@@ -14,15 +14,15 @@ void Sandbox2D::onAttach()
     m_texture_2 = Hazel::Texture2D::create("assets/textures/namica.png");
 
     Random::init();
-    particle_props.ColorBegin = {254 / 255.0f, 212 / 255.0f, 123 / 255.0f, 1.0f};
-    particle_props.ColorEnd = {254 / 255.0f, 109 / 255.0f, 41 / 255.0f, 1.0f};
-    particle_props.SizeBegin = 0.5f;
-    particle_props.SizeVariation = 0.3f;
-    particle_props.SizeEnd = 0.0f;
-    particle_props.LifeTime = 10.0f;
-    particle_props.Velocity = {0.0f, 0.0f};
-    particle_props.VelocityVariation = {3.0f, 3.0f};
-    particle_props.Position = {10.0f, 0.0f};
+    m_particle_props.ColorBegin = {254 / 255.0f, 212 / 255.0f, 123 / 255.0f, 1.0f};
+    m_particle_props.ColorEnd = {254 / 255.0f, 109 / 255.0f, 41 / 255.0f, 1.0f};
+    m_particle_props.SizeBegin = 0.3f;
+    m_particle_props.SizeVariation = 0.3f;
+    m_particle_props.SizeEnd = 0.0f;
+    m_particle_props.LifeTime = 5.0f;
+    m_particle_props.Velocity = {0.0f, 0.0f};
+    m_particle_props.VelocityVariation = {3.0f, 1.0f};
+    m_particle_props.Position = {10.0f, 0.0f};
 }
 
 void Sandbox2D::onDetach()
@@ -92,13 +92,13 @@ void Sandbox2D::onUpdate(Hazel::Timestep ts)
             float dy =
                 bounds.getHeight() * 0.5f - (pos_y / window.getHeight()) * bounds.getHeight();
 
-            particle_props.Position = {camera_pos.x + dx, camera_pos.y + dy};
-            for (uint32_t i = 0; i < 5; i++) {
-                particle_system.emit(particle_props);
+            m_particle_props.Position = {camera_pos.x + dx, camera_pos.y + dy};
+            for (int i = 0; i < m_particle_count; i++) {
+                m_particle_system.emit(m_particle_props);
             }
         }
-        particle_system.onUpdate(ts);
-        particle_system.onRender(m_camera_controller.getCamera());
+        m_particle_system.onUpdate(ts);
+        m_particle_system.onRender(m_camera_controller.getCamera());
     }
 }
 
@@ -113,12 +113,25 @@ void Sandbox2D::onImGuiRender()
 
     auto renderer2d_stats = Hazel::Renderer2D::getStats();
 
-    ImGui::Begin("Settings");
-    ImGui::ColorEdit4("Square Color", glm::value_ptr(m_square_color));
+    ImGui::Begin("渲染信息");
+    // ImGui::ColorEdit4("Square Color", glm::value_ptr(m_square_color));
     ImGui::Text("Renderer2D Stats:");
     ImGui::Text("Draw Calls: %d", renderer2d_stats.DrawCalls);
     ImGui::Text("Quad Count: %d", renderer2d_stats.QuadCount);
     ImGui::Text("Vertex Count: %d", renderer2d_stats.getTotalVertexCount());
     ImGui::Text("Index Count: %d", renderer2d_stats.getTotalIndexCount());
+    ImGui::End();
+
+    ImGui::Begin("粒子设置");
+    ImGui::ColorEdit4("起始颜色", glm::value_ptr(m_particle_props.ColorBegin));
+    ImGui::ColorEdit4("终止颜色", glm::value_ptr(m_particle_props.ColorEnd));
+    ImGui::SliderFloat("起始大小", &m_particle_props.SizeBegin, 0.1f, 1.0f);
+    ImGui::SliderFloat("起始大小变化量", &m_particle_props.SizeVariation, 0.3f, 0.5f);
+    ImGui::SliderFloat("终止大小", &m_particle_props.SizeEnd, 0.0f, 0.3f);
+    ImGui::DragFloat("生存时间", &m_particle_props.LifeTime, 1.0f, 0.0f, 1000.0f);
+    ImGui::DragFloat2("起始速度", glm::value_ptr(m_particle_props.Velocity), 1.0f, 0.0f, 10.0f);
+    ImGui::DragFloat2("速度变化值", glm::value_ptr(m_particle_props.VelocityVariation), 1.0f, 0.0f,
+                      10.0f);
+    ImGui::DragInt("单帧粒子发射数量:", &m_particle_count, 1.0, 0, 100);
     ImGui::End();
 }
