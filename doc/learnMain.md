@@ -604,3 +604,26 @@ Hazel引擎
   * HazelEditor 也存在于Hazel命名空间内
 
 * 创建application时默认给予一个名字, 方便给主窗口进行命名?
+
+#### Imgui面板-场景视口
+* ImGui::PushStyleVar(IMGUIStyleVar_WindowPadding, InVec2{0, 0});  // 设置窗口无边框
+* Imgui::Begin("Viewport")
+* Imvec2 viewportPanelSize = GetContentRegionAvail();  // 获取当前视口的长和宽, 会动态的获取当前视口的信息
+* m_viewport_size = viewportPanelSize;
+* 如果和之前的大小不一样, 需要调整帧缓冲区的大小->帧缓冲区重新执行invalidate
+* frameBuffer::resize(uint32_t width, uint32_t height)
+  * m_specification.w / h xxx
+  * invalidate();
+    * 如果当前不是第一次，则删除之前的帧缓冲区和两个纹理，重新执行
+* 相机控制器重新设置投影矩阵(因为此时视图的大小更新传播不了事件.)
+  * CameraController::onResize(float width, float height);
+  * .... resize
+* //...
+* ImGui::PopStyleVar();
+
+
+* 另外，在帧缓冲区绑定的时候，gl设置一下视口大小: glViewport(0, 0, width, height);
+
+
+* 现在存在问题: 不同视口上的事件会传播到别处, 存在影响
+

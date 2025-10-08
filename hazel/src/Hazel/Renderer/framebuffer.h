@@ -20,6 +20,9 @@ public:
     /// @brief 帧缓冲区解绑
     virtual void unBind() const = 0;
 
+    /// @brief 重置帧缓冲区大小
+    virtual void resize(uint32_t width, uint32_t height) = 0;
+
     /// @brief 获取帧缓冲区的颜色附加纹理的renderer id
     virtual uint32_t getColorAttachmentRendererID() const = 0;
 

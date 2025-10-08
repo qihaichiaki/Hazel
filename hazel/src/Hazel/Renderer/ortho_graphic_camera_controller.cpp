@@ -72,6 +72,14 @@ void OrthoGraphicCameraController::onEvent(Event& e)
         HZ_BIND_EVENT_FN(OrthoGraphicCameraController::onWindowResized));
 }
 
+void OrthoGraphicCameraController::onResize(float width, float height)
+{
+    m_aspect_ratio = 1.0f * width / height;
+    m_bounds = {-m_aspect_ratio * m_zoom_level, m_aspect_ratio * m_zoom_level, -m_zoom_level,
+                m_zoom_level};
+    m_camera.setProjection(m_bounds.Left, m_bounds.Right, m_bounds.Bottom, m_bounds.Top);
+}
+
 bool OrthoGraphicCameraController::onMouseScrolled(MouseScrolledEvent& e)
 {
     HZ_PROFILE_FUNCTION();
@@ -88,10 +96,7 @@ bool OrthoGraphicCameraController::onWindowResized(WindowResizeEvent& e)
 {
     HZ_PROFILE_FUNCTION();
 
-    m_aspect_ratio = 1.0f * e.getResizeWidth() / e.getResizeHeight();
-    m_bounds = {-m_aspect_ratio * m_zoom_level, m_aspect_ratio * m_zoom_level, -m_zoom_level,
-                m_zoom_level};
-    m_camera.setProjection(m_bounds.Left, m_bounds.Right, m_bounds.Bottom, m_bounds.Top);
+    onResize(e.getResizeWidth() * 1.0f, e.getResizeHeight() * 1.0f);
     return false;
 }
 

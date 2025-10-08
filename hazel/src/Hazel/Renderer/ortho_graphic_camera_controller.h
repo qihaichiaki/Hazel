@@ -36,6 +36,9 @@ public:
     HAZEL_API void onUpdate(Timestep ts);
     HAZEL_API void onEvent(Event&);
 
+    /// @brief 调整大小时应该调用的
+    HAZEL_API void onResize(float width, float height);
+
     HAZEL_API const OrthoGraphicCamera& getCamera() const
     {
         return m_camera;

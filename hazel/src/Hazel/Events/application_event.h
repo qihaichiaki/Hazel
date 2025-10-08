@@ -20,14 +20,14 @@ public:
 class HAZEL_API WindowResizeEvent : public Event
 {
 public:
-    WindowResizeEvent(unsigned int width, unsigned int height) : m_width{width}, m_height{height} {}
+    WindowResizeEvent(uint32_t width, uint32_t height) : m_width{width}, m_height{height} {}
 
-    unsigned int getResizeWidth() const
+    uint32_t getResizeWidth() const
     {
         return m_width;
     }
 
-    unsigned int getResizeHeight() const
+    uint32_t getResizeHeight() const
     {
         return m_height;
     }
@@ -43,7 +43,7 @@ public:
     }
 
 private:
-    unsigned int m_width, m_height;
+    uint32_t m_width, m_height;
 };
 
 class HAZEL_API AppTickEvent : public Event

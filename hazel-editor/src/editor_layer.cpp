@@ -155,10 +155,23 @@ void EditorLayer::onImGuiRender()
     ImGui::Text("Index Count: %d", renderer2d_stats.getTotalIndexCount());
     ImGui::End();
 
-    ImGui::Begin("场景窗口");
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
+    ImGui::Begin("Viewport");
+    ImVec2 viewport_panel_size = ImGui::GetContentRegionAvail();
+    // 内存布局一致, 可以强转
+    if (m_viewport_size != *(glm::vec2*)(&viewport_panel_size)) {
+        m_viewport_size.x = viewport_panel_size.x;
+        m_viewport_size.y = viewport_panel_size.y;
+        // 1. 帧缓冲区改变大小
+        m_framebuffer->resize((uint32_t)m_viewport_size.x, (uint32_t)m_viewport_size.y);
+        // 2. 重新设置相机投影矩阵
+        m_camera_controller.onResize(m_viewport_size.x, m_viewport_size.y);
+    }
     ImGui::Image((void*)(uintptr_t)(m_framebuffer->getColorAttachmentRendererID()),
-                 ImVec2{1536, 960}, ImVec2{0, 1}, ImVec2{1, 0});  // v方向反转一下
+                 ImVec2{m_viewport_size.x, m_viewport_size.y}, ImVec2{0, 1},
+                 ImVec2{1, 0});  // v方向反转一下
     ImGui::End();
+    ImGui::PopStyleVar();
 }
 
 }  // namespace Hazel

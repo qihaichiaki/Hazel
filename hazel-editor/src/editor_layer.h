@@ -23,5 +23,6 @@ private:
     Ref<Framebuffer> m_framebuffer;
 
     glm::vec4 m_square_color{1.0f};
+    glm::vec2 m_viewport_size = {0.0f, 0.0f};
 };
 }  // namespace Hazel
