@@ -77,7 +77,7 @@ void Application::onEvent(Event& event)
 
     for (auto layer_it = m_layer_stack.end(); layer_it != m_layer_stack.begin();) {
         (*(--layer_it))->onEvent(event);
-        if (event.isHandled()) {
+        if (event.Handled) {
             break;
         }
     }

@@ -15,6 +15,8 @@ struct HAZEL_API FramebufferSpecification
 class HAZEL_API Framebuffer
 {
 public:
+    virtual ~Framebuffer() {}
+
     /// @brief 帧缓冲区绑定
     virtual void bind() const = 0;
     /// @brief 帧缓冲区解绑

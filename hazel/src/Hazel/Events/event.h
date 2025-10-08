@@ -72,8 +72,6 @@ enum EventCategory {
 // 事件基类
 class HAZEL_API Event
 {
-    friend class EventDispatcher;
-
 public:
     virtual ~Event() {}
 
@@ -95,14 +93,7 @@ public:
         return getCategoryFlags() & event_category;
     }
 
-    /// @brief 当前事件是否被处理
-    bool isHandled() const
-    {
-        return m_handled;
-    }
-
-protected:
-    bool m_handled = false;
+    bool Handled = false;  // 事件是否被处理, 如果被处理则不会向低层传播事件
 };
 
 /// @brief 事件调度器
@@ -122,7 +113,7 @@ public:
     bool dispatch(EventFn<EventT> event_fn)
     {
         if (m_event.getEventType() == EventT::getStaticType()) {
-            m_event.m_handled = event_fn(*((EventT*)(&m_event)));
+            m_event.Handled = event_fn(*((EventT*)(&m_event)));
             return true;
         }
         return false;

@@ -627,3 +627,31 @@ Hazel引擎
 
 * 现在存在问题: 不同视口上的事件会传播到别处, 存在影响
 
+### 后续代码审查和方向
+#### input
+- 因为input是无法自己选择的, 是根据当前软件使用的平台抉择, 非运行时而编译期, 所以不需要设置虚函数进行实现兼容
+- 将虚函数实现全部删除
+- 直接在windowsinput后端实现所有函数, 利用宏控制是否包含当前实现
+- 未来实现多平台使用宏包裹实现代码即可
+
+#### 修正GUI检测事件输入问题
+* 解决要点: 如果当前活动或者聚焦的是视口就继续传递事件
+* 在当前的imgui窗口中, 检测是否被聚集和悬停: ImGui::IsWindowFocused(),ImGui::IsWindowHovered()
+* 可以简单利用此bool来控制相机控制器是否更新
+* 在ImGuiLayer中增加m_blockEvents变量控制是否阻止imGui事件的传播, application可以获取, 然后外部调用如果视口不处于焦点就阻止其将事件传播。
+  * imguilayer::onEvent
+  * if (m_blockEvents)
+  * ImGui::GetIo();
+  * e.Handled |= e.isInCategory(EventCategoryMouse) & io.WantCaptureMoouse;
+  * e.Handled |= e.isInCategory(EventCategoryKeyBoard) & io.WantCaptureKeyboard;  
+
+
+#### 帧缓冲区接收正确的大小调整
+* Framebuffer::resize(w, h) 如果宽和高任意一个为0，都不应该进行调整大小
+* 或者大于一个特定的值: s_MaxFramebufferSize = 8192;
+* 在editor layer端, 需要检查下传入的size是否全都大于零，可以避免相机设置错误的投影值
+
+#### 其他
+* 对于平台相关的宏, 更希望能够在外界(编译器层)进行定义包含，而不是在base中, 防止一些一地方因为base不存在而丢失
+* input_codes.h 需要将原本的宏转换为枚举变量enum class KeyCode: uint16_t
+* 除了opengl，其他图形渲染api没有顶点数组对象这个概念。

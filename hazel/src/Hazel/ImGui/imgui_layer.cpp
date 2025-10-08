@@ -60,6 +60,15 @@ void ImGuiLayer::onImGuiRender()
     ImGui::ShowDemoWindow(&is_show_demo);
 }
 
+void ImGuiLayer::onEvent(Event& e)
+{
+    if (m_block_events) {
+        ImGuiIO& io = ImGui::GetIO();
+        e.Handled |= e.isInCategory(CategoryMouse) & io.WantCaptureMouse;
+        e.Handled |= e.isInCategory(CategoryKeyboard) & io.WantCaptureKeyboard;
+    }
+}
+
 void ImGuiLayer::begin()
 {
     HZ_PROFILE_FUNCTION();

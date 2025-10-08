@@ -7,6 +7,8 @@
 namespace Hazel
 {
 
+static uint32_t s_max_framebuffer_size = 8192;
+
 OpenGLFramebuffer::OpenGLFramebuffer(const FramebufferSpecification& spec) : m_specification(spec)
 {
     invalidate();
@@ -65,6 +67,11 @@ void OpenGLFramebuffer::unBind() const
 
 void OpenGLFramebuffer::resize(uint32_t width, uint32_t height)
 {
+    if (width == 0 || height == 0 || width > s_max_framebuffer_size ||
+        height > s_max_framebuffer_size) {
+        HZ_CORE_WARN("帧缓冲区接收了异常的调整大小: {0}, {1}", width, height);
+        return;
+    }
     m_specification.Width = width;
     m_specification.Height = height;
     invalidate();

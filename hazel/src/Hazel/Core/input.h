@@ -6,6 +6,7 @@
  */
 
 #include "Hazel/Core/base.h"
+#include "Hazel/Core/input_codes.h"
 
 namespace Hazel
 {
@@ -14,44 +15,15 @@ class HAZEL_API Input
 {
 public:
     /// @brief 当前按键是否按下
-    static bool isKeyPressed(int keycode)
-    {
-        return s_instance->isKeyPressedImpl(keycode);
-    }
-
+    static bool isKeyPressed(KeyCode keycode);
     /// @brief 当前鼠标按键是否按下
-    static bool isMouseButtonPressed(int button)
-    {
-        return s_instance->isMouseButtonPressedImpl(button);
-    }
-
+    static bool isMouseButtonPressed(KeyCode button);
     /// @brief 获取当前鼠标坐标
-    static std::pair<float, float> getMousePosition()
-    {
-        return s_instance->getMousePositionImpl();
-    }
-
+    static std::pair<float, float> getMousePosition();
     /// @brief 获取当前鼠标X坐标
-    static float getMouseX()
-    {
-        return s_instance->getMouseXImpl();
-    }
-
+    static float getMouseX();
     /// @brief 获取当前鼠标Y坐标
-    static float getMouseY()
-    {
-        return s_instance->getMouseYImpl();
-    }
-
-protected:
-    virtual bool isKeyPressedImpl(int) = 0;
-    virtual bool isMouseButtonPressedImpl(int) = 0;
-    virtual std::pair<float, float> getMousePositionImpl() = 0;
-    virtual float getMouseXImpl() = 0;
-    virtual float getMouseYImpl() = 0;
-
-private:
-    static Input* s_instance;
+    static float getMouseY();
 };
 
 }  // namespace Hazel

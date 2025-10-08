@@ -29,7 +29,9 @@ void EditorLayer::onUpdate(Hazel::Timestep ts)
     HZ_PROFILE_FUNCTION();
 
     // update
-    m_camera_controller.onUpdate(ts);
+    if (m_is_viewport) {
+        m_camera_controller.onUpdate(ts);
+    }
 
     Hazel::Renderer2D::resetStats();
 
@@ -60,10 +62,6 @@ void EditorLayer::onUpdate(Hazel::Timestep ts)
         Hazel::Renderer2D::drawQuad({0.0f, 0.0f, -0.9f}, {20.0f, 20.0f}, m_texture, glm::vec4{1.0f},
                                     10.0f);
 
-        // 绘制nanamichiaki
-        Hazel::Renderer2D::drawQuad({2.0f, 3.0f, 0.5f}, {2.0f, 2.0f}, m_texture_2,
-                                    glm::vec4{0.8f, 1.0f, 0.9f, 1.0f});
-
         // 压力测试 100 * 100 -> 10000
         for (float y = -5.0f; y < 5.0f; y += 0.25f) {
             for (float x = -5.0f; x < 5.0f; x += 0.25f) {
@@ -71,6 +69,10 @@ void EditorLayer::onUpdate(Hazel::Timestep ts)
                 Hazel::Renderer2D::drawQuad({x, y, -0.5}, {0.45f, 0.45f}, color);
             }
         }
+        // 绘制nanamichiaki
+        Hazel::Renderer2D::drawQuad({2.0f, 3.0f, 0.5f}, {2.0f, 2.0f}, m_texture_2,
+                                    glm::vec4{0.8f, 1.0f, 0.9f, 1.0f});
+
         Hazel::Renderer2D::endScene();
         m_framebuffer->unBind();
     }
@@ -157,9 +159,15 @@ void EditorLayer::onImGuiRender()
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
     ImGui::Begin("Viewport");
+    // 检查当前窗口是否是聚焦和悬浮的
+    m_is_viewport = ImGui::IsWindowFocused() && ImGui::IsWindowHovered();
+    // 如果均不是, 则阻止imgui层事件的传播
+    Application::get().getImGuiLayer()->setBlockEvents(!m_is_viewport);
+
     ImVec2 viewport_panel_size = ImGui::GetContentRegionAvail();
     // 内存布局一致, 可以强转
-    if (m_viewport_size != *(glm::vec2*)(&viewport_panel_size)) {
+    if (m_viewport_size != *(glm::vec2*)(&viewport_panel_size) && viewport_panel_size.x > 0 &&
+        viewport_panel_size.y > 0) {
         m_viewport_size.x = viewport_panel_size.x;
         m_viewport_size.y = viewport_panel_size.y;
         // 1. 帧缓冲区改变大小

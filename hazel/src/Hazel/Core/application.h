@@ -35,6 +35,12 @@ public:
         return (*m_window);
     }
 
+    // TODO: 临时
+    HAZEL_API ImGuiLayer* getImGuiLayer()
+    {
+        return m_imgui_layer;
+    }
+
     // TODO: 临时实现类似单例的模式
     HAZEL_API static Application& get()
     {
