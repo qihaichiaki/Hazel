@@ -18,9 +18,10 @@ public:
 
 private:
     OrthoGraphicCameraController m_camera_controller;
-    Ref<Texture2D> m_texture;
-    Ref<Texture2D> m_texture_2;
     Ref<Framebuffer> m_framebuffer;
+
+    Entity m_temp_entity;                 // 示例实体对象
+    Ref<Scene> m_active_scene = nullptr;  // 示例激活scene
 
     bool m_is_viewport = false;  // 是否激活在视口上的事件更新
     glm::vec4 m_square_color{1.0f};

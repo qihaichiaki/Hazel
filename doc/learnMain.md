@@ -655,3 +655,82 @@ Hazel引擎
 * 对于平台相关的宏, 更希望能够在外界(编译器层)进行定义包含，而不是在base中, 防止一些一地方因为base不存在而丢失
 * input_codes.h 需要将原本的宏转换为枚举变量enum class KeyCode: uint16_t
 * 除了opengl，其他图形渲染api没有顶点数组对象这个概念。
+
+
+### 实体组件系统
+* 使用第三方ECS库: entt
+* 实体组件系统对性能至关重要
+* Scene容器 -> gameobject对象 entity -> 动作/行为 -> 分类system (缓存命中)
+
+#### entt的引入
+* 首先将<a href="https://github.com/skypjack/entt">entt</a>中的entt.hpp包含入vendor\entt\include
+* 将其库中的MIT 许可证也一并下载到对应的仓库
+* cmake中，hazel core/editor部分将其包含
+
+* 创建Scene文件夹, 后续ECS相关的部分均会在此文件夹下输出
+
+#### scene.h/.cpp
+* class Scene
+  * public:
+  * Scene();
+  * ~Scene();
+  * Entity createEntity(const std::string& name = std::string{});
+    * entity = {m_registry.create(), this};
+    * entity.AddComponent<TransformComponent>();  // 每个创建出来的entity对象默认增加transform组件
+    * tag = entity.AddComponent<TagComponent>();  // 每个创建出来的entity对象默认增加tag组件
+      * tag = name.empty() ? "新实体" : name;
+    * return entity;
+  * onUpdate(Timestep ts);  // 更新和渲染提交均在此处
+    * group = m_registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+    * 遍历其得到entity, 使用group.get<TransformComponent, SpriteRendererComponent>(entity);得到对应entity的两个组件, 然后获取其值上传到renderer2d中去。
+  * private:
+  * entt::registry m_registry;  // 注册管理器 -> 组件和实体的容器
+
+* 将此头文件加入到Hazel.h的renderer前面
+* Renderer2D增加transform + color/texure2d 提交渲染的功能
+
+#### Entity.h
+* class Entity
+  * public:
+  * Entity() = default;
+  * Entity(entt::entity, Scene* scene);
+  * Entity(const Entity& other) = default;
+  * bool hasComponent
+    * m_registry.has<T>(entity);
+  * T& addComponent
+    * assert(!has(xxx));
+    * m_registry.emplace<T>(entity, ...);
+  * T& getComponent
+    * assert(has(xxx));
+    * m_registry.get<T>(entity);
+  * void removeComponent
+    * assert(has(xxx));
+    * m_registry.remove<T>(entity);
+  * operator bool() { return m_entity_handle != 0;}
+  * private:
+  * entt::entity m_entity_handle{0};
+  * Scene* m_scene = nullptr;  // TODO: 后续会改造为弱引用模式
+
+#### Components.h
+* struct TagComponent
+  * std::string& Tag;
+
+* struct TransformComponent
+  * glm::mat4 Transform{1.0f};
+  * TransformComponent() = default;
+  * TransformComponent(const TransformComponent&) = default;
+  * TransformComponent(const glm::mat4& transform) :Transform{transform} {}
+  * operator glm::mat4&() { return Transform;}
+  * operator const glm::mat4&() const{ return Transform;}  
+
+* struct SpriteRendererComponent
+  * glm::vec4 Color{1.0f};
+  * SpriteRendererComponent() = default;
+  * SpriteRendererComponent(const SpriteRendererComponent&) = default;
+  * SpriteRendererComponent(const glm::vec4& color) :Color{color} {}
+
+* 将此头文件加入到Hazel.h的scene后面
+
+
+#### 实体系统展示时的imgui相关
+* ImGui::Separator();  // 插入一条分隔线（水平线），用于视觉上区分不同的区域或控件组。

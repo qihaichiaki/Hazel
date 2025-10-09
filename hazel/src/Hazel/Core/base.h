@@ -39,10 +39,10 @@
             HZ_CORE_ERROR("断言失败: {0}", __VA_ARGS__); \
             __debugbreak();                              \
         }
-    #define HZ_ASSERT(c, ...)                           \
-        if (!(c)) {                                     \
-            HZ_APP_ERROR("断言失败: {0}", __VA_ARGS__); \
-            __debugbreak();                             \
+    #define HZ_ASSERT(c, ...)                       \
+        if (!(c)) {                                 \
+            HZ_ERROR("断言失败: {0}", __VA_ARGS__); \
+            __debugbreak();                         \
         }
 #else
     #define HZ_CORE_ASSERT(c, ...) (void)(c);

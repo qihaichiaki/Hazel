@@ -15,6 +15,10 @@
 #include "Hazel/Core/input.h"
 #include "Hazel/Core/input_codes.h"
 
+#include "Hazel/Scene/scene.h"
+#include "Hazel/Scene/entity.h"
+#include "Hazel/Scene/components.h"
+
 // ==== 渲染器 ================
 #include "Hazel/Renderer/renderer.h"
 #include "Hazel/Renderer/renderer_command.h"

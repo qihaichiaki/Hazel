@@ -170,7 +170,7 @@ void Renderer2D::flushAndReset()
     s_data.QuadTextureSoltCount = 1;
 }
 
-void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
+void Renderer2D::drawQuad(const glm::mat4& transform, const glm::vec4& color)
 {
     HZ_PROFILE_FUNCTION();
 
@@ -185,9 +185,7 @@ void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, cons
     // 3 ----- 2
     // |   /   |
     // 0 ----- 1
-    // 准备变换矩阵
-    glm::mat4 transform = glm::translate(glm::mat4{1.0f}, position) *
-                          glm::scale(glm::mat4{1.0f}, {size.x, size.y, 1.0f});
+
     for (int i = 0; i < 4; ++i) {
         s_data.QuadVertexBufferPtr->Position = transform * s_data.RefPositions[i];
         s_data.QuadVertexBufferPtr->Color = color;
@@ -201,13 +199,7 @@ void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, cons
     s_data.Stats.QuadCount++;
 }
 
-void Renderer2D::drawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
-{
-    drawQuad({position.x, position.y, 0.0f}, size, color);
-}
-
-void Renderer2D::drawQuad(const glm::vec3& position,
-                          const glm::vec2& size,
+void Renderer2D::drawQuad(const glm::mat4& transform,
                           const Ref<Texture2D>& texture,
                           const glm::vec4& tint_color,
                           float tiling_factor)
@@ -235,9 +227,6 @@ void Renderer2D::drawQuad(const glm::vec3& position,
         s_data.QuadTextureSolts[s_data.QuadTextureSoltCount++] = texture;
     }
 
-    glm::mat4 transform = glm::translate(glm::mat4{1.0f}, position) *
-                          glm::scale(glm::mat4{1.0f}, glm::vec3{size.x, size.y, 1.0f});
-
     for (int i = 0; i < 4; ++i) {
         s_data.QuadVertexBufferPtr->Position = transform * s_data.RefPositions[i];
         s_data.QuadVertexBufferPtr->Color = tint_color;
@@ -248,6 +237,30 @@ void Renderer2D::drawQuad(const glm::vec3& position,
     }
     s_data.QuadCount++;
     s_data.Stats.QuadCount++;
+}
+
+void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
+{
+    // 准备变换矩阵
+    glm::mat4 transform = glm::translate(glm::mat4{1.0f}, position) *
+                          glm::scale(glm::mat4{1.0f}, {size.x, size.y, 1.0f});
+    drawQuad(transform, color);
+}
+
+void Renderer2D::drawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
+{
+    drawQuad({position.x, position.y, 0.0f}, size, color);
+}
+
+void Renderer2D::drawQuad(const glm::vec3& position,
+                          const glm::vec2& size,
+                          const Ref<Texture2D>& texture,
+                          const glm::vec4& tint_color,
+                          float tiling_factor)
+{
+    glm::mat4 transform = glm::translate(glm::mat4{1.0f}, position) *
+                          glm::scale(glm::mat4{1.0f}, glm::vec3{size.x, size.y, 1.0f});
+    drawQuad(transform, texture, tint_color, tiling_factor);
 }
 
 void Renderer2D::drawQuad(const glm::vec2& position,
@@ -265,29 +278,11 @@ void Renderer2D::drawRotatedQuad(const glm::vec3& position,
                                  float rotation,
                                  const glm::vec4& color)
 {
-    HZ_PROFILE_FUNCTION();
-
-    if (s_data.QuadCount >= Renderer2DData::MaxQuads) {
-        // 超出限制, 重置flush
-        flushAndReset();
-    }
-
-    const float white_texure_id = 0.0f;
-    const float tiling_factor = 1.0f;
     glm::mat4 transform = glm::translate(glm::mat4{1.0f}, position) *
                           glm::rotate(glm::mat4{1.0f}, rotation, glm::vec3{0.0f, 0.0f, 1.0f}) *
                           glm::scale(glm::mat4{1.0f}, glm::vec3{size.x, size.y, 1.0f});
 
-    for (int i = 0; i < 4; ++i) {
-        s_data.QuadVertexBufferPtr->Position = transform * s_data.RefPositions[i];
-        s_data.QuadVertexBufferPtr->Color = color;
-        s_data.QuadVertexBufferPtr->TexCoord = s_data.RefTexCoords[i];
-        s_data.QuadVertexBufferPtr->TexId = white_texure_id;
-        s_data.QuadVertexBufferPtr->TilingFactor = tiling_factor;
-        s_data.QuadVertexBufferPtr++;
-    }
-    s_data.QuadCount++;
-    s_data.Stats.QuadCount++;
+    drawQuad(transform, color);
 }
 
 void Renderer2D::drawRotatedQuad(const glm::vec2& position,
@@ -305,43 +300,10 @@ void Renderer2D::drawRotatedQuad(const glm::vec3& position,
                                  const glm::vec4& tint_color,
                                  float tiling_factor)
 {
-    HZ_PROFILE_FUNCTION();
-
-    if (s_data.QuadCount >= Renderer2DData::MaxQuads) {
-        // 超出限制, 重置flush
-        flushAndReset();
-    }
-
-    // 寻找纹理槽index
-    float texure_id = 0.0f;
-    for (uint32_t i = 1; i < s_data.QuadTextureSoltCount; ++i) {
-        if (s_data.QuadTextureSolts[i]->isEqual(*texture)) {
-            texure_id = (float)i;
-            break;
-        }
-    }
-    if (texure_id == 0.0f) {
-        if (s_data.QuadTextureSoltCount >= s_data.MaxTextureSolts) {
-            flushAndReset();
-        }
-        texure_id = (float)s_data.QuadTextureSoltCount;
-        s_data.QuadTextureSolts[s_data.QuadTextureSoltCount++] = texture;
-    }
-
     glm::mat4 transform = glm::translate(glm::mat4{1.0f}, position) *
                           glm::rotate(glm::mat4{1.0f}, rotation, glm::vec3{0.0f, 0.0f, 1.0f}) *
                           glm::scale(glm::mat4{1.0f}, glm::vec3{size.x, size.y, 1.0f});
-
-    for (int i = 0; i < 4; ++i) {
-        s_data.QuadVertexBufferPtr->Position = transform * s_data.RefPositions[i];
-        s_data.QuadVertexBufferPtr->Color = tint_color;
-        s_data.QuadVertexBufferPtr->TexCoord = s_data.RefTexCoords[i];
-        s_data.QuadVertexBufferPtr->TexId = texure_id;
-        s_data.QuadVertexBufferPtr->TilingFactor = tiling_factor;
-        s_data.QuadVertexBufferPtr++;
-    }
-    s_data.QuadCount++;
-    s_data.Stats.QuadCount++;
+    drawQuad(transform, texture, tint_color, tiling_factor);
 }
 
 void Renderer2D::drawRotatedQuad(const glm::vec2& position,

@@ -59,6 +59,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     "${CMAKE_SOURCE_DIR}/hazel/vendor/spdlog/include" # 增加spdlog作为三方依赖->只需要包含头文件即可
     "${CMAKE_SOURCE_DIR}/hazel/vendor/glm" # glm 同理
     "${CMAKE_SOURCE_DIR}/hazel/vendor/stb_image"
+    "${CMAKE_SOURCE_DIR}/hazel/vendor/entt/include" # ECS三方库, 也是单头文件包含
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
