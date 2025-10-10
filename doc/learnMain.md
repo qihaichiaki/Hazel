@@ -681,10 +681,24 @@ Hazel引擎
       * tag = name.empty() ? "新实体" : name;
     * return entity;
   * onUpdate(Timestep ts);  // 更新和渲染提交均在此处
-    * group = m_registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-    * 遍历其得到entity, 使用group.get<TransformComponent, SpriteRendererComponent>(entity);得到对应entity的两个组件, 然后获取其值上传到renderer2d中去。
+    * 尝试通过m_registry获取当前场景的相机组件 { }
+      * auto view = m_registry.view<TransformComponent, CameraComponent>();
+      * for (entity : view)-> 
+        * auto& [transform, camera] =  view.get<TransformComponent, CameraComponent>(entity);
+        * 找到主相机和对应的transform
+    * 如果主相机存在:
+      * 开始2d渲染
+      * group = m_registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+      * 遍历其得到entity, 使用group.get<TransformComponent, SpriteRendererComponent>(entity);得到对应entity的两个组件, 然后获取其值上传到renderer2d中去。
+      * 关闭2d渲染场景
+  * onViewportResize(uint32_t width, uint32_t height);  // 场景适配视口更新
+    * 记录视口的宽高
+    * view 相机组件
+    * 遍历每个相机组件，判断是否非固定分辨率
+      * 不是则更新其视口大小，使其更新投影矩阵
   * private:
   * entt::registry m_registry;  // 注册管理器 -> 组件和实体的容器
+  * float m_viewport_width/height;
 
 * 将此头文件加入到Hazel.h的renderer前面
 * Renderer2D增加transform + color/texure2d 提交渲染的功能
@@ -729,8 +743,57 @@ Hazel引擎
   * SpriteRendererComponent(const SpriteRendererComponent&) = default;
   * SpriteRendererComponent(const glm::vec4& color) :Color{color} {}
 
+* 增加运行时相机 renderer
+
+* struct CameraComponent
+  * Hazel::SceneCamera Camera;
+  * bool Primary = true;  // 是否是主相机
+  * bool FixedAspectRatio = false;  // 是否固定分辨率
+
 * 将此头文件加入到Hazel.h的scene后面
+
+
+#### 相机系统
+* renderer/camera.h/.cpp
+  * class Camera
+  * public:
+  * Camera();
+  * Camera(const glm::mat4& projection);  // 投影矩阵初始化
+  * getProjection();
+  * private:
+  * glm::mat4 m_projection{1.0f};  // 投影矩阵
+
+* 增加场景相机, 方便向其设置相机范围大小, 
+* renderer/SceneCamera.h
+  * class SceneCamera : Camera
+  * SceneCamera()
+    * RecalculateProjection();
+  * void setOrthographic(float size, float nearClip, float farClip);
+    * RecalculateProjection();
+  * void setOrthographicSize(float size);
+    * RecalculateProjection();
+  * float getOrthographicSize() const
+  * void setViewportSize(uint32_t width, uint32_t height);
+    * aspectRatio = (float) width/ (float)height;
+    * RecalculateProjection();
+
+  * private:
+  * RecalculateProjection();
+    * orthoLeft = -0.5 * orthographic_size * aspectRatio；
+    * orthoRight = 0.5 * orthographic_size * aspectRatio；
+    * orthoBottom = -0.5 * orthographic_size
+    * orthoTop = 0.5 * orthographic_size；
+    * glm::ortho(xxxx) -> 得到投影矩阵
+  * float orthographic_size = 10.0f;
+  * float orthographic_near = -1.0f;  // z
+  * float orthographic_far = 1.0f;  // 深度信息
+  * m_aspectRatio = 0;  // 当前视口的纵横比
+
+* 扩展renderer2d中的beginscene, 增加常规相机的添加 Camera
+* renderer2d::BeginScene(const Camera& camera, const glm::mat4& transform);  // 相机 + transform , 通过相机获取投影矩阵, 再将transform逆置得到视图矩阵，最后利用pv矩阵(glm and opengl)上传到shader中去
+
 
 
 #### 实体系统展示时的imgui相关
 * ImGui::Separator();  // 插入一条分隔线（水平线），用于视觉上区分不同的区域或控件组。
+* ImGui::Checkbox("xxx", &xxx);   // 复选框

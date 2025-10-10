@@ -24,6 +24,9 @@ public:
     /// @param ts 帧间隔
     HAZEL_API void onUpdate(Timestep ts);
 
+    /// @brief 更新场景的视口宽度和高度
+    HAZEL_API void onViewportResize(uint32_t width, uint32_t height);
+
 private:
     entt::registry m_registry;  // 注册管理器, 组件和实体的容器
 

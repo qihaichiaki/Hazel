@@ -28,6 +28,9 @@ public:
     /// @brief 获取帧缓冲区的颜色附加纹理的renderer id
     virtual uint32_t getColorAttachmentRendererID() const = 0;
 
+    /// @brief 获取当前帧缓冲区的信息
+    virtual const FramebufferSpecification& getSpecification() const = 0;
+
     /// @brief 根据帧缓冲区规范创建帧缓冲区对象
     static Ref<Framebuffer> create(const FramebufferSpecification& spec);
 };

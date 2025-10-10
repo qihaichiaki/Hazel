@@ -4,8 +4,9 @@
  * 2d渲染器的实现
  */
 
-#include "ortho_graphic_camera.h"
-#include "texture.h"
+#include "Hazel/Renderer/ortho_graphic_camera.h"
+#include "Hazel/Renderer/camera.h"
+#include "Hazel/Renderer/texture.h"
 
 namespace Hazel
 {
@@ -17,9 +18,13 @@ public:
     /// @brief 2d渲染器释放资源, 一些申请的gpu的资源进行释放
     HAZEL_API static void shutdown();
 
+    /// @brief 2d渲染器开始场景
+    /// @param camera 运行时相机
+    /// @param transform 相机的transform
+    HAZEL_API static void beginScene(const Camera& camera, const glm::mat4& transform);
     /// @brief 2d渲染器开始场景. 准备/上传当前绘制场景公共的数据
     /// @param camera 正交摄像机对象, 准备上传其投影矩阵和视图矩阵数据
-    HAZEL_API static void beginScene(const OrthoGraphicCamera& camera);
+    HAZEL_API static void beginScene(const OrthoGraphicCamera& camera);  // TODO: remove
     /// @brief 2d渲染器刷新场景->绘制数据
     HAZEL_API static void flush();
     /// @brief 2d渲染器结束场景

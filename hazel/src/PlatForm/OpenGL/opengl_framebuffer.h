@@ -23,6 +23,11 @@ public:
         return m_color_attachment;
     }
 
+    const FramebufferSpecification& getSpecification() const override
+    {
+        return m_specification;
+    }
+
 private:
     uint32_t m_rendrer_id = 0;
     uint32_t m_color_attachment = 0;

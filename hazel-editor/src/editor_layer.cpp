@@ -17,9 +17,16 @@ void EditorLayer::onAttach()
     m_active_scene = createRef<Scene>();
 
     // 创建entity
-    m_temp_entity = m_active_scene->createEntity("示例对象");
+    m_temp_entity = m_active_scene->createEntity();
     // 添加简单sprit组件
     m_temp_entity.addComponent<SpriteRendererComponent>(glm::vec4{0.0f, 1.0f, 0.0f, 1.0f});
+
+    // 创建两个相机对象
+    m_primary_camera_entity = m_active_scene->createEntity("主相机");
+    m_second_camera_entity = m_active_scene->createEntity("第二个相机");
+    // 给相机对象添加相机组件
+    m_primary_camera_entity.addComponent<CameraComponent>();
+    m_second_camera_entity.addComponent<CameraComponent>().Primary = false;
 }
 
 void EditorLayer::onDetach()
@@ -30,6 +37,17 @@ void EditorLayer::onDetach()
 void EditorLayer::onUpdate(Hazel::Timestep ts)
 {
     // update
+    // 判断当前view 视图是否更新宽度和高度, 方便进行设置场景的视图宽高
+    if (const auto& spec = m_framebuffer->getSpecification();
+        m_viewport_size.x > 0.0f && m_viewport_size.y > 0.0f &&
+        (m_viewport_size.x != spec.Width || m_viewport_size.y != spec.Height)) {
+        // 1. 帧缓冲区改变大小
+        m_framebuffer->resize((uint32_t)m_viewport_size.x, (uint32_t)m_viewport_size.y);
+        // 2. 重新设置相机投影矩阵
+        m_active_scene->onViewportResize((uint32_t)m_viewport_size.x, (uint32_t)m_viewport_size.y);
+        // m_camera_controller.onResize(m_viewport_size.x, m_viewport_size.y);
+    }
+
     if (m_is_viewport) {
         m_camera_controller.onUpdate(ts);
     }
@@ -40,9 +58,9 @@ void EditorLayer::onUpdate(Hazel::Timestep ts)
     Hazel::RendererCommand::setClearColor({0.2f, 0.2f, 0.2f, 1.0f});
     Hazel::RendererCommand::clear();
 
-    Hazel::Renderer2D::beginScene(m_camera_controller.getCamera());
+    // Hazel::Renderer2D::beginScene(m_camera_controller.getCamera());
     m_active_scene->onUpdate(ts);
-    Hazel::Renderer2D::endScene();
+    // Hazel::Renderer2D::endScene();
     m_framebuffer->unBind();
 }
 
@@ -51,10 +69,8 @@ void EditorLayer::onEvent(Hazel::Event& e)
     m_camera_controller.onEvent(e);
 }
 
-void EditorLayer::onImGuiRender()
+static void createDockspace()
 {
-    HZ_PROFILE_FUNCTION();
-
     // dockspace 创建停靠区域
     static bool opt_fullscreen = true;
     static bool opt_padding = false;
@@ -114,6 +130,13 @@ void EditorLayer::onImGuiRender()
     }
 
     ImGui::End();
+}
+
+void EditorLayer::onImGuiRender()
+{
+    HZ_PROFILE_FUNCTION();
+
+    createDockspace();
 
     auto renderer2d_stats = Hazel::Renderer2D::getStats();
     ImGui::Begin("渲染信息");
@@ -123,14 +146,33 @@ void EditorLayer::onImGuiRender()
     ImGui::Text("Vertex Count: %d", renderer2d_stats.getTotalVertexCount());
     ImGui::Text("Index Count: %d", renderer2d_stats.getTotalIndexCount());
     ImGui::Separator();
+    ImGui::Text("场景信息:");
     if (m_temp_entity) {
         ImGui::Text("%s", m_temp_entity.getComponent<TagComponent>().Tag.c_str());
         ImGui::ColorEdit4(
             "color", glm::value_ptr(m_temp_entity.getComponent<SpriteRendererComponent>().Color));
     }
+    Entity m_renderer_camera =
+        m_is_primary_camera ? m_primary_camera_entity : m_second_camera_entity;
+    if (m_renderer_camera) {
+        ImGui::Text("当前渲染相机对象:%s",
+                    m_renderer_camera.getComponent<TagComponent>().Tag.c_str());
+    }
+    if (ImGui::Checkbox("激活主相机", &m_is_primary_camera)) {
+        m_primary_camera_entity.getComponent<CameraComponent>().Primary = m_is_primary_camera;
+        m_second_camera_entity.getComponent<CameraComponent>().Primary = !m_is_primary_camera;
+    }
+    if (m_second_camera_entity) {
+        auto& camera_component = m_second_camera_entity.getComponent<CameraComponent>();
+        float view_size = camera_component.Camera.getOrthographicSize();
+        ImGui::DragFloat("调整第二个相机的可视范围: ", &view_size, 1.0f, 0.001f, 100.0f);
+        camera_component.Camera.setOrthographicSize(view_size);
+    }
+
     ImGui::Separator();
     ImGui::End();
 
+    // viewport
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
     ImGui::Begin("视口");
     // 检查当前窗口是否是聚焦和悬浮的
@@ -139,16 +181,9 @@ void EditorLayer::onImGuiRender()
     Application::get().getImGuiLayer()->setBlockEvents(!m_is_viewport);
 
     ImVec2 viewport_panel_size = ImGui::GetContentRegionAvail();
-    // 内存布局一致, 可以强转
-    if (m_viewport_size != *(glm::vec2*)(&viewport_panel_size) && viewport_panel_size.x > 0 &&
-        viewport_panel_size.y > 0) {
-        m_viewport_size.x = viewport_panel_size.x;
-        m_viewport_size.y = viewport_panel_size.y;
-        // 1. 帧缓冲区改变大小
-        m_framebuffer->resize((uint32_t)m_viewport_size.x, (uint32_t)m_viewport_size.y);
-        // 2. 重新设置相机投影矩阵
-        m_camera_controller.onResize(m_viewport_size.x, m_viewport_size.y);
-    }
+    m_viewport_size = {viewport_panel_size.x, viewport_panel_size.y};
+
+    // 显示视图. v方向上反转一下
     ImGui::Image((void*)(uintptr_t)(m_framebuffer->getColorAttachmentRendererID()),
                  ImVec2{m_viewport_size.x, m_viewport_size.y}, ImVec2{0, 1},
                  ImVec2{1, 0});  // v方向反转一下
