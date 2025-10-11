@@ -27,6 +27,36 @@ void EditorLayer::onAttach()
     // 给相机对象添加相机组件
     m_primary_camera_entity.addComponent<CameraComponent>();
     m_second_camera_entity.addComponent<CameraComponent>().Primary = false;
+    // 给相机对象添加脚本组件
+    // test
+    class TestCameraMoveScript : public ScriptableEntity
+    {
+    public:
+        void onCreate() override
+        {
+            HZ_WARN("你好, 世界!我是脚本桑, 现在挂载在对象:{}", getComponent<TagComponent>().Tag);
+        }
+
+        void onUpdate(Timestep ts) override
+        {
+            auto& transform = getComponent<TransformComponent>().Transform;
+            const float speed = 10.0f;
+            if (Input::isKeyPressed(KeyCode::W)) {
+                transform[3][1] += speed * ts;
+            }
+            if (Input::isKeyPressed(KeyCode::S)) {
+                transform[3][1] -= speed * ts;
+            }
+            if (Input::isKeyPressed(KeyCode::A)) {
+                transform[3][0] -= speed * ts;
+            }
+            if (Input::isKeyPressed(KeyCode::D)) {
+                transform[3][0] += speed * ts;
+            }
+        }
+    };
+    m_primary_camera_entity.addComponent<NativeScriptComponent>().bind<TestCameraMoveScript>();
+    m_second_camera_entity.addComponent<NativeScriptComponent>().bind<TestCameraMoveScript>();
 }
 
 void EditorLayer::onDetach()
@@ -157,17 +187,17 @@ void EditorLayer::onImGuiRender()
     if (m_renderer_camera) {
         ImGui::Text("当前渲染相机对象:%s",
                     m_renderer_camera.getComponent<TagComponent>().Tag.c_str());
+        auto& render_transform = m_renderer_camera.getComponent<TransformComponent>().Transform;
+        ImGui::Text("x: %.3f, y: %.3f", render_transform[3][0], render_transform[3][1]);
     }
     if (ImGui::Checkbox("激活主相机", &m_is_primary_camera)) {
         m_primary_camera_entity.getComponent<CameraComponent>().Primary = m_is_primary_camera;
         m_second_camera_entity.getComponent<CameraComponent>().Primary = !m_is_primary_camera;
     }
-    if (m_second_camera_entity) {
-        auto& camera_component = m_second_camera_entity.getComponent<CameraComponent>();
-        float view_size = camera_component.Camera.getOrthographicSize();
-        ImGui::DragFloat("调整第二个相机的可视范围: ", &view_size, 1.0f, 0.001f, 100.0f);
-        camera_component.Camera.setOrthographicSize(view_size);
-    }
+    auto& camera_component = m_second_camera_entity.getComponent<CameraComponent>();
+    float view_size = camera_component.Camera.getOrthographicSize();
+    ImGui::DragFloat("调整第二个相机的可视范围: ", &view_size, 1.0f, 0.001f, 100.0f);
+    camera_component.Camera.setOrthographicSize(view_size);
 
     ImGui::Separator();
     ImGui::End();

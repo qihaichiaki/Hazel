@@ -21,8 +21,23 @@ Entity Scene::createEntity(const std::string& name)
     return entity;
 }
 
-void Scene::onUpdate(Timestep)
+void Scene::onUpdate(Timestep ts)
 {
+    // update
+    // 执行游戏脚本更新
+    m_registry.view<NativeScriptComponent>().each([=](auto entity, NativeScriptComponent& nsc) {
+        if (!nsc.Instance) {
+            // TODO: 后续会转移到场景play相关函数中去
+            if (nsc.InstantiateScript) {
+                nsc.Instance = nsc.InstantiateScript();
+                nsc.Instance->m_entity = {entity, this};
+                nsc.Instance->onCreate();
+            }
+        }
+        nsc.Instance->onUpdate(ts);
+    });
+
+    // renderer
     // 检查所有的相机组件, 提取主相机和其transform, 方便开启场景渲染
     // view 轻量级查询, 不会改变内存布局
     const Camera* main_camera = nullptr;
@@ -45,7 +60,7 @@ void Scene::onUpdate(Timestep)
         // group 持久化,初始化稍慢，但是后续访问快->内存连续
         auto group = m_registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
         for (auto entity : group) {
-            const auto& [transform, sprite_renderer] =
+            auto [transform, sprite_renderer] =
                 group.get<TransformComponent, SpriteRendererComponent>(entity);
             Renderer2D::drawQuad(transform, sprite_renderer.Color);
         }

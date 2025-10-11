@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 
 #include "Hazel/Scene/scene_camera.h"
+#include "Hazel/Scene/scriptable_entity.h"
 
 namespace Hazel
 {
@@ -60,6 +61,30 @@ struct CameraComponent
 
     HAZEL_API CameraComponent() = default;
     HAZEL_API CameraComponent(const CameraComponent& other) = default;
+};
+
+// 原生脚本组件
+struct NativeScriptComponent
+{
+    ScriptableEntity* Instance{nullptr};
+
+    ScriptableEntity* (*InstantiateScript)() = nullptr;       // 延迟创建脚本对象函数
+    void (*DestroyScript)(NativeScriptComponent*) = nullptr;  // 销毁脚本对象函数
+
+    /// @brief 绑定实际的脚本对象
+    /// @tparam T 派生的脚本对象类型
+    template <typename T>
+    std::enable_if_t<std::is_base_of_v<ScriptableEntity, T>, void> bind()
+    {
+        InstantiateScript = []() -> ScriptableEntity* { return new T{}; };
+        DestroyScript = [](NativeScriptComponent* nsc) {
+            delete nsc->Instance;
+            nsc->Instance = nullptr;
+        };
+    }
+
+    HAZEL_API NativeScriptComponent() = default;
+    HAZEL_API NativeScriptComponent(const NativeScriptComponent& other) = default;
 };
 
 }  // namespace Hazel

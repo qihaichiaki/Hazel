@@ -681,6 +681,11 @@ Hazel引擎
       * tag = name.empty() ? "新实体" : name;
     * return entity;
   * onUpdate(Timestep ts);  // 更新和渲染提交均在此处
+    * 找到所有原生脚本组件, 进行执行操作
+      * _registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc) {
+      * 如果脚本对象没有创建执行创建，创建完毕赋予entity和当前的场景指针this -> entity对象 - > 延迟创建初始化, 等待的就是场景所有加载完毕再加载脚本对象(ToDo move to 场景play)
+      * 执行update方法
+      * });
     * 尝试通过m_registry获取当前场景的相机组件 { }
       * auto view = m_registry.view<TransformComponent, CameraComponent>();
       * for (entity : view)-> 
@@ -725,6 +730,19 @@ Hazel引擎
   * entt::entity m_entity_handle{0};
   * Scene* m_scene = nullptr;  // TODO: 后续会改造为弱引用模式
 
+#### ScriptableEntity.h
+* 脚本实体对象提供继承, 方便实现脚本对象继承编写, 使用一些便捷函数
+* class ScriptableEntity
+  * public:
+    * virtual ~ScriptableEntity();
+    * getComponent
+    * virtual void OnCreate;
+    * virtual void OnDestroy;
+    * virtual void OnUpdate(Timestep);
+  * private:
+  * Entity m_entity;
+  * friend class Scene;
+
 #### Components.h
 * struct TagComponent
   * std::string& Tag;
@@ -750,8 +768,15 @@ Hazel引擎
   * bool Primary = true;  // 是否是主相机
   * bool FixedAspectRatio = false;  // 是否固定分辨率
 
-* 将此头文件加入到Hazel.h的scene后面
+* 原生脚本组件支持
+* struct NativeScriptComponent
+  * ScriptableEntity* Instance{nullptr};  // 脚本实例对象
+  * ScriptableEntity*(*InstantiateScript)() ;// 函数指针
+  * ``void(*DestroyScript)(NativeScriptComponent* nsc);``
+  * bind()
+    * 赋值。T为ScriptableEntity实际继承类型
 
+* 将此头文件加入到Hazel.h的scene后面
 
 #### 相机系统
 * renderer/camera.h/.cpp
