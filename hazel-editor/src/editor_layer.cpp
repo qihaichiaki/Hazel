@@ -57,6 +57,8 @@ void EditorLayer::onAttach()
     };
     m_primary_camera_entity.addComponent<NativeScriptComponent>().bind<TestCameraMoveScript>();
     m_second_camera_entity.addComponent<NativeScriptComponent>().bind<TestCameraMoveScript>();
+
+    m_scene_hierarchy_panel.setContext(m_active_scene);
 }
 
 void EditorLayer::onDetach()
@@ -167,6 +169,9 @@ void EditorLayer::onImGuiRender()
     HZ_PROFILE_FUNCTION();
 
     createDockspace();
+
+    // 渲染场景层次面板
+    m_scene_hierarchy_panel.onImGuiRenderer();
 
     auto renderer2d_stats = Hazel::Renderer2D::getStats();
     ImGui::Begin("渲染信息");

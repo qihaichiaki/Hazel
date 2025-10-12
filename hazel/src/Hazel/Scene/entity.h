@@ -55,6 +55,18 @@ public:
     {
         return m_entity_handle != entt::null;
     }
+    HAZEL_API operator uint32_t() const
+    {
+        return static_cast<uint32_t>(m_entity_handle);
+    }
+    HAZEL_API bool operator==(const Entity& other) const
+    {
+        return other.m_entity_handle == m_entity_handle && other.m_scene == m_scene;
+    }
+    HAZEL_API bool operator!=(const Entity& other) const
+    {
+        return !(other == *this);
+    }
 
 private:
     entt::entity m_entity_handle{entt::null};

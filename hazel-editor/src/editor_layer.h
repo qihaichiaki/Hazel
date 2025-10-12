@@ -1,6 +1,7 @@
 #pragma once
 
 #include <hazel.h>
+#include "Panels/scene_hierarchy_panel.h"
 
 namespace Hazel
 {
@@ -20,6 +21,7 @@ private:
     OrthoGraphicCameraController m_camera_controller;
     Ref<Framebuffer> m_framebuffer;
 
+    SceneHierarchyPanel m_scene_hierarchy_panel;
     Ref<Scene> m_active_scene = nullptr;  // 示例激活scene
     Entity m_temp_entity;                 // 示例实体对象
     Entity m_primary_camera_entity;       // 主要相机对象

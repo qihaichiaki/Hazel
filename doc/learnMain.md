@@ -822,3 +822,23 @@ Hazel引擎
 #### 实体系统展示时的imgui相关
 * ImGui::Separator();  // 插入一条分隔线（水平线），用于视觉上区分不同的区域或控件组。
 * ImGui::Checkbox("xxx", &xxx);   // 复选框
+
+
+### Editor GUI
+#### 场景层次面板
+* editor/Panels 面板文件夹
+* 场景对象负责将场景内的信息取出渲染到场景面板上。类关联到Scene类，存在renderergui相关方法，将场景的树结构进行渲染，为后续的父子对象，删除，添加等做好准备
+* class SceneHierarchyPanel
+  * public:
+  * SetContext() 设置scene对象
+  * onImGuiRenderer() 将所有的entity取出, 渲染场景层次
+    * drawEntityNode(entity);  // 递归渲染单个entity节点
+  * drawEntityNode()  渲染节点
+    * ImGuiTreeNodeFlags flags = ((m_selection_context == entity)? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+    * bool opened = TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+    * if (ImGui::IsItemClicked())
+      * m_selection_context == entity;
+    * if (opened) ...模拟实现递归结构 - 子元素
+      * flags
+      * opend ... 
+      * ImGui::TreePop()

@@ -31,5 +31,6 @@ private:
     entt::registry m_registry;  // 注册管理器, 组件和实体的容器
 
     friend class Entity;
+    friend class SceneHierarchyPanel;  // 编辑器场景层次面板, todo remove
 };
 }  // namespace Hazel
