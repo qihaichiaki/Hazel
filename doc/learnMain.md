@@ -833,6 +833,9 @@ Hazel引擎
   * SetContext() 设置scene对象
   * onImGuiRenderer() 将所有的entity取出, 渲染场景层次
     * drawEntityNode(entity);  // 递归渲染单个entity节点
+    * 在场景面板中检查: ImGui::IsWindowHovered() && IsMouseDown(0);
+      * 如果鼠标按下并且是在当前窗口悬停, 空白区域
+      * m_selection_context = {};  // 置空
   * drawEntityNode()  渲染节点
     * ImGuiTreeNodeFlags flags = ((m_selection_context == entity)? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
     * bool opened = TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
@@ -842,3 +845,34 @@ Hazel引擎
       * flags
       * opend ... 
       * ImGui::TreePop()
+  * private:
+  * Entity m_selection_context
+  * Ref<Scene> m_context;
+
+#### 属性面板
+* 仍然在类SceneHierarchyPanel中进行添加
+* onImGuiRenderer()
+  * ...
+  * Begin("对象属性")
+  * if (m_selection_context) {
+  * drawComponents(Entity entity);
+  * }
+  * end()
+
+* private: drawComponents(Entity entity);
+* 根据if和hasComponent，依次进行绘制组件 // todo: 组件的先后顺序?，但是tag和transform是固定的 ->
+* TagComponent -> tag可修改
+  * char buffer[256];
+  * memset(buffer, 0, sizeof(buffer));
+  * strcpy(buffer, tag.c_str());  // strcpy_s
+  * if InputText("Tag", buffer, sizeof(buffer)) {
+  * tag = std::string{buffer};
+  * }
+* TransformComponent
+  * 以平移来将(平移矩阵的最后一列), DragFloat3 -> transform[3][0] //... 
+  * DragFloat3("Position" 0.1f ->speed)
+
+// ImGuiTreeNodeFlags_DefaultOpen 默认展开
+* 增加TreeNodeEx((void*)typeid(xxxxclass).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, "标题")
+  * ..... 组件属性ImGui内容
+  * ImGui::TreePop()
