@@ -17,12 +17,13 @@ public:
     HAZEL_API void onAttach() override;
     HAZEL_API void onDetach() override;
     HAZEL_API void onImGuiRender() override;
-    void onEvent(Event&) override;
-
     HAZEL_API void setBlockEvents(bool block_events)
     {
         m_block_events = block_events;
     }
+    HAZEL_API void setDarkThemeColors();
+
+    void onEvent(Event&) override;
 
     /// @brief 初始化imgui帧
     void begin();

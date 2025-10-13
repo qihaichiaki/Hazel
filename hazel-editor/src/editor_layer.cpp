@@ -145,13 +145,17 @@ static void createDockspace()
 
     // Submit the DockSpace
     ImGuiIO& io = ImGui::GetIO();
+    ImGuiStyle& style = ImGui::GetStyle();
+    float min_win_size_x = style.WindowMinSize.x;
+    style.WindowMinSize.x = 370.0f;  // 窗口被停靠, 宽度至少为370
     if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
         ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
         ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
     }
+    style.WindowMinSize.x = min_win_size_x;  // 还原
 
     if (ImGui::BeginMenuBar()) {
-        if (ImGui::BeginMenu("文件")) {
+        if (ImGui::BeginMenu("开始")) {
             if (ImGui::MenuItem("关闭")) {
                 Application::get().close();
             }
@@ -180,40 +184,6 @@ void EditorLayer::onImGuiRender()
     ImGui::Text("Quad Count: %d", renderer2d_stats.QuadCount);
     ImGui::Text("Vertex Count: %d", renderer2d_stats.getTotalVertexCount());
     ImGui::Text("Index Count: %d", renderer2d_stats.getTotalIndexCount());
-    ImGui::Separator();
-    // ImGui::Text("场景信息:");
-    // if (m_temp_entity) {
-    //     ImGui::Text("%s", m_temp_entity.getComponent<TagComponent>().Tag.c_str());
-    //     ImGui::ColorEdit4(
-    //         "color",
-    //         glm::value_ptr(m_temp_entity.getComponent<SpriteRendererComponent>().Color));
-    // }
-    // Entity m_renderer_camera =
-    //     m_is_primary_camera ? m_primary_camera_entity : m_second_camera_entity;
-    // if (m_renderer_camera) {
-    //     ImGui::Text("当前渲染相机对象:%s",
-    //                 m_renderer_camera.getComponent<TagComponent>().Tag.c_str());
-    //     auto& render_transform = m_renderer_camera.getComponent<TransformComponent>().Transform;
-    //     ImGui::Text("x: %.3f, y: %.3f", render_transform[3][0], render_transform[3][1]);
-    // }
-    // if (ImGui::Checkbox("激活主相机", &m_is_primary_camera)) {
-    //     if (m_primary_camera_entity) {
-    //         m_primary_camera_entity.getComponent<CameraComponent>().Primary =
-    //         m_is_primary_camera;
-    //     }
-    //     if (m_second_camera_entity) {
-    //         m_second_camera_entity.getComponent<CameraComponent>().Primary =
-    //         !m_is_primary_camera;
-    //     }
-    // }
-    // if (m_second_camera_entity) {
-    //     auto& camera_component = m_second_camera_entity.getComponent<CameraComponent>();
-    //     float view_size = camera_component.Camera.getOrthographicSize();
-    //     ImGui::DragFloat("调整第二个相机的可视范围: ", &view_size, 1.0f, 0.001f, 100.0f);
-    //     camera_component.Camera.setOrthographicSize(view_size);
-    // }
-
-    ImGui::Separator();
     ImGui::End();
 
     // viewport
