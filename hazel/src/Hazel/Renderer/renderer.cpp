@@ -36,7 +36,7 @@ void Renderer::submit(const Ref<Shader>& shader,
         "u_ProjectionView", m_scene_data->projection_view_matrix);
     std::static_pointer_cast<OpenGLShader>(shader)->uploadUniformMat4("u_Transform", transform);
     vertex_array->bind();
-    RendererCommand::drawIndexed(vertex_array);
+    RendererCommand::drawIndexed(vertex_array, vertex_array->getIndexBuffer()->getCount());
 }
 
 void Renderer::endScene() {}

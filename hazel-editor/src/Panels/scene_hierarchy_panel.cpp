@@ -1,6 +1,7 @@
 #include "scene_hierarchy_panel.h"
 #include <imgui.h>
 #include <Hazel/Scene/components.h>
+#include <imgui_internal.h>
 #include <Hazel/Core/log.h>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -110,6 +111,76 @@ void SceneHierarchyPanel::drawEntityNode(Entity entity)
     }
 }
 
+// TODO: 后续会转移到自定义UI库中
+static bool drawVec3Contol(const std::string& label,
+                           glm::vec3& values,
+                           float reset_value = 0.0f,
+                           float column_width = 100.0f)
+{
+    bool is_col = false;
+
+    ImGui::PushID(label.c_str());
+    ImGui::Columns(2);                       // 开始设置为2列
+    ImGui::SetColumnWidth(0, column_width);  // 设置第一列的宽度
+    ImGui::Text(label.c_str());
+    ImGui::NextColumn();                                     // 开始添加下一行
+    ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());  // 设置多个item的宽度
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
+    float line_height = GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;  // 计算行高
+    ImVec2 button_size{line_height + 3.0f, line_height};
+    // 创建按钮 x, y, z
+    // 按钮颜色
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.8f, 0.1f, 0.15f, 1.0f});
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.8f, 0.1f, 0.15f, 1.0f});
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{0.8f, 0.1f, 0.15f, 1.0f});
+    if (ImGui::Button("X", button_size)) {
+        values.x = reset_value;
+        is_col = true;
+    }
+    ImGui::PopStyleColor(3);
+    ImGui::SameLine();
+    if (ImGui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, ".2f")) {
+        is_col = true;
+    }
+    ImGui::PopItemWidth();
+    ImGui::SameLine();
+
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.2f, 0.7f, 0.2f, 1.0f});
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.3f, 0.8f, 0.3f, 1.0f});
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{0.2f, 0.7f, 0.2f, 1.0f});
+    if (ImGui::Button("Y", button_size)) {
+        values.y = reset_value;
+        is_col = true;
+    }
+    ImGui::PopStyleColor(3);
+    ImGui::SameLine();
+    if (ImGui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, ".2f")) {
+        is_col = true;
+    }
+    ImGui::PopItemWidth();
+    ImGui::SameLine();
+
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.1f, 0.25f, 0.8f, 1.0f});
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.2f, 0.35f, 0.9f, 1.0f});
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{0.1f, 0.25f, 0.8f, 1.0f});
+    if (ImGui::Button("Z", button_size)) {
+        values.z = reset_value;
+        is_col = true;
+    }
+    ImGui::PopStyleColor(3);
+    ImGui::SameLine();
+    if (ImGui::DragFloat("##Z", &values.z, 0.1f, 0.0f, 0.0f, ".2f")) {
+        is_col = true;
+    }
+    ImGui::PopItemWidth();
+
+    ImGui::PopStyleVar();
+    ImGui::Columns(1);
+    ImGui::PopID();
+
+    return is_col;
+}
+
 // 属性面板绘制组件信息
 void SceneHierarchyPanel::drawComponents(Entity entity)
 {
@@ -134,8 +205,13 @@ void SceneHierarchyPanel::drawComponents(Entity entity)
         bool is_open = ImGui::TreeNodeEx((void*)typeid(TransformComponent).hash_code(),
                                          tree_node_flags, "Transform");
         if (is_open) {
-            auto& transform = entity.getComponent<TransformComponent>().Transform;
-            ImGui::DragFloat3("位置", glm::value_ptr(transform[3]), 0.1f);
+            auto& transform_component = entity.getComponent<TransformComponent>();
+            drawVec3Contol("位置", transform_component.Translation);
+            glm::vec3 d_roation = glm::degrees(transform_component.Rotation);
+            if (drawVec3Contol("旋转", d_roation)) {
+                transform_component.Rotation = glm::radians(d_roation);
+            }
+            drawVec3Contol("缩放", transform_component.Scale, 1.0f);
             ImGui::TreePop();
         }
     }
@@ -225,7 +301,7 @@ void SceneHierarchyPanel::drawComponents(Entity entity)
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{4, 4});
         bool is_open = ImGui::TreeNodeEx((void*)typeid(SpriteRendererComponent).hash_code(),
                                          tree_node_flags, "Sprite");
-        ImGui::SameLine(ImGui::GetWindowWidth() - 25.0f);
+        ImGui::SameLine(ImGui::GetWindowWidth() - 32.0f);
         if (ImGui::Button("•••"))  // 扩展按钮
         {
             ImGui::OpenPopup("ComponentSettings");

@@ -39,19 +39,19 @@ void EditorLayer::onAttach()
 
         void onUpdate(Timestep ts) override
         {
-            auto& transform = getComponent<TransformComponent>().Transform;
+            auto& transform_component = getComponent<TransformComponent>();
             const float speed = 10.0f;
             if (Input::isKeyPressed(KeyCode::W)) {
-                transform[3][1] += speed * ts;
+                transform_component.Translation.y += speed * ts;
             }
             if (Input::isKeyPressed(KeyCode::S)) {
-                transform[3][1] -= speed * ts;
+                transform_component.Translation.y -= speed * ts;
             }
             if (Input::isKeyPressed(KeyCode::A)) {
-                transform[3][0] -= speed * ts;
+                transform_component.Translation.x -= speed * ts;
             }
             if (Input::isKeyPressed(KeyCode::D)) {
-                transform[3][0] += speed * ts;
+                transform_component.Translation.x += speed * ts;
             }
         }
     };

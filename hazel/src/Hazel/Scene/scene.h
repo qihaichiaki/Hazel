@@ -32,7 +32,12 @@ public:
     HAZEL_API void onViewportResize(uint32_t width, uint32_t height);
 
 private:
+    void onCameraComponentAdded(entt::registry& registry, entt::entity entity);
+
+private:
     entt::registry m_registry;  // 注册管理器, 组件和实体的容器
+    uint32_t m_viewport_width;
+    uint32_t m_viewport_height;
 
     friend class Entity;
     friend class SceneHierarchyPanel;  // 编辑器场景层次面板, todo remove
