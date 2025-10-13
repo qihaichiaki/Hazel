@@ -145,8 +145,8 @@ void SceneHierarchyPanel::drawComponents(Entity entity)
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{4, 4});
         bool is_open = ImGui::TreeNodeEx((void*)typeid(CameraComponent).hash_code(),
                                          tree_node_flags, "Camera");
-        ImGui::SameLine(ImGui::GetWindowWidth() - 25.0f);
-        if (ImGui::Button("+", ImVec2{20, 20}))  // 扩展按钮
+        ImGui::SameLine(ImGui::GetWindowWidth() - 32.0f);
+        if (ImGui::Button("•••"))  // 扩展按钮
         {
             ImGui::OpenPopup("ComponentSettings");
         }
@@ -164,7 +164,54 @@ void SceneHierarchyPanel::drawComponents(Entity entity)
             auto& camera_component = entity.getComponent<CameraComponent>();
 
             ImGui::Checkbox("渲染", &camera_component.Primary);
-            ImGui::Checkbox("固定纵痕比", &camera_component.FixedAspectRatio);
+            const char* projection_type_strings[] = {"透视", "正交"};
+            const char* current_projection_type_string =
+                projection_type_strings[(int)camera_component.Camera.getProjectionType()];
+            if (ImGui::BeginCombo("投影类型", current_projection_type_string)) {
+                for (int i = 0; i < 2; ++i) {
+                    bool is_selected = current_projection_type_string == projection_type_strings[i];
+                    if (ImGui::Selectable(projection_type_strings[i], is_selected)) {
+                        current_projection_type_string = projection_type_strings[i];
+                        camera_component.Camera.setProjectionType((SceneCamera::ProjectionType)i);
+                    }
+
+                    if (is_selected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+                ImGui::EndCombo();
+            }
+
+            if (strcmp(current_projection_type_string, "透视") == 0) {
+                float fov_degree =
+                    glm::degrees(camera_component.Camera.getPerspectionVerticalFOV());
+                if (ImGui::DragFloat("垂直视野", &fov_degree)) {
+                    camera_component.Camera.setPerspectionVerticalFOV(glm::radians(fov_degree));
+                }
+                float p_near = camera_component.Camera.getPerspectiveNearClip();
+                if (ImGui::DragFloat("近点", &p_near)) {
+                    camera_component.Camera.setPerspectiveNearClip(p_near);
+                }
+                float p_far = camera_component.Camera.getPerspectiveFarClip();
+                if (ImGui::DragFloat("远点", &p_far)) {
+                    camera_component.Camera.setPerspectiveFarClip(p_far);
+                }
+            } else {
+                float o_size = camera_component.Camera.getOrthographicSize();
+                if (ImGui::DragFloat("正交大小", &o_size)) {
+                    camera_component.Camera.setOrthographicSize(o_size);
+                }
+                float o_near = camera_component.Camera.getOrthographicNearClip();
+                if (ImGui::DragFloat("近点", &o_near)) {
+                    camera_component.Camera.setOrthographicNearClip(o_near);
+                }
+                float o_far = camera_component.Camera.getOrthographicFarClip();
+                if (ImGui::DragFloat("远点", &o_far)) {
+                    camera_component.Camera.setOrthographicFarClip(o_far);
+                }
+            }
+
+            ImGui::Checkbox("固定纵横比", &camera_component.FixedAspectRatio);
             ImGui::TreePop();
         }
 
@@ -179,7 +226,7 @@ void SceneHierarchyPanel::drawComponents(Entity entity)
         bool is_open = ImGui::TreeNodeEx((void*)typeid(SpriteRendererComponent).hash_code(),
                                          tree_node_flags, "Sprite");
         ImGui::SameLine(ImGui::GetWindowWidth() - 25.0f);
-        if (ImGui::Button("+", ImVec2{20, 20}))  // 扩展按钮
+        if (ImGui::Button("•••"))  // 扩展按钮
         {
             ImGui::OpenPopup("ComponentSettings");
         }
