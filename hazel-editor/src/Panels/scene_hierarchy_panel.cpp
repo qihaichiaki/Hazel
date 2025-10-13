@@ -1,9 +1,10 @@
 #include "scene_hierarchy_panel.h"
 #include <imgui.h>
-#include <Hazel/Scene/components.h>
 #include <imgui_internal.h>
-#include <Hazel/Core/log.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <Hazel/Scene/components.h>
+#include <Hazel/Core/log.h>
+#include <Hazel/ImGui/imgui_layer.h>
 
 namespace Hazel
 {
@@ -126,12 +127,13 @@ static bool drawVec3Contol(const std::string& label,
     ImGui::NextColumn();                                     // 开始添加下一行
     ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());  // 设置多个item的宽度
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
-    float line_height = GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;  // 计算行高
+    auto gimgui = GetImGuiContextPtr();
+    float line_height = gimgui->FontSize + gimgui->Style.FramePadding.y * 2.0f;  // 计算行高
     ImVec2 button_size{line_height + 3.0f, line_height};
     // 创建按钮 x, y, z
     // 按钮颜色
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.8f, 0.1f, 0.15f, 1.0f});
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.8f, 0.1f, 0.15f, 1.0f});
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.9f, 0.2f, 0.2f, 1.0f});
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{0.8f, 0.1f, 0.15f, 1.0f});
     if (ImGui::Button("X", button_size)) {
         values.x = reset_value;
@@ -139,7 +141,7 @@ static bool drawVec3Contol(const std::string& label,
     }
     ImGui::PopStyleColor(3);
     ImGui::SameLine();
-    if (ImGui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, ".2f")) {
+    if (ImGui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, "%.2f")) {
         is_col = true;
     }
     ImGui::PopItemWidth();
@@ -154,7 +156,7 @@ static bool drawVec3Contol(const std::string& label,
     }
     ImGui::PopStyleColor(3);
     ImGui::SameLine();
-    if (ImGui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, ".2f")) {
+    if (ImGui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, "%.2f")) {
         is_col = true;
     }
     ImGui::PopItemWidth();
@@ -169,7 +171,7 @@ static bool drawVec3Contol(const std::string& label,
     }
     ImGui::PopStyleColor(3);
     ImGui::SameLine();
-    if (ImGui::DragFloat("##Z", &values.z, 0.1f, 0.0f, 0.0f, ".2f")) {
+    if (ImGui::DragFloat("##Z", &values.z, 0.1f, 0.0f, 0.0f, "%.2f")) {
         is_col = true;
     }
     ImGui::PopItemWidth();
@@ -195,6 +197,7 @@ void SceneHierarchyPanel::drawComponents(Entity entity)
         if (ImGui::InputText("##Tag", buffer, sizeof(buffer))) {
             tag = std::string{buffer};
         }
+        ImGui::Dummy(ImVec2(0.0f, ImGui::GetStyle().ItemSpacing.y * 2.0f));  // 空两倍默认间距
     }
 
     // 默认展开 | 运行项目重叠（目的时在treenode这一行继续添加控件）
@@ -213,6 +216,7 @@ void SceneHierarchyPanel::drawComponents(Entity entity)
             }
             drawVec3Contol("缩放", transform_component.Scale, 1.0f);
             ImGui::TreePop();
+            ImGui::Dummy(ImVec2(0.0f, ImGui::GetStyle().ItemSpacing.y * 2.0f));  // 空两倍默认间距
         }
     }
 
@@ -289,6 +293,7 @@ void SceneHierarchyPanel::drawComponents(Entity entity)
 
             ImGui::Checkbox("固定纵横比", &camera_component.FixedAspectRatio);
             ImGui::TreePop();
+            ImGui::Dummy(ImVec2(0.0f, ImGui::GetStyle().ItemSpacing.y * 2.0f));  // 空两倍默认间距
         }
 
         if (remove_component) {
@@ -320,6 +325,7 @@ void SceneHierarchyPanel::drawComponents(Entity entity)
             auto& color = entity.getComponent<SpriteRendererComponent>().Color;
             ImGui::ColorEdit4("颜色", glm::value_ptr(color));
             ImGui::TreePop();
+            ImGui::Dummy(ImVec2(0.0f, ImGui::GetStyle().ItemSpacing.y * 2.0f));  // 空两倍默认间距
         }
 
         if (remove_component) {

@@ -34,3 +34,6 @@ private:
 };
 
 }  // namespace Hazel
+
+struct ImGuiContext;
+HAZEL_API inline ImGuiContext* GetImGuiContextPtr();
