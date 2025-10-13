@@ -20,6 +20,10 @@ public:
     /// @note 会默认添加transform组件和tag组件
     HAZEL_API Entity createEntity(const std::string& name = std::string{});
 
+    /// @brief 从当前场景删除实体对象
+    /// @param entity 实体对象
+    HAZEL_API void destoryEntity(Entity entity);
+
     /// @brief 场景更新
     /// @param ts 帧间隔
     HAZEL_API void onUpdate(Timestep ts);

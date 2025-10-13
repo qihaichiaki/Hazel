@@ -673,6 +673,8 @@ Hazel引擎
 * class Scene
   * public:
   * Scene();
+    * // 未来可以为添加到实体的相机组件设置事件回调
+    * // m_registry.on_construct<CameraComponent>().connect<>
   * ~Scene();
   * Entity createEntity(const std::string& name = std::string{});
     * entity = {m_registry.create(), this};
@@ -680,6 +682,9 @@ Hazel引擎
     * tag = entity.AddComponent<TagComponent>();  // 每个创建出来的entity对象默认增加tag组件
       * tag = name.empty() ? "新实体" : name;
     * return entity;
+  * DestroyEntity(Entity entity) {
+    * m_registry.destroy(entity);
+  * }
   * onUpdate(Timestep ts);  // 更新和渲染提交均在此处
     * 找到所有原生脚本组件, 进行执行操作
       * _registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc) {
@@ -702,6 +707,11 @@ Hazel引擎
     * 遍历每个相机组件，判断是否非固定分辨率
       * 不是则更新其视口大小，使其更新投影矩阵
   * private:
+  * onComponentAdded<T>(Entity, Component&)  // 实体添加特定组件时需要场景触发的方法
+    * 将此实现实现到cpp中去，虽然是模板。。。
+    * static_assert(false);  // 无此特化
+  * onComponentAdded<CameraComponent>
+    * camera.SetViewportSize(m_viewport_width, m_viewport_height);
   * entt::registry m_registry;  // 注册管理器 -> 组件和实体的容器
   * float m_viewport_width/height;
 
@@ -718,7 +728,8 @@ Hazel引擎
     * m_registry.has<T>(entity);
   * T& addComponent
     * assert(!has(xxx));
-    * m_registry.emplace<T>(entity, ...);
+    * T& component = m_registry.emplace<T>(entity, ...);
+    * m_scene->onComponentAdded<T>(*this, component);  // 增加场景中添加特定组件会触发的一些行为
   * T& getComponent
     * assert(has(xxx));
     * m_registry.get<T>(entity);
@@ -726,6 +737,7 @@ Hazel引擎
     * assert(has(xxx));
     * m_registry.remove<T>(entity);
   * operator bool() { return m_entity_handle != 0;}
+  * operator entt::entity() const { return m_entity_handle;}
   * private:
   * entt::entity m_entity_handle{0};
   * Scene* m_scene = nullptr;  // TODO: 后续会改造为弱引用模式
@@ -748,15 +760,21 @@ Hazel引擎
   * std::string& Tag;
 
 * struct TransformComponent
-  * glm::mat4 Transform{1.0f};
+  * // glm::mat4 Transform{1.0f}; 直接以矩阵存储，会让用户设置的一些信息丢失, 比如设置弧度值为1000，处理的时候显然要模上2pi，所以建议将位置, 旋转, 缩放分开存储, 最后处理时计算成一个矩阵即可 
+  * glm::vec3 Translation{0.0f};
+  * glm::vec3 Rotation{0.0f};
+  * glm::vec3 Scale{1.0f};
   * TransformComponent() = default;
   * TransformComponent(const TransformComponent&) = default;
-  * TransformComponent(const glm::mat4& transform) :Transform{transform} {}
-  * operator glm::mat4&() { return Transform;}
-  * operator const glm::mat4&() const{ return Transform;}  
+  * TransformComponent(const glm::vec3& translation) :Translation{translation} {}
+  * glm::mat4 getTransform() const{
+    * auto rotation = glm::rotate(mat4{1.0f}, Rotation.x, {1, 0, 0}) * glm::rotate(mat4{1.0f}, Rotation.y, {0, 1, 0}) * glm::rotate(mat4{1.0f}, Rotation.z, {0, 0, 1});
+    * return glm::translate(...)  * rotation * glm::scale();
+  * }
 
 * struct SpriteRendererComponent
   * glm::vec4 Color{1.0f};
+  * // TODO: 未来需要MaterialInstance来整合Texture和Shader，material(实际上就是shader+任意类型的统一变量)相关内容
   * SpriteRendererComponent() = default;
   * SpriteRendererComponent(const SpriteRendererComponent&) = default;
   * SpriteRendererComponent(const glm::vec4& color) :Color{color} {}
@@ -792,27 +810,43 @@ Hazel引擎
 * renderer/SceneCamera.h
   * class SceneCamera : Camera
   * SceneCamera()
+    * public:
+    * enum class ProjectionType {Perspective = 0, Orthographic = 1};
+    * getProjectionType()
+    * setProjectionType()
+    * void setViewportSize(uint32_t width, uint32_t height);
+      * aspectRatio = (float) width/ (float)height;
+      * RecalculateProjection();
+    * // 透视相机相关api
+    * void set/getPerspectiveVerticalFOV(float verticalFOV);
+    * float getOrthographicSize() const
+    * set/getPerspectiveNearClip(), set/getPerspectiveFarClip();
+    * // 正交相机相关api
+    * void setOrthographicSize(float size);
+      * RecalculateProjection();
+    * float getOrthographicSize() const
+    * set/getOrthographicNearClip(), set/getOrthographicFarClip();
+      * set需要重新计算投影矩阵 RecalculateProjection
+    * private:
     * RecalculateProjection();
-  * void setOrthographic(float size, float nearClip, float farClip);
-    * RecalculateProjection();
-  * void setOrthographicSize(float size);
-    * RecalculateProjection();
-  * float getOrthographicSize() const
-  * void setViewportSize(uint32_t width, uint32_t height);
-    * aspectRatio = (float) width/ (float)height;
-    * RecalculateProjection();
-
-  * private:
-  * RecalculateProjection();
-    * orthoLeft = -0.5 * orthographic_size * aspectRatio；
-    * orthoRight = 0.5 * orthographic_size * aspectRatio；
-    * orthoBottom = -0.5 * orthographic_size
-    * orthoTop = 0.5 * orthographic_size；
-    * glm::ortho(xxxx) -> 得到投影矩阵
-  * float orthographic_size = 10.0f;
-  * float orthographic_near = -1.0f;  // z
-  * float orthographic_far = 1.0f;  // 深度信息
-  * m_aspectRatio = 0;  // 当前视口的纵横比
+      * if type == Perspective
+        * m_projection = glm::perspective(perspective_FOV, m_aspectRatio, perspective_near, perspective_far);
+      * if type == Orthographic
+        * orthoLeft = -0.5 * orthographic_size * aspectRatio；
+        * orthoRight = 0.5 * orthographic_size * aspectRatio；
+        * orthoBottom = -0.5 * orthographic_size
+        * orthoTop = 0.5 * orthographic_size；
+        * glm::ortho(xxxx) -> 得到投影矩阵
+    * ProjectionType m_projectionType = ProjectionType::Orthographic;
+    * // 透视相机信息
+    * float perspective_FOV = glm::radians(45.0f);  // 垂直视场
+    * float perspective_near = 0.01f;  // 近点
+    * float perspective_far = 1000.0f;  // 远点
+    * // 正交相机信息
+    * float orthographic_size = 10.0f;
+    * float orthographic_near = -1.0f;  // z
+    * float orthographic_far = 1.0f;  // 深度信息
+    * m_aspectRatio = 0;  // 当前视口的纵横比
 
 * 扩展renderer2d中的beginscene, 增加常规相机的添加 Camera
 * renderer2d::BeginScene(const Camera& camera, const glm::mat4& transform);  // 相机 + transform , 通过相机获取投影矩阵, 再将transform逆置得到视图矩阵，最后利用pv矩阵(glm and opengl)上传到shader中去
@@ -836,15 +870,30 @@ Hazel引擎
     * 在场景面板中检查: ImGui::IsWindowHovered() && IsMouseDown(0);
       * 如果鼠标按下并且是在当前窗口悬停, 空白区域
       * m_selection_context = {};  // 置空
-  * drawEntityNode()  渲染节点
-    * ImGuiTreeNodeFlags flags = ((m_selection_context == entity)? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
-    * bool opened = TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
-    * if (ImGui::IsItemClicked())
-      * m_selection_context == entity;
-    * if (opened) ...模拟实现递归结构 - 子元素
-      * flags
-      * opend ... 
-      * ImGui::TreePop()
+    * 添加/删除entity
+      * if BeginPopupContextWindow(0, 1, false)  弹出上下文窗口 01默认参数, false表示如果选中一个当前串口的item则不会显示此窗口
+        * 空白处右键窗口
+        * if MenuItem("创建空实体")
+          * CreateEntity("Empty Entity");
+        * EndPopup();
+    * drawEntityNode()  渲染节点
+      * ImGuiTreeNodeFlags flags = ((m_selection_context == entity)? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+      * bool opened = TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+      * if (ImGui::IsItemClicked())
+        * m_selection_context == entity;
+      * bool entityDeleted = false;
+      * BeginPopupContextItem()  // 如果右键当前的item对象
+        * MenuItem("删除实体")
+          * entityDeleted = true;  // 这里就存在不希望立即删除实体的需求了, 因为下面仍然在处理, 可能会访问删除的实体, 所以希望实体只是被标记删除, 下一帧开始之前将其删除即可
+          * EndPopup();
+      * if (opened) ...模拟实现递归结构 - 子元素
+        * flags
+        * opend ... 
+        * ImGui::TreePop()
+      * if (entityDeleted)
+        * DestoryEntity(entity);  // 延迟删除
+        * if (m_selection_context == entity)
+          * m_selection_context = {};// 注意此处需要置空, 否则属性面板渲染的就是已经被摧毁的entity对象
   * private:
   * Entity m_selection_context
   * Ref<Scene> m_context;
@@ -856,11 +905,53 @@ Hazel引擎
   * Begin("对象属性")
   * if (m_selection_context) {
   * drawComponents(Entity entity);
+  * // 添加组件功能
+  * if (Button("添加组件))
+    * OpenPopup("AddComponent");  // 通过按钮打开上下文窗口
+  * if(BeginPopup("AddComponent"))
+    * MenuItem("Camera")
+      * AddComponent<CameraComponent>();
+      * CloseCurrentPopup();
+    * MenuItem("Sprite Renderer")
+    * EndPopup();
   * }
   * end()
-
 * private: drawComponents(Entity entity);
 * 根据if和hasComponent，依次进行绘制组件 // todo: 组件的先后顺序?，但是tag和transform是固定的 ->
+
+
+* 增加便于写UI的函数, 未来可以将其移动到UI库中
+* static void DrawVec3Contol(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f -> 标签的宽度);
+  * 效果: 位置: [x]-- [y]-- [z]--
+  * PushID(label.c_str())  // 用于整个控制下面控件的绑定id，防止复用代码时会将值全部绑定到一起
+  * ImGui::Columns(2);   // 从这行开始下面的ui开始将其设置为2列
+  * SetColumnWidth(0, columnWidth);  // 设置第一列的宽度
+  * Text(label.c_str());
+  * NextColumn();  // 开始添加下一行
+  * PushMultiItemWidths(3， CalcItemWidth());  // 设置多个item的宽度 -> 添加imgui_internal.h头文件进行包含 
+  * PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f})  // 项目间距
+  * lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;  // 计算行高
+  * ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight};
+  * // 创建按钮 x、y、z
+  * PushStyleColor(imGuiCOl_Button, imVec4{0.8f, 0.1f, 0.15f, 1.0f})  // 按钮颜色: 普通，悬停，激活
+  * PushStyleColor(imGuiCOl_ButtonHovered, imVec4{0.9f, 0.2f, 0.2f, 1.0f})
+  * PushStyleColor(imGuiCOl_ButtonActive, imVec4{0.8f, 0.1f, 0.15f, 1.0f});
+  * // Y: {0.2, 0.7, 0.2} {0.3, 0.8, 0.3} {0.2, 0.7, 0.2}
+  * // Z: {0.1, 0.25, 0.8} {0.2, 0.35, 0.9} {0.1, 0.25, 0.8}
+  * if Button("X", buttonSize)
+    * values.x = resetValue;  // 重置值
+  * PopStyleColor(3);
+  * SameLine();  下面开始的内容显示的内容在同一行上
+  * DragFloat("##x", &values.x, 0.1f， 0.0f, 0.0f, "%.2f");  // ## 不会将标签显示出来
+  * PopItemWidth();  // 弹出项的宽度, 当前设置了1个item
+  * SameLine();  显示的内容在同一行上
+  * // 上述内容同时设置xyz，从if开始
+  * PopStyleVar();
+  * ImGui::Columns(1);   // 设置回1列
+  * PopID();
+
+
+* drawComponents开始
 * TagComponent -> tag可修改
   * char buffer[256];
   * memset(buffer, 0, sizeof(buffer));
@@ -868,11 +959,59 @@ Hazel引擎
   * if InputText("Tag", buffer, sizeof(buffer)) {
   * tag = std::string{buffer};
   * }
-* TransformComponent
-  * 以平移来将(平移矩阵的最后一列), DragFloat3 -> transform[3][0] //... 
-  * DragFloat3("Position" 0.1f ->speed)
 
-// ImGuiTreeNodeFlags_DefaultOpen 默认展开
-* 增加TreeNodeEx((void*)typeid(xxxxclass).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, "标题")
+* const ImGuiTreeNodeFlags treeNodeFlags =  ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_AllowItemOverlap;  // 默认展开子内容和运行项目重叠（目的时在treenode这一行继续添加控件）
+* 组件增加treeNode方便折叠展开
+* ImGui::PushStyleVar(FramePadding, ImVec2{4, 4});
+* bool open = TreeNodeEx((void*)typeid(xxxxclass).hash_code(), treeNodeFlags, "标题")
+* SameLine(GetWindowWidth() - 25.0f);  // 下个控件对齐到设置的距离
+* if Button("+", ImVec2{20, 20})  // 增加按钮+方便提示用户组件选项存在额外的内容
+  * ImGui::OpenPopup("ComponentSettings");
+* ImGui::PopStyleVar();
+* bool removeComponent = false;
+* if BeginPopup("ComponentSettings")
+  * if MenuItem("删除组件")
+    * removeComponent = true;  // 同样需要延迟删除
+  * EndPopUp();
+* if open
   * ..... 组件属性ImGui内容
   * ImGui::TreePop()
+* if removeComponent
+  * entity.removeComponent<xxx>();
+* 上述删除组件的功能除开transform和tag组件不存在，其余组件均存在
+
+* TransformComponent
+  * // 以平移来将(平移矩阵的最后一列), DragFloat3 -> transform[3][0] //... 
+  * DrawVec3Contol("Translation", ...);
+  * DrawVec3Contol("Rotation", ...);  // 注意转换为度数给用户提供，degress(), 随后在转换回来 radians()
+  * DrawVec3Contol("Scale", ...);
+
+
+* CameraComponent
+  * 运行时相机组件
+  * ImGui::Checkbox("Primary”, )  // 设置是否是主相机 
+  * const char* projectionTypeStrings[] = {"Perspective", "Orthographic"};  // 透视和正交
+  * const char* currentProjectionTypeString = projectionTypeStrings[(int)camera.GetProjectionType()];
+  * if (BeginCombo("Projection", currentProjectionTypeString))  // 下拉框选择
+    * for i, 2
+      * bool isSelected = currentProjectionTypeString == projectionTypeStrings[i];
+      * if (ImGui::Selectable(projectionTypeStrings[i], isSelected))  // 下拉选择框
+        * currentProjectionTypeString = projectionTypeStrings[i];
+        * camera.setProjectionType((ProjectionType)i);
+      * if (isSelected)
+        * SetItemDefalutFacus();  // 当前选项位默认选中ui
+    * ImGui::EndCombo();
+  * if 判断类型
+    * Perspective
+      * FOV, Near, Far
+      * FOV 使用glm::degrees()  将弧度值转换位角度值, 设置时使用glm::radians()再将角度值转换为弧度值
+    * Orthographic
+      * size，Near，Far
+      * if (DragFloat("Size", &size))
+        * setOrthographicSize(size);
+      * ...
+  * ImGui::Checkbox("Fixed Aspect Ratio”, )  // 是否固定纵横比
+
+* SpriteRendererComponent
+  * 精灵组件用户界面
+  * ColorEdit4("Color", ...)

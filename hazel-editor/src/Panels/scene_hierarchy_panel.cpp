@@ -1,6 +1,7 @@
 #include "scene_hierarchy_panel.h"
 #include <imgui.h>
 #include <Hazel/Scene/components.h>
+#include <Hazel/Core/log.h>
 #include <glm/gtc/type_ptr.hpp>
 
 namespace Hazel
@@ -12,14 +13,24 @@ void SceneHierarchyPanel::onImGuiRenderer()
     {
         ImGui::Begin("场景层次");
         // 取出当前渲染场景的所有实体对象
-        for (auto entity_id : m_context->m_registry.storage<entt::entity>()) {
+        m_context->m_registry.view<entt::entity>().each([this](auto entity_id) {
             Entity entity{entity_id, m_context.get()};
             drawEntityNode(entity);
-        }
+        });
 
         // 如果点击当前场景面板的空白区域, 将选择entity置为空
         if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && ImGui::IsWindowHovered()) {
             m_selection_context = {};
+        }
+
+        // 如果在场景层次右键空白区域, 弹出当前窗口的上下文窗口
+        // flag: 右键打开 | 悬停在项目上时不返回true，仅在悬停在空白处时返回。
+        if (ImGui::BeginPopupContextWindow(
+                0, ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems)) {
+            if (ImGui::MenuItem("创建空实体")) {
+                m_context->createEntity("空实体");
+            }
+            ImGui::EndPopup();
         }
         ImGui::End();
     }
@@ -28,11 +39,39 @@ void SceneHierarchyPanel::onImGuiRenderer()
         ImGui::Begin("对象属性");
         if (m_selection_context) {
             drawComponents(m_selection_context);
+
+            {
+                // 居中按钮
+                // 获取窗口内容区域宽度
+                float window_width =
+                    ImGui::GetContentRegionAvail().x + ImGui::GetStyle().FramePadding.x * 2;
+                // 下一个按钮的宽度
+                float button_width = 100.0f;
+                // 计算居中位置
+                float offsetX = (window_width - button_width) * 0.5f;
+                if (offsetX > 0.0f) ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offsetX);
+            }
+            if (ImGui::Button("添加组件")) {
+                // 添加组件打开对应id的上下文窗口
+                ImGui::OpenPopup("AddComponent");
+            }
+
+            if (ImGui::BeginPopup("AddComponent")) {
+                if (ImGui::MenuItem("Camera")) {
+                    m_selection_context.addComponent<CameraComponent>();
+                    // ImGui::CloseCurrentPopup();
+                }
+                if (ImGui::MenuItem("SpriteRenderer")) {
+                    m_selection_context.addComponent<SpriteRendererComponent>();
+                }
+                ImGui::EndPopup();
+            }
         }
         ImGui::End();
     }
 }
 
+// 场景层次绘制树状节点
 void SceneHierarchyPanel::drawEntityNode(Entity entity)
 {
     auto& tag = entity.getComponent<TagComponent>().Tag;
@@ -45,6 +84,15 @@ void SceneHierarchyPanel::drawEntityNode(Entity entity)
         m_selection_context = entity;
     }
 
+    // 右键场景层次节点, 存在相关辅助操作, 比如删除节点
+    bool is_deleted_entity = false;
+    if (ImGui::BeginPopupContextItem()) {
+        if (ImGui::MenuItem("删除实体")) {
+            is_deleted_entity = true;  // 标记删除
+        }
+        ImGui::EndPopup();
+    }
+
     if (opened) {
         // 模拟子元素
         ImGuiTreeNodeFlags _flags = ImGuiTreeNodeFlags_OpenOnArrow;
@@ -53,8 +101,16 @@ void SceneHierarchyPanel::drawEntityNode(Entity entity)
         if (_opened) ImGui::TreePop();
         ImGui::TreePop();
     }
+
+    if (is_deleted_entity) {
+        m_context->destoryEntity(entity);
+        if (m_selection_context == entity) {
+            m_selection_context = {};  // 此处也需要置空, 防止属性面板访问空的实体对象
+        }
+    }
 }
 
+// 属性面板绘制组件信息
 void SceneHierarchyPanel::drawComponents(Entity entity)
 {
     // tag
@@ -64,18 +120,87 @@ void SceneHierarchyPanel::drawComponents(Entity entity)
         memset(buffer, 0, sizeof(buffer));
         strcpy_s(buffer, sizeof(buffer), tag.c_str());
 
-        if (ImGui::InputText("Tag", buffer, sizeof(buffer))) {
+        // "##Tag" 重名渲染, 会导致不同对象设置点击一致的效果
+        if (ImGui::InputText("##Tag", buffer, sizeof(buffer))) {
             tag = std::string{buffer};
         }
     }
 
+    // 默认展开 | 运行项目重叠（目的时在treenode这一行继续添加控件）
+    const ImGuiTreeNodeFlags tree_node_flags =
+        ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_AllowItemOverlap;
     // transform
     if (entity.hasComponent<TransformComponent>()) {
-        if (ImGui::TreeNodeEx((void*)typeid(TransformComponent).hash_code(),
-                              ImGuiTreeNodeFlags_DefaultOpen, "Transform")) {
+        bool is_open = ImGui::TreeNodeEx((void*)typeid(TransformComponent).hash_code(),
+                                         tree_node_flags, "Transform");
+        if (is_open) {
             auto& transform = entity.getComponent<TransformComponent>().Transform;
-            ImGui::DragFloat3("position", glm::value_ptr(transform[3]), 0.1f);
+            ImGui::DragFloat3("位置", glm::value_ptr(transform[3]), 0.1f);
             ImGui::TreePop();
+        }
+    }
+
+    // Camera
+    if (entity.hasComponent<CameraComponent>()) {
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{4, 4});
+        bool is_open = ImGui::TreeNodeEx((void*)typeid(CameraComponent).hash_code(),
+                                         tree_node_flags, "Camera");
+        ImGui::SameLine(ImGui::GetWindowWidth() - 25.0f);
+        if (ImGui::Button("+", ImVec2{20, 20}))  // 扩展按钮
+        {
+            ImGui::OpenPopup("ComponentSettings");
+        }
+        ImGui::PopStyleVar();
+
+        bool remove_component = false;
+        if (ImGui::BeginPopup("ComponentSettings")) {
+            if (ImGui::MenuItem("删除组件")) {
+                remove_component = true;
+            }
+            ImGui::EndPopup();
+        }
+
+        if (is_open) {
+            auto& camera_component = entity.getComponent<CameraComponent>();
+
+            ImGui::Checkbox("渲染", &camera_component.Primary);
+            ImGui::Checkbox("固定纵痕比", &camera_component.FixedAspectRatio);
+            ImGui::TreePop();
+        }
+
+        if (remove_component) {
+            entity.removeComponent<CameraComponent>();
+        }
+    }
+
+    // SpriteRenderer
+    if (entity.hasComponent<SpriteRendererComponent>()) {
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{4, 4});
+        bool is_open = ImGui::TreeNodeEx((void*)typeid(SpriteRendererComponent).hash_code(),
+                                         tree_node_flags, "Sprite");
+        ImGui::SameLine(ImGui::GetWindowWidth() - 25.0f);
+        if (ImGui::Button("+", ImVec2{20, 20}))  // 扩展按钮
+        {
+            ImGui::OpenPopup("ComponentSettings");
+        }
+        ImGui::PopStyleVar();
+
+        bool remove_component = false;
+        if (ImGui::BeginPopup("ComponentSettings")) {
+            if (ImGui::MenuItem("删除组件")) {
+                remove_component = true;
+            }
+            ImGui::EndPopup();
+        }
+
+        if (is_open) {
+            auto& color = entity.getComponent<SpriteRendererComponent>().Color;
+            ImGui::ColorEdit4("颜色", glm::value_ptr(color));
+            ImGui::TreePop();
+        }
+
+        if (remove_component) {
+            entity.removeComponent<SpriteRendererComponent>();
         }
     }
 }

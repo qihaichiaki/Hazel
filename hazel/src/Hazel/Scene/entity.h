@@ -1,6 +1,7 @@
 #pragma once
 
-#include "scene.h"
+#include <Hazel/Scene/scene.h>
+#include <Hazel/Core/log.h>
 
 namespace Hazel
 {
@@ -53,11 +54,15 @@ public:
 
     HAZEL_API operator bool() const
     {
-        return m_entity_handle != entt::null;
+        return m_entity_handle != entt::null && m_scene->m_registry.valid(m_entity_handle);
     }
     HAZEL_API operator uint32_t() const
     {
         return static_cast<uint32_t>(m_entity_handle);
+    }
+    HAZEL_API operator entt::entity() const
+    {
+        return m_entity_handle;
     }
     HAZEL_API bool operator==(const Entity& other) const
     {
