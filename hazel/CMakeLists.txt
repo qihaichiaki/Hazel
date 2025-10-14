@@ -12,6 +12,14 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/hazel/vendor/glad)
 # 加载imgui三方依赖
 add_subdirectory(${CMAKE_SOURCE_DIR}/hazel/vendor/imgui)
 
+# 加载yaml-cpp
+# 禁用 yaml-cpp 自身的额外组件
+set(YAML_BUILD_SHARED_LIBS OFF CACHE BOOL "Build yaml-cpp as static" FORCE)
+set(YAML_CPP_BUILD_CONTRIB OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_INSTALL OFF CACHE BOOL "" FORCE)
+add_subdirectory(${CMAKE_SOURCE_DIR}/hazel/vendor/yaml-cpp)
+
 # dll/lib 文件指明生成位置
 # 跳过MSBuild自动配置子目录
 set(BUILD_PATH "${CMAKE_BINARY_DIR}/bin/${BUILD_CONFIG}-${BUILD_PLATFROM}/${PROJECT_NAME}")
@@ -67,4 +75,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     glad # 三方封装现代opengl库
     opengl32 # opengl
     imgui
+    yaml-cpp
 )

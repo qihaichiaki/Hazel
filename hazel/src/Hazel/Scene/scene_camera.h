@@ -27,9 +27,9 @@ public:
     HAZEL_API void setProjectionType(ProjectionType projection_type);
 
     /// @brief 设置透视相机垂直视野的弧度值
-    HAZEL_API void setPerspectionVerticalFOV(float perspective_FOV);  // 设置透视垂直视野
+    HAZEL_API void setPerspectiveFOV(float perspective_FOV);  // 设置透视垂直视野
     /// @brief 获取透视相机垂直视野的弧度值
-    HAZEL_API float getPerspectionVerticalFOV() const
+    HAZEL_API float getPerspectiveFOV() const
     {
         return m_perspective_fov;
     }

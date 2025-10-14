@@ -1015,3 +1015,45 @@ Hazel引擎
 * SpriteRendererComponent
   * 精灵组件用户界面
   * ColorEdit4("Color", ...)
+
+
+### 序列化和反序列化
+* 存在序列化和反序列化是能协同开发, 长期开发的基础。由于存在git管理和人类阅读的习惯，通常将保存的文件使用文本文件存储，里面好用且清晰的，使用yaml-cpp, 将其编译为C++静态库链接到项目中来, 提供文件序列化和反序列化的功能.
+* 从scene出发, scene -> entity -> component. 使用独立于这些对象之外的类进行序列化即可
+
+* Scene/scene_serializer.h/.cpp
+
+* class SceneSerializer
+* public:
+* SceneSerializer(const Ref<Scene>& scene);
+* serialize(const std::string& filepath);
+* serializeRuntime(const std::string& filepath);  // TODO
+* deserialize(const std::string& filepath);
+* deserializeRuntime(const std::string& filepath);  // TODO
+* private:
+* Ref<Scene> m_scene;
+
+* yaml语法:
+  * 从Emitter开始执行序列化
+  * BeginMap;  //使用一个map, 后面全是使用Key和Value的
+  * 其中Value可以不用指定输入, 后面可以直接着BeginMap
+  * EndMap结束map
+  * BeginSeq是序列，类似于数组
+  * EndSeq结束序列
+  * 对于自定义类型序列化, 重载<<即可
+  * YAML::Node data; 接收节点
+  * YAML::Load(str);  // 进行反序列化
+  * data[xxx].as<xxx>();  // 进行返回
+  * data[xxx] = value(map里键值对里的值或者子node)
+  * 自定义反序列化.as<xxx>()
+    * 在YAML namespace里操作
+    * template<>
+    * 在struct convert<xxx>  //特化类中实现
+    * static Node encode(const xxx& rhs)
+      * Node node;
+      * node.push_back...
+      * return node;
+    * static bool decode(const Node& node, xxx& rhs)
+      * if !node.IsSequence() || node.size() != 3 return false
+      * rhs.x = node[0].as<float>();  ...
+      * return true;

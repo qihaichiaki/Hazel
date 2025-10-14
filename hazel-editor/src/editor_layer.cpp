@@ -3,6 +3,8 @@
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <Hazel/Scene/scene_serializer.h>
+
 namespace Hazel
 {
 
@@ -16,6 +18,10 @@ void EditorLayer::onAttach()
     // 创建初始场景
     m_active_scene = createRef<Scene>();
 
+    // 场景视口添加当前激活场景
+    m_scene_hierarchy_panel.setContext(m_active_scene);
+
+#ifdef TEST
     // 创建entity
     m_temp_entity = m_active_scene->createEntity();
     // 添加简单sprit组件
@@ -57,8 +63,7 @@ void EditorLayer::onAttach()
     };
     m_primary_camera_entity.addComponent<NativeScriptComponent>().bind<TestCameraMoveScript>();
     m_second_camera_entity.addComponent<NativeScriptComponent>().bind<TestCameraMoveScript>();
-
-    m_scene_hierarchy_panel.setContext(m_active_scene);
+#endif
 }
 
 void EditorLayer::onDetach()
@@ -101,7 +106,7 @@ void EditorLayer::onEvent(Hazel::Event& e)
     m_camera_controller.onEvent(e);
 }
 
-static void createDockspace()
+void EditorLayer::createDockspace()
 {
     // dockspace 创建停靠区域
     static bool opt_fullscreen = true;
@@ -156,6 +161,18 @@ static void createDockspace()
 
     if (ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("开始")) {
+            if (ImGui::MenuItem("序列化当前场景到示例文件")) {
+                SceneSerializer serializer{m_active_scene};
+                serializer.serialize("assets/scenes/Example.hazel");
+            }
+            if (ImGui::MenuItem("反序列化示例文件到当前场景")) {
+                m_active_scene = createRef<Scene>();  // 创建一个新的场景
+                m_active_scene->onViewportResize((uint32_t)m_viewport_size.x,
+                                                 (uint32_t)m_viewport_size.y);
+                m_scene_hierarchy_panel.setContext(m_active_scene);
+                SceneSerializer serializer{m_active_scene};
+                serializer.deserialize("assets/scenes/Example.hazel");
+            }
             if (ImGui::MenuItem("关闭")) {
                 Application::get().close();
             }

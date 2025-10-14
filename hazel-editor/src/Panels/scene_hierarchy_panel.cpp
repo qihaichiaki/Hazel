@@ -191,14 +191,24 @@ static void drawComponent(const std::string& name,
         ImGui::Separator();
         bool is_open =
             ImGui::TreeNodeEx((void*)typeid(T).hash_code(), tree_node_flags, name.c_str());
-        ImGui::PopStyleVar();
-        ImGui::SameLine(content_region_available.x - line_height * 0.5f);
-        if (ImGui::Button("•••", ImVec2{line_height, line_height}))  // 扩展按钮
-        {
-            ImGui::OpenPopup("ComponentSettings");
+        bool is_render_button = false;
+        // 判断鼠标是否悬浮在这个 TreeNode 的矩形区域上上
+        if (bool hovered =
+                ImGui::IsMouseHoveringRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax())) {
+            // 鼠标悬浮在 TreeNode 上
+            is_render_button = true;
         }
+        ImGui::PopStyleVar();
 
         bool remove_component = false;
+        if (is_render_button) {
+            ImGui::SameLine(content_region_available.x - line_height * 0.5f);
+            if (ImGui::Button("•••", ImVec2{line_height, line_height}))  // 扩展按钮
+            {
+                ImGui::OpenPopup("ComponentSettings");
+            }
+        }
+
         if (ImGui::BeginPopup("ComponentSettings")) {
             if (ImGui::MenuItem("删除组件", 0, false, !is_no_delete)) {
                 remove_component = true;
@@ -292,9 +302,9 @@ void SceneHierarchyPanel::drawComponents(Entity entity)
         }
 
         if (strcmp(current_projection_type_string, "透视") == 0) {
-            float fov_degree = glm::degrees(camera_component.Camera.getPerspectionVerticalFOV());
+            float fov_degree = glm::degrees(camera_component.Camera.getPerspectiveFOV());
             if (ImGui::DragFloat("垂直视野", &fov_degree)) {
-                camera_component.Camera.setPerspectionVerticalFOV(glm::radians(fov_degree));
+                camera_component.Camera.setPerspectiveFOV(glm::radians(fov_degree));
             }
             float p_near = camera_component.Camera.getPerspectiveNearClip();
             if (ImGui::DragFloat("近点", &p_near)) {

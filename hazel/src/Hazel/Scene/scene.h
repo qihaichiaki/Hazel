@@ -40,6 +40,7 @@ private:
     uint32_t m_viewport_height;
 
     friend class Entity;
+    friend class SceneSerializer;
     friend class SceneHierarchyPanel;  // 编辑器场景层次面板, todo remove
 };
 }  // namespace Hazel
