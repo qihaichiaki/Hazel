@@ -43,6 +43,11 @@ public:
         return ss.str();
     }
 
+    int getRepeatCount() const
+    {
+        return m_repeat_count;
+    }
+
 private:
     int m_repeat_count;
 };

@@ -15,6 +15,7 @@ public:
     void setContext(const Ref<Scene>& scene)
     {
         m_context = scene;
+        m_selection_context = {};
     }
 
     /// @brief 渲染imgui场景层次

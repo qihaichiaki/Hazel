@@ -19,9 +19,13 @@ public:
 
 private:
     void createDockspace();
+    void newScene();
+    void openScene();
+    void saveSceneAs();
+
+    bool onKeyPressed(KeyPressedEvent& event);
 
 private:
-    OrthoGraphicCameraController m_camera_controller;
     Ref<Framebuffer> m_framebuffer;
 
     SceneHierarchyPanel m_scene_hierarchy_panel;

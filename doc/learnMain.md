@@ -1057,3 +1057,27 @@ Hazel引擎
       * if !node.IsSequence() || node.size() != 3 return false
       * rhs.x = node[0].as<float>();  ...
       * return true;
+
+#### 添加打开/保存文件
+* Hazel/Utils/PlatformUtils.h
+* 同input，只会在对应编译的平台对应实现生效。
+
+* class FileDialogs;
+  * static string OpenFile(const char*)
+  * static string SaveFile(const char*)
+
+* Platform/Windows/WindowsUtils.cpp
+* commdlg.h -> 32位通用对话API
+* GLFW/glfw.h -> 依附于现在创建窗口
+* #define GLFW_EXPOSE_NATIVE_WIN32
+* GLFW/glfw3native.h -> 返回关心的WIN32相关接口
+- OpenFile
+    - ...
+
+
+
+* 注意bug: 如果此时选中一个entity，那么此时信息中存储的m_selection_context是对应场景的entity，但是如果此时切换别的场景，那么此时调用entity相关方法就会出现失效。
+* 解决此需要SceneHierarchyPanel同步到当前切换的场景，也就是说setContext时候将m_selection_context置空
+
+* 增加New，Open，SaveSceneAs 场景到EditorLayer中去
+* 增加快捷键

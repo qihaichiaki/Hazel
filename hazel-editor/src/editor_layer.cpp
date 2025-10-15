@@ -4,11 +4,12 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <Hazel/Scene/scene_serializer.h>
+#include <Hazel/Utils/platform_utils.h>
 
 namespace Hazel
 {
 
-EditorLayer::EditorLayer() : Layer{"EditorLayer"}, m_camera_controller{2560.0f / 1600.0f} {}
+EditorLayer::EditorLayer() : Layer{"EditorLayer"} {}
 
 void EditorLayer::onAttach()
 {
@@ -20,50 +21,6 @@ void EditorLayer::onAttach()
 
     // 场景视口添加当前激活场景
     m_scene_hierarchy_panel.setContext(m_active_scene);
-
-#ifdef TEST
-    // 创建entity
-    m_temp_entity = m_active_scene->createEntity();
-    // 添加简单sprit组件
-    m_temp_entity.addComponent<SpriteRendererComponent>(glm::vec4{0.0f, 1.0f, 0.0f, 1.0f});
-
-    // 创建两个相机对象
-    m_primary_camera_entity = m_active_scene->createEntity("主相机");
-    m_second_camera_entity = m_active_scene->createEntity("第二个相机");
-    // 给相机对象添加相机组件
-    m_primary_camera_entity.addComponent<CameraComponent>();
-    m_second_camera_entity.addComponent<CameraComponent>().Primary = false;
-    // 给相机对象添加脚本组件
-    // test
-    class TestCameraMoveScript : public ScriptableEntity
-    {
-    public:
-        void onCreate() override
-        {
-            HZ_WARN("你好, 世界!我是脚本桑, 现在挂载在对象:{}", getComponent<TagComponent>().Tag);
-        }
-
-        void onUpdate(Timestep ts) override
-        {
-            auto& transform_component = getComponent<TransformComponent>();
-            const float speed = 10.0f;
-            if (Input::isKeyPressed(KeyCode::W)) {
-                transform_component.Translation.y += speed * ts;
-            }
-            if (Input::isKeyPressed(KeyCode::S)) {
-                transform_component.Translation.y -= speed * ts;
-            }
-            if (Input::isKeyPressed(KeyCode::A)) {
-                transform_component.Translation.x -= speed * ts;
-            }
-            if (Input::isKeyPressed(KeyCode::D)) {
-                transform_component.Translation.x += speed * ts;
-            }
-        }
-    };
-    m_primary_camera_entity.addComponent<NativeScriptComponent>().bind<TestCameraMoveScript>();
-    m_second_camera_entity.addComponent<NativeScriptComponent>().bind<TestCameraMoveScript>();
-#endif
 }
 
 void EditorLayer::onDetach()
@@ -82,11 +39,6 @@ void EditorLayer::onUpdate(Hazel::Timestep ts)
         m_framebuffer->resize((uint32_t)m_viewport_size.x, (uint32_t)m_viewport_size.y);
         // 2. 重新设置相机投影矩阵
         m_active_scene->onViewportResize((uint32_t)m_viewport_size.x, (uint32_t)m_viewport_size.y);
-        // m_camera_controller.onResize(m_viewport_size.x, m_viewport_size.y);
-    }
-
-    if (m_is_viewport) {
-        m_camera_controller.onUpdate(ts);
     }
 
     Hazel::Renderer2D::resetStats();
@@ -103,7 +55,71 @@ void EditorLayer::onUpdate(Hazel::Timestep ts)
 
 void EditorLayer::onEvent(Hazel::Event& e)
 {
-    m_camera_controller.onEvent(e);
+    EventDispatcher dispatcher{e};
+    dispatcher.dispatch<KeyPressedEvent>(HZ_BIND_EVENT_FN(EditorLayer::onKeyPressed));
+}
+
+bool EditorLayer::onKeyPressed(KeyPressedEvent& event)
+{
+    // 短按, 长按排除
+    if (event.getRepeatCount() > 0) {
+        return false;
+    }
+
+    bool is_ctrl =
+        Input::isKeyPressed(KeyCode::LeftControl) || Input::isKeyPressed(KeyCode::RightControl);
+    bool is_shift =
+        Input::isKeyPressed(KeyCode::LeftShift) || Input::isKeyPressed(KeyCode::RightShift);
+
+    switch ((KeyCode)event.getKeyCode()) {
+        case KeyCode::N:
+            if (is_ctrl) {
+                newScene();
+            }
+            break;
+        case KeyCode::O:
+            if (is_ctrl) {
+                openScene();
+            }
+            break;
+        case KeyCode::S:
+            if (is_ctrl && is_shift) {
+                saveSceneAs();
+            }
+            break;
+        default:
+            break;
+    }
+
+    return false;
+}
+
+void EditorLayer::newScene()
+{
+    m_active_scene = createRef<Scene>();  // 创建一个新的场景
+    m_active_scene->onViewportResize((uint32_t)m_viewport_size.x, (uint32_t)m_viewport_size.y);
+    m_scene_hierarchy_panel.setContext(m_active_scene);
+}
+
+void EditorLayer::openScene()
+{
+    auto file_path = FileDialogs::openFile("Hazel Scene (*.hazel)\0*.hazel\0");
+    if (!file_path.empty()) {
+        m_active_scene = createRef<Scene>();  // 创建一个新的场景
+        m_active_scene->onViewportResize((uint32_t)m_viewport_size.x, (uint32_t)m_viewport_size.y);
+        m_scene_hierarchy_panel.setContext(m_active_scene);
+        SceneSerializer serializer{m_active_scene};
+        serializer.deserialize(file_path);
+    }
+}
+
+void EditorLayer::saveSceneAs()
+{
+    auto file_path = FileDialogs::saveFile("Hazel Scene (*.hazel)\0*.hazel\0");
+    if (!file_path.empty()) {
+        SceneSerializer serializer{m_active_scene};
+        serializer.serialize(file_path);
+    }
 }
 
 void EditorLayer::createDockspace()
@@ -161,17 +177,14 @@ void EditorLayer::createDockspace()
 
     if (ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("开始")) {
-            if (ImGui::MenuItem("序列化当前场景到示例文件")) {
-                SceneSerializer serializer{m_active_scene};
-                serializer.serialize("assets/scenes/Example.hazel");
+            if (ImGui::MenuItem("新建场景", "CTRL+N")) {
+                newScene();
             }
-            if (ImGui::MenuItem("反序列化示例文件到当前场景")) {
-                m_active_scene = createRef<Scene>();  // 创建一个新的场景
-                m_active_scene->onViewportResize((uint32_t)m_viewport_size.x,
-                                                 (uint32_t)m_viewport_size.y);
-                m_scene_hierarchy_panel.setContext(m_active_scene);
-                SceneSerializer serializer{m_active_scene};
-                serializer.deserialize("assets/scenes/Example.hazel");
+            if (ImGui::MenuItem("打开场景...", "CTRL+O")) {
+                openScene();
+            }
+            if (ImGui::MenuItem("另存为场景...", "CTRL+SHIFT+S")) {
+                saveSceneAs();
             }
             if (ImGui::MenuItem("关闭")) {
                 Application::get().close();
