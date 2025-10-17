@@ -31,6 +31,11 @@ public:
     /// @brief 更新场景的视口宽度和高度
     HAZEL_API void onViewportResize(uint32_t width, uint32_t height);
 
+    /// @brief 按照视图获取第一个要渲染的相机对象
+    /// @return 相机对象
+    /// @warning 后续可能会废弃掉, 当前只是支持获取运行时存在渲染的相机对象
+    HAZEL_API Entity getPrimaryCameraEntity() const;
+
 private:
     void onCameraComponentAdded(entt::registry& registry, entt::entity entity);
 

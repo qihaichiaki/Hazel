@@ -27,6 +27,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     "${CMAKE_SOURCE_DIR}/hazel/vendor/glm" # glm opengl math库同理
     "${CMAKE_SOURCE_DIR}/hazel/vendor/imgui"
     "${CMAKE_SOURCE_DIR}/hazel/vendor/entt/include" # ECS三方库, 也是单头文件包含
+    "${CMAKE_SOURCE_DIR}/hazel/vendor/ImGuizmo" # ImGuizmo imgui相关小组件
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE)

@@ -102,4 +102,18 @@ void Scene::onViewportResize(uint32_t width, uint32_t height)
     }
 }
 
+Entity Scene::getPrimaryCameraEntity() const
+{
+    auto view = m_registry.view<CameraComponent>();
+    Entity camera_entity;
+    for (auto entity_id : view) {
+        auto& camera_component = view.get<CameraComponent>(entity_id);
+        if (camera_component.Primary) {
+            camera_entity = Entity{entity_id, const_cast<Scene*>(this)};
+            break;
+        }
+    }
+    return camera_entity;
+}
+
 }  // namespace Hazel

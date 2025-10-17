@@ -5,6 +5,7 @@
 
 #include <Hazel/Scene/scene_serializer.h>
 #include <Hazel/Utils/platform_utils.h>
+#include <ImGuizmo.h>
 
 namespace Hazel
 {
@@ -215,6 +216,34 @@ void EditorLayer::onImGuiRender()
     ImGui::Text("Vertex Count: %d", renderer2d_stats.getTotalVertexCount());
     ImGui::Text("Index Count: %d", renderer2d_stats.getTotalIndexCount());
     ImGui::End();
+
+    // 显示变换组件
+    Entity select_entity = m_scene_hierarchy_panel.getSelectionEntity();
+    if (select_entity) {
+        // TODO: 临时获取当前场景渲染的相机对象
+        auto camera_entity = m_active_scene->getPrimaryCameraEntity();
+        if (camera_entity) {
+            // 转换小组件调用
+            ImGuizmo::BeginFrame();
+
+            auto& camera = camera_entity.getComponent<CameraComponent>().Camera;
+            // 相机的视图矩阵
+            auto& transform_component = camera_entity.getComponent<TransformComponent>();
+            auto view_transform = transform_component.getTransform();  // 逆置一下
+            // 相机的投影矩阵
+            auto projection = camera.getProjection();
+
+            ImGuizmo::SetRect(0, 0, m_viewport_size.x, m_viewport_size.y);
+            ImGuizmo::Manipulate(glm::value_ptr(view_transform), glm::value_ptr(projection),
+                                 ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::MODE::LOCAL,
+                                 glm::value_ptr(view_transform));
+            // 如果发生平移了
+            if (ImGuizmo::IsUsing()) {
+                // 测试transf
+                transform_component.Translation = glm::vec3{view_transform[3]};
+            }
+        }
+    }
 
     // viewport
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
