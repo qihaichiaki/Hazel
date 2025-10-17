@@ -91,6 +91,7 @@ void SceneHierarchyPanel::drawEntityNode(Entity entity)
 static bool drawVec3Contol(const std::string& label,
                            glm::vec3& values,
                            float reset_value = 0.0f,
+                           const char* format = "%.2f",
                            float column_width = 100.0f)
 {
     auto& io = ImGui::GetIO();
@@ -122,7 +123,7 @@ static bool drawVec3Contol(const std::string& label,
     ImGui::PopFont();
     ImGui::PopStyleColor(3);
     ImGui::SameLine();
-    if (ImGui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, "%.2f")) {
+    if (ImGui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, format)) {
         is_col = true;
     }
     ImGui::PopItemWidth();
@@ -139,7 +140,7 @@ static bool drawVec3Contol(const std::string& label,
     ImGui::PopFont();
     ImGui::PopStyleColor(3);
     ImGui::SameLine();
-    if (ImGui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, "%.2f")) {
+    if (ImGui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, format)) {
         is_col = true;
     }
     ImGui::PopItemWidth();
@@ -156,7 +157,7 @@ static bool drawVec3Contol(const std::string& label,
     ImGui::PopFont();
     ImGui::PopStyleColor(3);
     ImGui::SameLine();
-    if (ImGui::DragFloat("##Z", &values.z, 0.1f, 0.0f, 0.0f, "%.2f")) {
+    if (ImGui::DragFloat("##Z", &values.z, 0.1f, 0.0f, 0.0f, format)) {
         is_col = true;
     }
     ImGui::PopItemWidth();
@@ -273,7 +274,7 @@ void SceneHierarchyPanel::drawComponents(Entity entity)
         [](TransformComponent& transform_component) {
             drawVec3Contol("位置", transform_component.Translation);
             glm::vec3 d_roation = glm::degrees(transform_component.Rotation);
-            if (drawVec3Contol("旋转", d_roation)) {
+            if (drawVec3Contol("旋转", d_roation, 0.0f, "%.2f°")) {
                 transform_component.Rotation = glm::radians(d_roation);
             }
             drawVec3Contol("缩放", transform_component.Scale, 1.0f);

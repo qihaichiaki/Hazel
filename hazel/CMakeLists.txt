@@ -32,7 +32,8 @@ endforeach()
 
 file(GLOB_RECURSE SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/vendor/stb_image/stb_image.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/vendor/stb_image/stb_image.cpp" # 将stb_image加入引擎编译
+    "${CMAKE_CURRENT_SOURCE_DIR}/vendor/ImGuizmo/ImGuizmo.cpp" # 将ImGuizmo加入引擎编译
 )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
@@ -51,6 +52,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 # 一些三方库的宏配置
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     -DGLFW_INCLUDE_NONE
+    -DIMGUI_API=HAZEL_API # 让ImGuizmo参与编译的头文件同引擎导出宏定义
 )
 
 # debug宏设置
@@ -68,6 +70,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     "${CMAKE_SOURCE_DIR}/hazel/vendor/glm" # glm 同理
     "${CMAKE_SOURCE_DIR}/hazel/vendor/stb_image"
     "${CMAKE_SOURCE_DIR}/hazel/vendor/entt/include" # ECS三方库, 也是单头文件包含
+    "${CMAKE_SOURCE_DIR}/hazel/vendor/ImGuizmo" # ImGuizmo相关头文件导入
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
