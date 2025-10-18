@@ -21,6 +21,12 @@ public:
     /// @brief 渲染imgui场景层次
     void onImGuiRenderer();
 
+    /// @brief 返回当前场景面板选择的entity对象
+    Entity getSelectedEntity() const
+    {
+        return m_selection_context;
+    }
+
 private:
     void drawEntityNode(Entity entity);
     void drawComponents(Entity entity);

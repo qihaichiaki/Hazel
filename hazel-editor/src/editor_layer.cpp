@@ -5,6 +5,8 @@
 
 #include <Hazel/Scene/scene_serializer.h>
 #include <Hazel/Utils/platform_utils.h>
+#include <Hazel/Math/math.h>
+#include <ImGuizmo.h>
 
 namespace Hazel
 {
@@ -87,6 +89,19 @@ bool EditorLayer::onKeyPressed(KeyPressedEvent& event)
                 saveSceneAs();
             }
             break;
+
+        case KeyCode::Q:
+            m_gizom_type = -1;
+            break;
+        case KeyCode::W:
+            m_gizom_type = ImGuizmo::OPERATION::TRANSLATE;
+            break;
+        case KeyCode::E:
+            m_gizom_type = ImGuizmo::OPERATION::ROTATE;
+            break;
+        case KeyCode::R:
+            m_gizom_type = ImGuizmo::OPERATION::SCALE;
+            break;
         default:
             break;
     }
@@ -168,7 +183,7 @@ void EditorLayer::createDockspace()
     ImGuiIO& io = ImGui::GetIO();
     ImGuiStyle& style = ImGui::GetStyle();
     float min_win_size_x = style.WindowMinSize.x;
-    style.WindowMinSize.x = 370.0f;  // 窗口被停靠, 宽度至少为370
+    style.WindowMinSize.x = 380.0f;  // 窗口被停靠, 宽度至少为370
     if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
         ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
         ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
@@ -188,6 +203,22 @@ void EditorLayer::createDockspace()
             }
             if (ImGui::MenuItem("关闭")) {
                 Application::get().close();
+            }
+            ImGui::Separator();
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("变换")) {
+            if (ImGui::MenuItem("关闭", "Q")) {
+                m_gizom_type = -1;
+            }
+            if (ImGui::MenuItem("平移", "W")) {
+                m_gizom_type = ImGuizmo::OPERATION::TRANSLATE;
+            }
+            if (ImGui::MenuItem("旋转", "E")) {
+                m_gizom_type = ImGuizmo::OPERATION::ROTATE;
+            }
+            if (ImGui::MenuItem("缩放", "R")) {
+                m_gizom_type = ImGuizmo::OPERATION::SCALE;
             }
             ImGui::Separator();
             ImGui::EndMenu();
@@ -231,6 +262,58 @@ void EditorLayer::onImGuiRender()
     ImGui::Image((void*)(uintptr_t)(m_framebuffer->getColorAttachmentRendererID()),
                  ImVec2{m_viewport_size.x, m_viewport_size.y}, ImVec2{0, 1},
                  ImVec2{1, 0});  // v方向反转一下
+
+    // 显示变换组件 - Gizmos
+    Entity selected_entity = m_scene_hierarchy_panel.getSelectedEntity();
+    if (m_gizom_type != -1 && selected_entity) {
+        // TODO: 临时获取当前场景渲染的相机对象
+        auto camera_entity = m_active_scene->getPrimaryCameraEntity();
+        if (camera_entity) {
+            ImGuizmo::SetOrthographic(false);  // 使其适用于透视投影
+            ImGuizmo::SetDrawlist();
+
+            // 转换小组件调用
+            auto& camera = camera_entity.getComponent<CameraComponent>().Camera;
+            // 相机的视图矩阵
+            auto camera_view = glm::inverse(
+                camera_entity.getComponent<TransformComponent>().getTransform());  // 逆置一下
+            // 相机的投影矩阵
+            const auto& camera_projection = camera.getProjection();
+
+            // entity的transform
+            auto& entity_transform_component = selected_entity.getComponent<TransformComponent>();
+            auto transform = entity_transform_component.getTransform();
+
+            ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, m_viewport_size.x,
+                              m_viewport_size.y);
+
+            // Snapping 精确控制
+            bool snap = Input::isKeyPressed(KeyCode::LeftControl);
+            float snap_value = 0.5f;
+            if (m_gizom_type == ImGuizmo::OPERATION::ROTATE) {
+                snap_value = 45.0f;
+            }
+
+            float snap_values[3] = {snap_value, snap_value, snap_value};
+
+            ImGuizmo::Manipulate(glm::value_ptr(camera_view), glm::value_ptr(camera_projection),
+                                 (ImGuizmo::OPERATION)m_gizom_type, ImGuizmo::MODE::LOCAL,
+                                 glm::value_ptr(transform), nullptr, snap ? snap_values : nullptr);
+            // 如果发生平移了
+            if (ImGuizmo::IsUsing()) {
+                // 需要分解函数, 讲改变之后的entity_transform进行分解为平移，旋转，缩放
+                // glm::decompose() 类似的功能, 但是其中处理了很多当前不关心的
+                // 所以改为Hazel自己实现的版本
+                glm::vec3 translation, rotation, scale;
+                Hazel::Math::decomposeTransform(transform, translation, rotation, scale);
+
+                entity_transform_component.Translation = translation;
+                entity_transform_component.Rotation = rotation;
+                entity_transform_component.Scale = scale;
+            }
+        }
+    }
+
     ImGui::End();
     ImGui::PopStyleVar();
 }

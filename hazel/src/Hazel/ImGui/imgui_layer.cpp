@@ -3,11 +3,12 @@
 
 #include "Hazel/Core/application.h"
 
-#include "imgui.h"
-#include "imgui_internal.h"
-#include "GLFW/glfw3.h"
-#include "backends/imgui_impl_glfw.h"
-#include "backends/imgui_impl_opengl3.h"
+#include <imgui.h>
+#include <imgui_internal.h>
+#include <GLFW/glfw3.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
+#include <ImGuizmo.h>
 
 namespace Hazel
 {
@@ -83,6 +84,7 @@ void ImGuiLayer::begin()
     ImGui_ImplGlfw_NewFrame();
     ImGui_ImplOpenGL3_NewFrame();
     ImGui::NewFrame();
+    ImGuizmo::BeginFrame();  // 小组件begin
 }
 
 void ImGuiLayer::end()
