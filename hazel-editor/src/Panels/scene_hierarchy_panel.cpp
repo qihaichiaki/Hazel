@@ -274,7 +274,7 @@ void SceneHierarchyPanel::drawComponents(Entity entity)
         [](TransformComponent& transform_component) {
             drawVec3Contol("位置", transform_component.Translation);
             glm::vec3 d_roation = glm::degrees(transform_component.Rotation);
-            if (drawVec3Contol("旋转", d_roation, 0.0f, "%.2f°")) {
+            if (drawVec3Contol("旋转", d_roation, 0.0f, "%.1f°")) {
                 transform_component.Rotation = glm::radians(d_roation);
             }
             drawVec3Contol("缩放", transform_component.Scale, 1.0f);

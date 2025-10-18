@@ -22,7 +22,7 @@ public:
     void onImGuiRenderer();
 
     /// @brief 返回当前场景面板选择的entity对象
-    Entity getSelectionEntity() const
+    Entity getSelectedEntity() const
     {
         return m_selection_context;
     }

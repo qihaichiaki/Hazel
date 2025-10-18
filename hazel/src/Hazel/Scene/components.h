@@ -3,6 +3,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
+
 #include "Hazel/Scene/scene_camera.h"
 #include "Hazel/Scene/scriptable_entity.h"
 
@@ -40,9 +43,10 @@ struct TransformComponent
     /// @brief 计算transform矩阵
     glm::mat4 getTransform() const
     {
-        auto rotation = glm::rotate(glm::mat4{1.0f}, Rotation.x, {1.0f, 0.0f, 0.0f}) *
-                        glm::rotate(glm::mat4{1.0f}, Rotation.y, {0.0f, 1.0f, 0.0f}) *
-                        glm::rotate(glm::mat4{1.0f}, Rotation.z, {0.0f, 0.0f, 1.0f});
+        // auto rotation = glm::rotate(glm::mat4{1.0f}, Rotation.x, {1.0f, 0.0f, 0.0f}) *
+        //                 glm::rotate(glm::mat4{1.0f}, Rotation.y, {0.0f, 1.0f, 0.0f}) *
+        //                 glm::rotate(glm::mat4{1.0f}, Rotation.z, {0.0f, 0.0f, 1.0f});
+        auto rotation = glm::toMat4(glm::quat(Rotation));  // 使用欧拉角?
         return glm::translate(glm::mat4{1.0f}, Translation) * rotation *
                glm::scale(glm::mat4{1.0f}, Scale);
     }
