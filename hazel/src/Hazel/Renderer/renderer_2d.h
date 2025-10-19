@@ -5,7 +5,7 @@
  */
 
 #include "Hazel/Renderer/ortho_graphic_camera.h"
-#include "Hazel/Renderer/camera.h"
+#include "Hazel/Renderer/editor_camera.h"
 #include "Hazel/Renderer/texture.h"
 
 namespace Hazel
@@ -18,6 +18,9 @@ public:
     /// @brief 2d渲染器释放资源, 一些申请的gpu的资源进行释放
     HAZEL_API static void shutdown();
 
+    /// @brief 2d渲染器开始场景
+    /// @param camera 编辑器时相机
+    HAZEL_API static void beginScene(const EditorCamera& camera);
     /// @brief 2d渲染器开始场景
     /// @param camera 运行时相机
     /// @param transform 相机的transform

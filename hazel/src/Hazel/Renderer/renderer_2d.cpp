@@ -119,6 +119,20 @@ void Renderer2D::shutdown()
     s_data.QuadVertexBufferBase = nullptr;
 }
 
+void Renderer2D::beginScene(const EditorCamera& camera)
+{
+    // 上传pv矩阵
+    s_data.TextureShader->bind();
+    s_data.TextureShader->setMat4("u_ProjectionView", camera.getViewProjection());
+
+    // 四边形绘制重置
+    s_data.QuadCount = 0;
+    s_data.QuadVertexBufferPtr = s_data.QuadVertexBufferBase;
+
+    // 绑定纹理槽重置
+    s_data.QuadTextureSoltCount = 1;  // 0号始终由白色纹理占用
+}
+
 void Renderer2D::beginScene(const Camera& camera, const glm::mat4& transform)
 {
     // 上传pv矩阵

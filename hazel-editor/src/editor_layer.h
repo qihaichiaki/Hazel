@@ -31,6 +31,8 @@ private:
     SceneHierarchyPanel m_scene_hierarchy_panel;
     Ref<Scene> m_active_scene = nullptr;  // 示例激活scene
 
+    EditorCamera m_editor_camera;
+
     bool m_is_viewport = false;  // 是否激活在视口上的事件更新
     glm::vec2 m_viewport_size = {0.0f, 0.0f};
 

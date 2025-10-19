@@ -1091,3 +1091,26 @@ Hazel引擎
 
 * 增加New，Open，SaveSceneAs 场景到EditorLayer中去
 * 增加快捷键
+
+
+### 编辑器相机
+* 构建场景和运行游戏是多个不同的相机对象进行渲染
+* 构建场景时(非运行时)需要用到编辑器相机，此相机并非运行时相机组件
+
+* 编辑器更新渲染的逻辑:
+  * 不会更新场景内的脚本组件
+  * 不会去找运行时相机组件然后开始渲染(场景运行时需要做的工作)
+
+* 之前的Scene->onUpdate 更新为 onUpdateRuntime(ts)
+* 新增onUpdateEditor(ts, EditorCamera&)
+* 后续优化的点在于讲这两个抽象为两个类实现，因为真正运行的时候，是不需要编辑器场景的各种UI元素的，打包成游戏我们并不想把这些和游戏运行时无相关的东西加进来。
+
+
+* onUpdateEditor(ts, EditorCamera&)
+  * beginScene 开始批量渲染即可
+
+
+* 添加EditorCamera (Hazel/Renderer/EditorCamera.h/.cpp)
+  * 主要是通过界面UI操作相机的视图矩阵
+
+* 注意讲之前的ImGuizmo更新为编辑器相机

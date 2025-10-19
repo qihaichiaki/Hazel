@@ -29,5 +29,3 @@
 #include "Hazel/Renderer/texture.h"
 #include "Hazel/Renderer/renderer_2d.h"
 // ===========================
-
-#include "Hazel/Renderer/ortho_graphic_camera_controller.h"

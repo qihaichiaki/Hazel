@@ -39,24 +39,30 @@ void EditorLayer::onUpdate(Hazel::Timestep ts)
         (m_viewport_size.x != spec.Width || m_viewport_size.y != spec.Height)) {
         // 1. 帧缓冲区改变大小
         m_framebuffer->resize((uint32_t)m_viewport_size.x, (uint32_t)m_viewport_size.y);
-        // 2. 重新设置相机投影矩阵
+        // 2. 重新设置场景视口大小
         m_active_scene->onViewportResize((uint32_t)m_viewport_size.x, (uint32_t)m_viewport_size.y);
+        // 3. 设置编辑器相机的视口大小
+        m_editor_camera.setViewportSize(m_viewport_size.x, m_viewport_size.y);
     }
 
+    // 编辑器相机更新
+    m_editor_camera.onUpdate(ts);
     Hazel::Renderer2D::resetStats();
+
     // render
     m_framebuffer->bind();
     Hazel::RendererCommand::setClearColor({0.2f, 0.2f, 0.2f, 1.0f});
     Hazel::RendererCommand::clear();
 
-    // Hazel::Renderer2D::beginScene(m_camera_controller.getCamera());
-    m_active_scene->onUpdate(ts);
-    // Hazel::Renderer2D::endScene();
+    // m_active_scene->onUpdateRuntime(ts);
+    m_active_scene->onUpdateEditor(ts, m_editor_camera);
     m_framebuffer->unBind();
 }
 
 void EditorLayer::onEvent(Hazel::Event& e)
 {
+    m_editor_camera.onEvent(e);
+
     EventDispatcher dispatcher{e};
     dispatcher.dispatch<KeyPressedEvent>(HZ_BIND_EVENT_FN(EditorLayer::onKeyPressed));
 }
@@ -266,51 +272,44 @@ void EditorLayer::onImGuiRender()
     // 显示变换组件 - Gizmos
     Entity selected_entity = m_scene_hierarchy_panel.getSelectedEntity();
     if (m_gizom_type != -1 && selected_entity) {
-        // TODO: 临时获取当前场景渲染的相机对象
-        auto camera_entity = m_active_scene->getPrimaryCameraEntity();
-        if (camera_entity) {
-            ImGuizmo::SetOrthographic(false);  // 使其适用于透视投影
-            ImGuizmo::SetDrawlist();
+        ImGuizmo::SetOrthographic(false);  // 使其适用于透视投影
+        ImGuizmo::SetDrawlist();
 
-            // 转换小组件调用
-            auto& camera = camera_entity.getComponent<CameraComponent>().Camera;
-            // 相机的视图矩阵
-            auto camera_view = glm::inverse(
-                camera_entity.getComponent<TransformComponent>().getTransform());  // 逆置一下
-            // 相机的投影矩阵
-            const auto& camera_projection = camera.getProjection();
+        // 相机的视图矩阵
+        const auto& camera_view = m_editor_camera.getViewMatrix();
+        // 相机的投影矩阵
+        const auto& camera_projection = m_editor_camera.getProjection();
 
-            // entity的transform
-            auto& entity_transform_component = selected_entity.getComponent<TransformComponent>();
-            auto transform = entity_transform_component.getTransform();
+        // entity的transform
+        auto& entity_transform_component = selected_entity.getComponent<TransformComponent>();
+        auto transform = entity_transform_component.getTransform();
 
-            ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, m_viewport_size.x,
-                              m_viewport_size.y);
+        ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, m_viewport_size.x,
+                          m_viewport_size.y);
 
-            // Snapping 精确控制
-            bool snap = Input::isKeyPressed(KeyCode::LeftControl);
-            float snap_value = 0.5f;
-            if (m_gizom_type == ImGuizmo::OPERATION::ROTATE) {
-                snap_value = 45.0f;
-            }
+        // Snapping 精确控制
+        bool snap = Input::isKeyPressed(KeyCode::LeftControl);
+        float snap_value = 0.5f;
+        if (m_gizom_type == ImGuizmo::OPERATION::ROTATE) {
+            snap_value = 45.0f;
+        }
 
-            float snap_values[3] = {snap_value, snap_value, snap_value};
+        float snap_values[3] = {snap_value, snap_value, snap_value};
 
-            ImGuizmo::Manipulate(glm::value_ptr(camera_view), glm::value_ptr(camera_projection),
-                                 (ImGuizmo::OPERATION)m_gizom_type, ImGuizmo::MODE::LOCAL,
-                                 glm::value_ptr(transform), nullptr, snap ? snap_values : nullptr);
-            // 如果发生平移了
-            if (ImGuizmo::IsUsing()) {
-                // 需要分解函数, 讲改变之后的entity_transform进行分解为平移，旋转，缩放
-                // glm::decompose() 类似的功能, 但是其中处理了很多当前不关心的
-                // 所以改为Hazel自己实现的版本
-                glm::vec3 translation, rotation, scale;
-                Hazel::Math::decomposeTransform(transform, translation, rotation, scale);
+        ImGuizmo::Manipulate(glm::value_ptr(camera_view), glm::value_ptr(camera_projection),
+                             (ImGuizmo::OPERATION)m_gizom_type, ImGuizmo::MODE::LOCAL,
+                             glm::value_ptr(transform), nullptr, snap ? snap_values : nullptr);
+        // 如果发生平移了
+        if (ImGuizmo::IsUsing()) {
+            // 需要分解函数, 讲改变之后的entity_transform进行分解为平移，旋转，缩放
+            // glm::decompose() 类似的功能, 但是其中处理了很多当前不关心的
+            // 所以改为Hazel自己实现的版本
+            glm::vec3 translation, rotation, scale;
+            Hazel::Math::decomposeTransform(transform, translation, rotation, scale);
 
-                entity_transform_component.Translation = translation;
-                entity_transform_component.Rotation = rotation;
-                entity_transform_component.Scale = scale;
-            }
+            entity_transform_component.Translation = translation;
+            entity_transform_component.Rotation = rotation;
+            entity_transform_component.Scale = scale;
         }
     }
 

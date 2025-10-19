@@ -3,6 +3,7 @@
 #include <entt.hpp>
 
 #include <Hazel/Core/timestep.h>
+#include <Hazel/Renderer/editor_camera.h>
 
 namespace Hazel
 {
@@ -24,9 +25,15 @@ public:
     /// @param entity 实体对象
     HAZEL_API void destoryEntity(Entity entity);
 
-    /// @brief 场景更新
+    /// @brief 场景编辑时更新
     /// @param ts 帧间隔
-    HAZEL_API void onUpdate(Timestep ts);
+    /// @warning 临时区分场景运行时和编辑器时的接口
+    HAZEL_API void onUpdateEditor(Timestep ts, const EditorCamera& editor_camera);
+
+    /// @brief 场景运行时更新
+    /// @param ts 帧间隔
+    /// @warning 临时区分场景运行时和编辑器时的接口
+    HAZEL_API void onUpdateRuntime(Timestep ts);
 
     /// @brief 更新场景的视口宽度和高度
     HAZEL_API void onViewportResize(uint32_t width, uint32_t height);

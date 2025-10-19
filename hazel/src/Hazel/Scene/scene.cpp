@@ -38,7 +38,23 @@ void Scene::destoryEntity(Entity entity)
     m_registry.destroy(entity);
 }
 
-void Scene::onUpdate(Timestep ts)
+void Scene::onUpdateEditor(Timestep, const EditorCamera& editor_camera)
+{
+    Renderer2D::beginScene(editor_camera);
+
+    // group 持久化,初始化稍慢，但是后续访问快->内存连续
+    auto group = m_registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+    for (auto entity : group) {
+        auto [transform, sprite_renderer] =
+            group.get<TransformComponent, SpriteRendererComponent>(entity);
+        // TODO: 是否需要优化, 防止每次都计算transform
+        Renderer2D::drawQuad(transform.getTransform(), sprite_renderer.Color);
+    }
+
+    Renderer2D::endScene();
+}
+
+void Scene::onUpdateRuntime(Timestep ts)
 {
     // update
     // 执行游戏脚本更新
