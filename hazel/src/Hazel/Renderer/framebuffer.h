@@ -7,9 +7,86 @@
 namespace Hazel
 {
 
-struct HAZEL_API FramebufferSpecification
+enum class HAZEL_API FramebufferTextureFormat {
+    None,
+    RGBA8,            // 颜色附件格式
+    DEPTH24_STENCIL8  // 深度附件格式
+};
+
+struct HAZEL_API FramebufferTextureSpecification
 {
-    uint32_t Width, Height;
+    FramebufferTextureSpecification() = default;
+    FramebufferTextureSpecification(FramebufferTextureFormat texture_format)
+        : TextureFormat{texture_format}
+    {
+    }
+
+    FramebufferTextureFormat TextureFormat;
+    // TODO: filtering/ wrap
+};
+
+class FramebufferTextureAttachmentSpecification
+{
+public:
+    HAZEL_API FramebufferTextureAttachmentSpecification() = default;
+    HAZEL_API FramebufferTextureAttachmentSpecification(
+        std::initializer_list<FramebufferTextureSpecification> attachments)
+        : m_attachments{attachments}
+    {
+    }
+
+    HAZEL_API std::vector<FramebufferTextureSpecification>& getAttachments()
+    {
+        return m_attachments;
+    }
+    HAZEL_API const std::vector<FramebufferTextureSpecification>& getAttachments() const
+    {
+        return m_attachments;
+    }
+
+private:
+    std::vector<FramebufferTextureSpecification> m_attachments;
+};
+
+struct FramebufferSpecification
+{
+    HAZEL_API void setSize(uint32_t width, uint32_t height)
+    {
+        m_width = width;
+        m_height = height;
+    }
+    HAZEL_API void setSamples(uint32_t samples)
+    {
+        m_samples = samples;
+    }
+
+    HAZEL_API uint32_t getWitdh() const
+    {
+        return m_width;
+    }
+    HAZEL_API uint32_t getHeight() const
+    {
+        return m_height;
+    }
+    HAZEL_API uint32_t getSamples() const
+    {
+        return m_samples;
+    }
+
+    HAZEL_API void setAttachmentSpecification(
+        const FramebufferTextureAttachmentSpecification& attachment_specification)
+    {
+        m_attachment_specification = attachment_specification;
+    }
+    HAZEL_API const FramebufferTextureAttachmentSpecification& getAttachmentSpecification() const
+    {
+        return m_attachment_specification;
+    }
+
+private:
+    uint32_t m_width = 0, m_height = 0;
+    uint32_t m_samples = 1;  // 是否多重采样
+    FramebufferTextureAttachmentSpecification m_attachment_specification;
 };
 
 class HAZEL_API Framebuffer
@@ -26,7 +103,8 @@ public:
     virtual void resize(uint32_t width, uint32_t height) = 0;
 
     /// @brief 获取帧缓冲区的颜色附加纹理的renderer id
-    virtual uint32_t getColorAttachmentRendererID() const = 0;
+    /// @param index 指定附加color附件的下标
+    virtual uint32_t getColorAttachmentRendererID(uint32_t index = 0) const = 0;
 
     /// @brief 获取当前帧缓冲区的信息
     virtual const FramebufferSpecification& getSpecification() const = 0;

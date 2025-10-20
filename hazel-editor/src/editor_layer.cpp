@@ -16,7 +16,12 @@ EditorLayer::EditorLayer() : Layer{"EditorLayer"} {}
 void EditorLayer::onAttach()
 {
     // 创建帧缓冲区
-    m_framebuffer = Framebuffer::create(FramebufferSpecification{1536, 960});
+    FramebufferSpecification framebuffer_spec;
+    framebuffer_spec.setSize(1536, 960);
+    framebuffer_spec.setAttachmentSpecification({FramebufferTextureFormat::RGBA8,
+                                                 FramebufferTextureFormat::RGBA8,
+                                                 FramebufferTextureFormat::DEPTH24_STENCIL8});
+    m_framebuffer = Framebuffer::create(framebuffer_spec);
 
     // 创建初始场景
     m_active_scene = createRef<Scene>();
@@ -36,7 +41,7 @@ void EditorLayer::onUpdate(Hazel::Timestep ts)
     // 判断当前view 视图是否更新宽度和高度, 方便进行设置场景的视图宽高
     if (const auto& spec = m_framebuffer->getSpecification();
         m_viewport_size.x > 0.0f && m_viewport_size.y > 0.0f &&
-        (m_viewport_size.x != spec.Width || m_viewport_size.y != spec.Height)) {
+        (m_viewport_size.x != spec.getWitdh() || m_viewport_size.y != spec.getHeight())) {
         // 1. 帧缓冲区改变大小
         m_framebuffer->resize((uint32_t)m_viewport_size.x, (uint32_t)m_viewport_size.y);
         // 2. 重新设置场景视口大小
@@ -265,7 +270,7 @@ void EditorLayer::onImGuiRender()
     m_viewport_size = {viewport_panel_size.x, viewport_panel_size.y};
 
     // 显示视图. v方向上反转一下
-    ImGui::Image((void*)(uintptr_t)(m_framebuffer->getColorAttachmentRendererID()),
+    ImGui::Image((void*)(uintptr_t)(m_framebuffer->getColorAttachmentRendererID(1)),
                  ImVec2{m_viewport_size.x, m_viewport_size.y}, ImVec2{0, 1},
                  ImVec2{1, 0});  // v方向反转一下
 

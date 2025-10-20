@@ -1114,3 +1114,96 @@ Hazel引擎
   * 主要是通过界面UI操作相机的视图矩阵
 
 * 注意讲之前的ImGuizmo更新为编辑器相机
+
+* 编辑器相机操作: alt + 左键 = 旋转 alt + 中键 = 平移 (alt + 右键) | 滚轮 = 缩放
+
+
+### 鼠标拾取
+* 思路: 鼠标坐标映射到选中的纹理坐标上，此纹理坐标是附加的纹理坐标，用来显示实体ID的, 获取后即可知道选择的entity是谁
+* 附加数据?额外的渲染通道，IDBuffer?
+
+#### 帧缓冲区重构
+* 扩展创建帧缓冲区所使用的纹理样式
+* enum class FramebufferTexureFormat
+  * None, RGBA8 - 颜色(8)，DEPTH24STENCIL8 -  深度模板(深度24，模板8), Depth = DEPTH24TENCIL8(默认) 
+
+* 帧缓冲区的纹理实际规范
+* struct FramebufferTexureSpecification
+  * FramebufferTexureSpecification() = default;
+  * FramebufferTexureSpecification(TexureFormat)
+  * FramebufferTexureFormat TexureFormat;
+  * TODO: filtering/wrap
+
+* 帧缓冲区附件规范
+* struct FramebufferAttachmentSpecification
+  * std::vector<FramebufferTexureSpecification> Attachments;
+
+* FramebufferSpecification
+  * FramebufferAttachmentSpecification Attachments;
+  * uint32_t Samples = 1;  // 是否多重纹理采样? >1
+
+
+* TextureTarget -> multisampled? GL_TEXTURE_2D_MULTISAMPLE: GL_TEXTURE_2D
+* createTextures(bool multisampled, uint32_t * out_id, uint32_t count) {
+  * glCreateTextures(TextureTarget(multisampled), count, out_id);
+* }
+* bindTexture(bool multisampled, uint32_t id) -> glBindTexture(TextureTarget(multisampled), id);
+* AttachColorTexture(id, Samples, GLenum format, width, height, index) {
+  * bool is_multisampled = Samples > 1;
+  * if (is_multisampled) {  //多重采样处理
+    * glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, Samples, format, width, height, GL_FALSE);
+  * }
+  * else{
+    * glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    * glTexParameteri(GL_TEXTURE_2D, MIN_FILTER/MAG, LINEAR)
+    * glTexParameteri(GL_TEXTURE_2D, WRAP_R, GL_CLAMP_TO_EDGE)
+    * glTexParameteri(GL_TEXTURE_2D, WRAP_S, GL_CLAMP_TO_EDGE)
+    * glTexParameteri(GL_TEXTURE_2D, WRAP_T, GL_CLAMP_TO_EDGE)
+  * }
+  * glFramebufferTexturee2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, TextureTarget(is_multisampled) id, 0);  // 附加到帧缓冲区上
+  * 
+* }
+* AttachDepthTexture(..., GLenum format, GLenum attachment_type, ...);\
+  * if ....
+  * glTexStorage2D(GL_TEXTURE_2D, 1, format, witdh, height);
+  * ...
+  * glFramebufferTexturee2D(GL_FRAMEBUFFER, attachment_type, ...)
+* IsDepthFormat(FramebufferTexureSpecification)  // 判断传入的规范是否是深度模板
+
+* OpenGLFramebuffer
+  * 构造函数
+    * 将附件分类
+    * 遍历 FramebufferAttachmentSpecification中的每个附件规范
+    * 如果是depth就赋值m_depth_attachment_spec,否则m_color_attachment_specs就进行加入
+    * invalidate();
+  * invalidate() 实际添加附件纹理
+    * 清除时:
+      * 对于m_color_attachments, m_depth_attachment进行清空
+    * 提前对m_color_attachments进行扩容
+    * createTextures(is_multisample, m_color_attachments.data(), m_color_attachments.size());  // 一次性全部创建完毕
+    * 遍历每个color附件()
+      * 指定使用样式，分配内存
+      * bindTexture
+      * switch TextureFormat
+        * RGBA8: AttachColorTexture(id, Samples, GL_RGBA8, 宽度, 高度, index) 
+    * if m_depth_attachment_spec.TexureFormat != None
+      * createTextures(is_multisample, &m_depth_attachment, 1);
+      * bindTexture
+      * switch TextureFormat
+        * DEPTH24TENCIL8:  AttachDepthTexture(id, Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, 宽度, 高度) 
+    * 如果存在颜色附件大于1的情况，则assert只能支持4个
+      * Glenum buffers[4] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3};
+      * glDrawBuffers(m_ColorAttachments.size, buffers);
+    * else if (颜色附件为空)
+      * glDrawBuffers(GL_NONE);
+  * private:
+    * vector<FramebufferTexureSpecification> m_color_attachment_specs;
+    * FramebufferTexureSpecification m_depth_attachment_spec;
+    * vector<uint32_t> m_color_attachments;  // 颜色缓冲区每个附件的id
+    * uint32_t m_depth_attachment = 0;  // 深度缓冲区附件的id
+
+* 测试效果, 帧缓冲区创建RGBA8, RGBA8, Depth 的效果
+* 然后在片段着色器中使用layout(location = 1) out vec4 color
+  * color = xxx
+
+然后在使用帧缓冲区时使用第二个颜色附加区即可, 查看是否渲染为设置的第二个颜色?
