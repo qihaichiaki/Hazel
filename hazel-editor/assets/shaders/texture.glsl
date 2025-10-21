@@ -25,7 +25,7 @@ void main()
 #type fragment
 #version 330 core
 layout(location=0)out vec4 color;
-layout(location=1)out vec4 color_2;
+layout(location=1)out int color_2;
 
 in vec4 v_Color;
 in vec2 v_TexCoord;
@@ -38,5 +38,5 @@ void main()
 {
     // 采样器 -> (纹理坐标 * 平铺因子) * 混合颜色
     color=texture(u_Textures[int(v_TexId)],v_TexCoord*v_TilingFactor)*v_Color;
-    color_2=vec4(.3294,.0706,.0706,1.);
+    color_2=1;
 }

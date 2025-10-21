@@ -23,6 +23,8 @@ public:
         return m_color_attachments[index];
     }
 
+    int readPixel(uint32_t attachment_index, int x, int y) const override;
+
     const FramebufferSpecification& getSpecification() const override
     {
         return m_specification;

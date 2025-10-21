@@ -29,15 +29,20 @@ static bool isDepthFormat(FramebufferTextureSpecification attachment)
     return attachment.TextureFormat == FramebufferTextureFormat::DEPTH24_STENCIL8;
 }
 
-static void attachColorTexture(
-    uint32_t id, uint32_t samples, GLenum format, uint32_t width, uint32_t height, uint32_t index)
+static void attachColorTexture(uint32_t id,
+                               uint32_t samples,
+                               GLenum internal_format,
+                               GLenum format,
+                               uint32_t width,
+                               uint32_t height,
+                               uint32_t index)
 {
     bool is_multisampled = samples > 1;
     if (is_multisampled) {
-        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, format, width, height,
+        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, internal_format, width, height,
                                 GL_FALSE);
     } else {
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+        glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, format, GL_UNSIGNED_BYTE,
                      nullptr);
 
         // filter and wrap
@@ -122,7 +127,12 @@ void OpenGLFramebuffer::invalidate()
             switch (m_color_attachment_specs[index].TextureFormat) {
                 case FramebufferTextureFormat::RGBA8:
                     attachColorTexture(m_color_attachments[index], m_specification.getSamples(),
-                                       GL_RGBA8, m_specification.getWitdh(),
+                                       GL_RGBA8, GL_RGBA, m_specification.getWitdh(),
+                                       m_specification.getHeight(), index);
+                    break;
+                case FramebufferTextureFormat::RED_INTEGER:
+                    attachColorTexture(m_color_attachments[index], m_specification.getSamples(),
+                                       GL_R32I, GL_RED_INTEGER, m_specification.getWitdh(),
                                        m_specification.getHeight(), index);
                     break;
             }
@@ -178,6 +188,15 @@ void OpenGLFramebuffer::resize(uint32_t width, uint32_t height)
     }
     m_specification.setSize(width, height);
     invalidate();
+}
+
+int OpenGLFramebuffer::readPixel(uint32_t attachment_index, int x, int y) const
+{
+    HZ_CORE_ASSERT(attachment_index < m_color_attachments.size(), "附加index越界!");
+    glReadBuffer(GL_COLOR_ATTACHMENT0 + attachment_index);
+    int pixel_data;
+    glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixel_data);
+    return pixel_data;
 }
 
 }  // namespace Hazel

@@ -10,6 +10,7 @@ namespace Hazel
 enum class HAZEL_API FramebufferTextureFormat {
     None,
     RGBA8,            // 颜色附件格式
+    RED_INTEGER,      // int 类型附件格式, 方便读取id
     DEPTH24_STENCIL8  // 深度附件格式
 };
 
@@ -105,6 +106,13 @@ public:
     /// @brief 获取帧缓冲区的颜色附加纹理的renderer id
     /// @param index 指定附加color附件的下标
     virtual uint32_t getColorAttachmentRendererID(uint32_t index = 0) const = 0;
+
+    /// @brief 获取对应坐标的对应附加缓冲区内的值
+    /// @param attachment_index int附件的下标
+    /// @param x 坐标x
+    /// @param y 坐标y
+    /// @return 附件内的值int
+    virtual int readPixel(uint32_t attachment_index, int x, int y) const = 0;
 
     /// @brief 获取当前帧缓冲区的信息
     virtual const FramebufferSpecification& getSpecification() const = 0;

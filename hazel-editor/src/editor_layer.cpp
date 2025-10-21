@@ -19,7 +19,7 @@ void EditorLayer::onAttach()
     FramebufferSpecification framebuffer_spec;
     framebuffer_spec.setSize(1536, 960);
     framebuffer_spec.setAttachmentSpecification({FramebufferTextureFormat::RGBA8,
-                                                 FramebufferTextureFormat::RGBA8,
+                                                 FramebufferTextureFormat::RED_INTEGER,
                                                  FramebufferTextureFormat::DEPTH24_STENCIL8});
     m_framebuffer = Framebuffer::create(framebuffer_spec);
 
@@ -61,6 +61,19 @@ void EditorLayer::onUpdate(Hazel::Timestep ts)
 
     // m_active_scene->onUpdateRuntime(ts);
     m_active_scene->onUpdateEditor(ts, m_editor_camera);
+
+    // 获取当前鼠标在视口中的坐标
+    auto [m_x, m_y] = ImGui::GetMousePos();
+    m_x -= m_viewport_bounds[0].x;
+    m_y -= m_viewport_bounds[0].y;
+    // 需要反转y, 因为当前opengl渲染纹理是左下角0, 0并非左上角
+    auto viewport_size = m_viewport_bounds[1] - m_viewport_bounds[0];
+    m_y = viewport_size.y - m_y;
+
+    if (m_x >= 0 && m_y >= 0 && m_x <= viewport_size.x && m_y <= viewport_size.y) {
+        HZ_WARN("mouse pos pixel: {}", m_framebuffer->readPixel(1, (int)m_x, (int)m_y));
+    }
+
     m_framebuffer->unBind();
 }
 
@@ -261,6 +274,8 @@ void EditorLayer::onImGuiRender()
     // viewport
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
     ImGui::Begin("视口");
+    auto viewport_offset = ImGui::GetCursorPos();  // Includes tab bar
+
     // 检查当前窗口是否是聚焦和悬浮的
     m_is_viewport = ImGui::IsWindowFocused() && ImGui::IsWindowHovered();
     // 如果均不是, 则阻止imgui层事件的传播
@@ -270,9 +285,21 @@ void EditorLayer::onImGuiRender()
     m_viewport_size = {viewport_panel_size.x, viewport_panel_size.y};
 
     // 显示视图. v方向上反转一下
-    ImGui::Image((void*)(uintptr_t)(m_framebuffer->getColorAttachmentRendererID(1)),
+    ImGui::Image((void*)(uintptr_t)(m_framebuffer->getColorAttachmentRendererID()),
                  ImVec2{m_viewport_size.x, m_viewport_size.y}, ImVec2{0, 1},
                  ImVec2{1, 0});  // v方向反转一下
+
+    // 在计算当前 ImGui 视口窗口（通常是游戏场景渲染区）的
+    // 屏幕空间边界矩形（bounds），也就是在整个应用窗口坐标系（像素坐标系）中，这个“视口区域”的
+    // 左上角 (min) 和 右下角 (max) 的位置。
+    auto window_size = ImGui::GetWindowSize();
+    ImVec2 min_bound = ImGui::GetWindowPos();
+    min_bound.x += viewport_offset.x;
+    min_bound.y += viewport_offset.y;
+
+    ImVec2 max_bound = {min_bound.x + window_size.x, min_bound.y + window_size.y};
+    m_viewport_bounds[0] = {min_bound.x, min_bound.y};
+    m_viewport_bounds[1] = {max_bound.x, max_bound.y};
 
     // 显示变换组件 - Gizmos
     Entity selected_entity = m_scene_hierarchy_panel.getSelectedEntity();

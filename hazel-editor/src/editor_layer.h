@@ -35,6 +35,7 @@ private:
 
     bool m_is_viewport = false;  // 是否激活在视口上的事件更新
     glm::vec2 m_viewport_size = {0.0f, 0.0f};
+    glm::vec2 m_viewport_bounds[2];
 
     int m_gizom_type{-1};  // 变换组件类型, 默认是关闭
 };
