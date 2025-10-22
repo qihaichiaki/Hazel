@@ -114,6 +114,11 @@ public:
     /// @return 附件内的值int
     virtual int readPixel(uint32_t attachment_index, int x, int y) const = 0;
 
+    /// @brief 设置清除附加缓冲区的值
+    /// @param attachment_index 附加缓冲区的下标
+    /// @param value RED_INTEGER类型附加缓冲区清除值
+    virtual void clearAttachment(uint32_t attachment_index, int value) const = 0;
+
     /// @brief 获取当前帧缓冲区的信息
     virtual const FramebufferSpecification& getSpecification() const = 0;
 

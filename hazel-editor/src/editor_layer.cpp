@@ -59,6 +59,9 @@ void EditorLayer::onUpdate(Hazel::Timestep ts)
     Hazel::RendererCommand::setClearColor({0.2f, 0.2f, 0.2f, 1.0f});
     Hazel::RendererCommand::clear();
 
+    // 帧缓冲区的第二个实体id附加区域清空
+    m_framebuffer->clearAttachment(1, -1);
+
     // m_active_scene->onUpdateRuntime(ts);
     m_active_scene->onUpdateEditor(ts, m_editor_camera);
 

@@ -24,6 +24,7 @@ public:
     }
 
     int readPixel(uint32_t attachment_index, int x, int y) const override;
+    void clearAttachment(uint32_t attachment_index, int value) const override;
 
     const FramebufferSpecification& getSpecification() const override
     {

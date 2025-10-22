@@ -199,4 +199,14 @@ int OpenGLFramebuffer::readPixel(uint32_t attachment_index, int x, int y) const
     return pixel_data;
 }
 
+void OpenGLFramebuffer::clearAttachment(uint32_t attachment_index, int value) const
+{
+    HZ_CORE_ASSERT(attachment_index < m_color_attachment_specs.size(), "附加index越界!");
+
+    if (m_color_attachment_specs[attachment_index].TextureFormat ==
+        FramebufferTextureFormat::RED_INTEGER) {
+        glClearTexImage(m_color_attachments[attachment_index], 0, GL_RED_INTEGER, GL_INT, &value);
+    }
+}
+
 }  // namespace Hazel
