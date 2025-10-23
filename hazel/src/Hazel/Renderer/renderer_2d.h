@@ -36,7 +36,10 @@ public:
     /// @brief 提交根据transform渲染的带颜色的四边形
     /// @param transform 当前图形的基于世界的transform
     /// @param color 图形颜色
-    HAZEL_API static void drawQuad(const glm::mat4& transform, const glm::vec4& color);
+    /// @param entity_id 实体id, 默认为-1, 表示无实体绘制. 编辑器特供, 临时的
+    HAZEL_API static void drawQuad(const glm::mat4& transform,
+                                   const glm::vec4& color,
+                                   int entity_id = -1);
 
     /// @brief 提交根据transform渲染的带颜色, 平铺因子的纹理四边形
     /// @param transform 当前纹理的基于世界的transform

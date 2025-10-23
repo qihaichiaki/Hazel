@@ -18,6 +18,7 @@ struct QuadVertex
     glm::vec2 TexCoord;
     float TexId;
     float TilingFactor;
+    int EntityID;
 };
 
 struct Renderer2DData
@@ -66,7 +67,8 @@ void Renderer2D::init()
                                         {ShaderDataType::Float4, "a_Color"},
                                         {ShaderDataType::Float2, "a_TexCoord"},
                                         {ShaderDataType::Float, "a_TexId"},
-                                        {ShaderDataType::Float, "a_TilingFactor"}});
+                                        {ShaderDataType::Float, "a_TilingFactor"},
+                                        {ShaderDataType::Int, "a_EntityID"}});
     // 4. 设置到顶点数组对象中去
     s_data.QuadVertexArray->addVertexBuffer(s_data.QuadVertexBuffer);
 
@@ -200,7 +202,7 @@ void Renderer2D::flushAndReset()
     s_data.QuadTextureSoltCount = 1;
 }
 
-void Renderer2D::drawQuad(const glm::mat4& transform, const glm::vec4& color)
+void Renderer2D::drawQuad(const glm::mat4& transform, const glm::vec4& color, int entity_id)
 {
     HZ_PROFILE_FUNCTION();
 
@@ -222,6 +224,7 @@ void Renderer2D::drawQuad(const glm::mat4& transform, const glm::vec4& color)
         s_data.QuadVertexBufferPtr->TexCoord = s_data.RefTexCoords[i];
         s_data.QuadVertexBufferPtr->TexId = white_texure_id;
         s_data.QuadVertexBufferPtr->TilingFactor = tiling_factor;
+        s_data.QuadVertexBufferPtr->EntityID = entity_id;
         s_data.QuadVertexBufferPtr++;
     }
 

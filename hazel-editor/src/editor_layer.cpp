@@ -74,7 +74,9 @@ void EditorLayer::onUpdate(Hazel::Timestep ts)
     m_y = viewport_size.y - m_y;
 
     if (m_x >= 0 && m_y >= 0 && m_x <= viewport_size.x && m_y <= viewport_size.y) {
-        HZ_WARN("mouse pos pixel: {}", m_framebuffer->readPixel(1, (int)m_x, (int)m_y));
+        int pixel_id = m_framebuffer->readPixel(1, (int)m_x, (int)m_y);
+        m_hover_entity =
+            pixel_id == -1 ? Entity{} : Entity{(entt::entity)pixel_id, m_active_scene.get()};
     }
 
     m_framebuffer->unBind();
@@ -266,7 +268,13 @@ void EditorLayer::onImGuiRender()
     m_scene_hierarchy_panel.onImGuiRenderer();
 
     auto renderer2d_stats = Hazel::Renderer2D::getStats();
-    ImGui::Begin("渲染信息");
+    ImGui::Begin("面板信息");
+    char const* hover_entity_tag = "无";
+    if (m_hover_entity) {
+        hover_entity_tag = m_hover_entity.getComponent<TagComponent>().Tag.c_str();
+    }
+    ImGui::Text("当前悬停的实体对象: %s", hover_entity_tag);
+    ImGui::Separator();
     ImGui::Text("Renderer2D Stats:");
     ImGui::Text("Draw Calls: %d", renderer2d_stats.DrawCalls);
     ImGui::Text("Quad Count: %d", renderer2d_stats.QuadCount);

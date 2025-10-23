@@ -14,6 +14,8 @@ static GLenum shaderDataTypeToOpenGLBaseType(Hazel::ShaderDataType type)
         case Hazel::ShaderDataType::Mat3:
         case Hazel::ShaderDataType::Mat4:
             return GL_FLOAT;
+        case Hazel::ShaderDataType::Bool:
+            return GL_BOOL;
         case Hazel::ShaderDataType::Int:
         case Hazel::ShaderDataType::Int2:
         case Hazel::ShaderDataType::Int3:
@@ -69,11 +71,38 @@ void OpenGLVertexArray::addVertexBuffer(const std::shared_ptr<VertexBuffer>& ver
     int index = 0;
     for (const auto& element : buffer_layer) {
         // 为shader启动顶点属性
-        glEnableVertexAttribArray(index);
-        glVertexAttribPointer(index, element.getComponentCount(),
-                              shaderDataTypeToOpenGLBaseType(element.type),
-                              element.normalized ? GL_TRUE : GL_FALSE, buffer_layer.getStride(),
-                              reinterpret_cast<const void*>((uint16_t)element.offset));
+        switch (element.type) {
+            case ShaderDataType::Float:
+            case ShaderDataType::Float2:
+            case ShaderDataType::Float3:
+            case ShaderDataType::Float4:
+                glEnableVertexAttribArray(index);
+                glVertexAttribPointer(index, element.getComponentCount(),
+                                      shaderDataTypeToOpenGLBaseType(element.type),
+                                      element.normalized ? GL_TRUE : GL_FALSE,
+                                      buffer_layer.getStride(),
+                                      reinterpret_cast<const void*>((uint16_t)element.offset));
+                break;
+            case ShaderDataType::Bool:
+            case ShaderDataType::Int:
+            case ShaderDataType::Int2:
+            case ShaderDataType::Int3:
+            case ShaderDataType::Int4:
+                glEnableVertexAttribArray(index);
+                glVertexAttribIPointer(index, element.getComponentCount(),
+                                       shaderDataTypeToOpenGLBaseType(element.type),
+                                       buffer_layer.getStride(),
+                                       reinterpret_cast<const void*>((uint16_t)element.offset));
+                break;
+            case Hazel::ShaderDataType::Mat3:
+            case Hazel::ShaderDataType::Mat4:
+                // TODO: 对于mat3，mat4, 计算偏移得时候需要按照getComponentCount依次设置
+                break;
+
+            default:
+                break;
+        }
+
         index++;
     }
 
