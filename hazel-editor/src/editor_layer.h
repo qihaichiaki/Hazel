@@ -24,6 +24,7 @@ private:
     void saveSceneAs();
 
     bool onKeyPressed(KeyPressedEvent& event);
+    bool onMouseButtonPressed(MouseButtonPressedEvent& event);
 
 private:
     Ref<Framebuffer> m_framebuffer;

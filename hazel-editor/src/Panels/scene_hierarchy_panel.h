@@ -27,6 +27,11 @@ public:
         return m_selection_context;
     }
 
+    void setSelectedEntity(Entity selection_context)
+    {
+        m_selection_context = selection_context;
+    }
+
 private:
     void drawEntityNode(Entity entity);
     void drawComponents(Entity entity);

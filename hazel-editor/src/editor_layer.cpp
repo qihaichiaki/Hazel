@@ -88,6 +88,8 @@ void EditorLayer::onEvent(Hazel::Event& e)
 
     EventDispatcher dispatcher{e};
     dispatcher.dispatch<KeyPressedEvent>(HZ_BIND_EVENT_FN(EditorLayer::onKeyPressed));
+    dispatcher.dispatch<MouseButtonPressedEvent>(
+        HZ_BIND_EVENT_FN(EditorLayer::onMouseButtonPressed));
 }
 
 bool EditorLayer::onKeyPressed(KeyPressedEvent& event)
@@ -135,6 +137,17 @@ bool EditorLayer::onKeyPressed(KeyPressedEvent& event)
             break;
     }
 
+    return false;
+}
+
+bool EditorLayer::onMouseButtonPressed(MouseButtonPressedEvent& event)
+{
+    if (event.getMouseButton() == (int)KeyCode::MouseButtonLeft) {
+        if (!ImGuizmo::IsOver() && !Input::isKeyPressed(KeyCode::LeftAlt)) {
+            m_scene_hierarchy_panel.setSelectedEntity(m_hover_entity);
+            return true;
+        }
+    }
     return false;
 }
 
@@ -285,7 +298,13 @@ void EditorLayer::onImGuiRender()
     // viewport
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
     ImGui::Begin("视口");
-    auto viewport_offset = ImGui::GetCursorPos();  // Includes tab bar
+    auto viewport_min_region = ImGui::GetWindowContentRegionMin();
+    auto viewport_max_region = ImGui::GetWindowContentRegionMax();
+    auto viewport_offset = ImGui::GetWindowPos();
+    m_viewport_bounds[0] = {viewport_min_region.x + viewport_offset.x,
+                            viewport_min_region.y + viewport_offset.y};
+    m_viewport_bounds[1] = {viewport_max_region.x + viewport_offset.x,
+                            viewport_max_region.y + viewport_offset.y};
 
     // 检查当前窗口是否是聚焦和悬浮的
     m_is_viewport = ImGui::IsWindowFocused() && ImGui::IsWindowHovered();
@@ -299,18 +318,6 @@ void EditorLayer::onImGuiRender()
     ImGui::Image((void*)(uintptr_t)(m_framebuffer->getColorAttachmentRendererID()),
                  ImVec2{m_viewport_size.x, m_viewport_size.y}, ImVec2{0, 1},
                  ImVec2{1, 0});  // v方向反转一下
-
-    // 在计算当前 ImGui 视口窗口（通常是游戏场景渲染区）的
-    // 屏幕空间边界矩形（bounds），也就是在整个应用窗口坐标系（像素坐标系）中，这个“视口区域”的
-    // 左上角 (min) 和 右下角 (max) 的位置。
-    auto window_size = ImGui::GetWindowSize();
-    ImVec2 min_bound = ImGui::GetWindowPos();
-    min_bound.x += viewport_offset.x;
-    min_bound.y += viewport_offset.y;
-
-    ImVec2 max_bound = {min_bound.x + window_size.x, min_bound.y + window_size.y};
-    m_viewport_bounds[0] = {min_bound.x, min_bound.y};
-    m_viewport_bounds[1] = {max_bound.x, max_bound.y};
 
     // 显示变换组件 - Gizmos
     Entity selected_entity = m_scene_hierarchy_panel.getSelectedEntity();
@@ -327,7 +334,7 @@ void EditorLayer::onImGuiRender()
         auto& entity_transform_component = selected_entity.getComponent<TransformComponent>();
         auto transform = entity_transform_component.getTransform();
 
-        ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, m_viewport_size.x,
+        ImGuizmo::SetRect(m_viewport_bounds[0].x, m_viewport_bounds[0].y, m_viewport_size.x,
                           m_viewport_size.y);
 
         // Snapping 精确控制
