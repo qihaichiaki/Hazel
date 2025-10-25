@@ -1220,3 +1220,28 @@ Hazel引擎
 * 需要逐渐意识到, 此时做的是编辑器鼠标拾取, shader也是编辑器渲染的专属shdaer，所以在设计API的时候需要考虑是否影响其运行时的效率问题
 * 基本思路就是给每个实体渲染的顶点数据中增加一个int类型的数据, 使其传入顶点shader后传递给片段shader，从而使其输出给颜色附件
 * 需要注意使用guizmo的时候不要让选择实体触发, 通过guizmo的一些判断条件避免设置即可: !IsOver() 另外还存在按下alt控制相机时点击也会消失，检查不按下alt即可
+
+
+
+### 材质系统
+* texture.glsl
+  * 针对于相机的投影矩阵, 因为在一次绘制调用中, 渲染的每个对象的投影矩阵并不会发生改变, 又或者是说存在不同的材质(不同的shader), 没有必要每次都给这些shader上传更新投影矩阵的值，可以使用一种叫uniform buffer的东西, 与GPU交互的可被shader访问的内存块，内存块可以被任意的shader进行访问
+```glsl
+layout(std140, binding = 0) uniform Camera
+{
+  mat4 u_ViewProjection;
+}
+```
+  * 以前的``uniform mat4 u_ViewProjection`` 需要给每一个shader都上传一遍, 而uniform buffer则不需要
+  * 注意shader的版本变为了"450 core"
+  * 后续凡是不单绑定于shader的数据均可通过此方式进行上传
+  * 对于sampler2D, 以前单个的话``uniform sampler2D u_Texture`` 可以通过uniformI设置绑定的纹理槽, 但是现在可以在前面shader文件指定纹理槽``layout (binding = 0) uniform sampler2D u_Texture`` 不需要手动在gpu进行指定
+  * 另外一些同一对象的数据可以使用struct整合起来, 输出的时候一样按顺序输出即可(location会从0 -> x 个数就是你的struct里的数据个数)
+  * flat作用就是禁止插值, 防止一些固定值因为插值而发生变化, 不是预期的效果
+  * 无论in还是out，前面均可使用``layout(location=xxx)`` 指明位置, 另外in和out是分开的
+  * 使用spurv进行编译着色器, 这样会生成缓存, 不更新shader的话每次就读取缓存就不会重新的进行编译着色器了
+  * 使用vulkan glsl shader的流程:
+    * vulkan glsl -SPIR-V编译-> 1二进制文件 -SPIR-V交叉编译器-> opengl glsl ->SPIR-V编译-> 2二进制文件
+    * 缓存这两个二进制文件, 下次无需编译直接使用
+
+#### shader重建
