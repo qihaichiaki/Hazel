@@ -16,7 +16,7 @@
             "environment": [
                 {
                     "name": "PATH",
-                    "value": "${workspaceFolder}/build/bin/${command:cmake.buildType}-x64/Hazel"
+                    "value": "${workspaceFolder}/build/bin/${command:cmake.buildType}-x64/Hazel;${env:VULKAN_SDK}/bin"
                 }
             ]
         }

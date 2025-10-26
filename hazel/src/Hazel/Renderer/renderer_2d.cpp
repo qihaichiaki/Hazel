@@ -4,6 +4,7 @@
 #include "vertex_array.h"
 #include "shader.h"
 #include "renderer_command.h"
+#include "Hazel/Renderer/uniform_buffer.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -48,6 +49,13 @@ struct Renderer2DData
         glm::vec4{-0.5f, 0.5f, 0.0f, 1.0f}};  // 参照坐标, 坐标的transform依据此进行变换
     const glm::vec2 RefTexCoords[4] = {glm::vec2{0.0f, 0.0f}, glm::vec2{1.0f, 0.0f},
                                        glm::vec2{1.0f, 1.0f}, glm::vec2{0.0f, 1.0f}};  // 参照UV坐标
+
+    struct CameraData
+    {
+        glm::mat4 ViewProjection;
+    };
+    CameraData CameraBuffer;
+    Ref<UniformBuffer> CameraUniformBuffer;
 };
 
 static Renderer2DData s_data;
@@ -111,6 +119,7 @@ void Renderer2D::init()
         texture_solts[i] = i;
     }
     s_data.TextureShader->setIntArray("u_Textures", texture_solts, s_data.MaxTextureSolts);
+    s_data.CameraUniformBuffer = UniformBuffer::create(sizeof(Renderer2DData::CameraData), 0);
 }
 
 void Renderer2D::shutdown()
@@ -124,8 +133,8 @@ void Renderer2D::shutdown()
 void Renderer2D::beginScene(const EditorCamera& camera)
 {
     // 上传pv矩阵
-    s_data.TextureShader->bind();
-    s_data.TextureShader->setMat4("u_ProjectionView", camera.getViewProjection());
+    s_data.CameraBuffer.ViewProjection = camera.getViewProjection();
+    s_data.CameraUniformBuffer->setData(&s_data.CameraBuffer, sizeof(Renderer2DData::CameraBuffer));
 
     // 四边形绘制重置
     s_data.QuadCount = 0;

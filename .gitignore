@@ -18,3 +18,6 @@ thirdparty
 
 # hazel相关profile文件
 HazelProfile*
+hazel/vendor/VulkanSDK
+scripts/__pycache__
+hazel-editor/assets/cache

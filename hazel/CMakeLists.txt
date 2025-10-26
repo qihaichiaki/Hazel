@@ -20,6 +20,32 @@ set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
 set(YAML_CPP_INSTALL OFF CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/hazel/vendor/yaml-cpp)
 
+# 加载vulkan SDK
+if(NOT DEFINED ENV{VULKAN_SDK})
+    message(FATAL_ERROR "未检测到 Vulkan SDK 环境变量 VULKAN_SDK")
+endif()
+
+set(VULKAN_SDK $ENV{VULKAN_SDK})
+message(STATUS "Vulkan SDK found at ${VULKAN_SDK}")
+set(VULKAN_INCLUDE_DIR "${VULKAN_SDK}/Include")
+set(VULKAN_LIBRARY_DIR "${VULKAN_SDK}/Lib")
+
+# 所有 Vulkan SDK 的库
+set(VULKAN_SDK_LIBS_DEBUG
+    "${VULKAN_LIBRARY_DIR}/vulkan-1.lib"
+    "${VULKAN_LIBRARY_DIR}/shaderc_sharedd.lib"
+    "${VULKAN_LIBRARY_DIR}/spirv-cross-cored.lib"
+    "${VULKAN_LIBRARY_DIR}/spirv-cross-glsld.lib"
+    "${VULKAN_LIBRARY_DIR}/SPIRV-Toolsd.lib"
+)
+
+set(VULKAN_SDK_LIBS_RELEASE
+    "${VULKAN_LIBRARY_DIR}/vulkan-1.lib"
+    "${VULKAN_LIBRARY_DIR}/shaderc_shared.lib"
+    "${VULKAN_LIBRARY_DIR}/spirv-cross-core.lib"
+    "${VULKAN_LIBRARY_DIR}/spirv-cross-glsl.lib"
+)
+
 # dll/lib 文件指明生成位置
 # 跳过MSBuild自动配置子目录
 set(BUILD_PATH "${CMAKE_BINARY_DIR}/bin/${BUILD_CONFIG}-${BUILD_PLATFROM}/${PROJECT_NAME}")
@@ -71,6 +97,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     "${CMAKE_SOURCE_DIR}/hazel/vendor/stb_image"
     "${CMAKE_SOURCE_DIR}/hazel/vendor/entt/include" # ECS三方库, 也是单头文件包含
     "${CMAKE_SOURCE_DIR}/hazel/vendor/ImGuizmo" # ImGuizmo相关头文件导入
+    "${VULKAN_INCLUDE_DIR}"
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -79,4 +106,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     opengl32 # opengl
     imgui
     yaml-cpp
+    $<$<CONFIG:Debug>:${VULKAN_SDK_LIBS_DEBUG}>
+    $<$<CONFIG:Release>:${VULKAN_SDK_LIBS_RELEASE}>
 )

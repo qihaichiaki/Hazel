@@ -1224,6 +1224,9 @@ Hazel引擎
 
 
 ### 材质系统
+
+
+#### shader重构
 * texture.glsl
   * 针对于相机的投影矩阵, 因为在一次绘制调用中, 渲染的每个对象的投影矩阵并不会发生改变, 又或者是说存在不同的材质(不同的shader), 没有必要每次都给这些shader上传更新投影矩阵的值，可以使用一种叫uniform buffer的东西, 与GPU交互的可被shader访问的内存块，内存块可以被任意的shader进行访问
 ```glsl
@@ -1243,5 +1246,3 @@ layout(std140, binding = 0) uniform Camera
   * 使用vulkan glsl shader的流程:
     * vulkan glsl -SPIR-V编译-> 1二进制文件 -SPIR-V交叉编译器-> opengl glsl ->SPIR-V编译-> 2二进制文件
     * 缓存这两个二进制文件, 下次无需编译直接使用
-
-#### shader重建

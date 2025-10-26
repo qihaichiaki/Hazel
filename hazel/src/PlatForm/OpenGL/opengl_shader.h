@@ -55,11 +55,24 @@ private:
     std::string readFile(const std::string& file_path);  // 读取文件内容到字符缓冲区中
     std::unordered_map<GLenum, std::string> preProcess(
         const std::string& source);  // 将字符缓冲区中的shader程序按照shader类型进行拆分
-    void compile(const std::unordered_map<GLenum, std::string>&
-                     shader_sources);  // 对所有shader类型的程序进行编译链接
+    // 直接opengl编译API弃用
+    // void compile(const std::unordered_map<GLenum, std::string>&
+    //  shader_sources);  // 对所有shader类型的程序进行编译链接
+    void compileOrGetVulkanBinaries(const std::unordered_map<GLenum, std::string>&
+                                        shader_sources);  // 将vulkan glsl->Vulkan bin
+    void reflect(GLenum stage, const std::vector<uint32_t>& shader_data);  // 将编译结果反射出来
+    void compileOrGetOpenGLBinaries();  // Vulkan bin -> OpenGL bin
+    void createProgram();               // 创建shader程序
+
 private:
     std::string m_name;
+    std::string m_file_path;
     uint32_t m_renderer_id;
+
+    std::unordered_map<GLenum, std::vector<uint32_t>> m_vulkan_SPIRV;
+    std::unordered_map<GLenum, std::vector<uint32_t>> m_opengl_SPIRV;
+
+    std::unordered_map<GLenum, std::string> m_opengl_source_code;
 };
 
 }  // namespace Hazel
