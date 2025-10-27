@@ -279,6 +279,7 @@ void EditorLayer::onImGuiRender()
 
     // 渲染场景层次面板
     m_scene_hierarchy_panel.onImGuiRenderer();
+    m_content_browser_panel.onImGuiRenderer();
 
     auto renderer2d_stats = Hazel::Renderer2D::getStats();
     ImGui::Begin("面板信息");

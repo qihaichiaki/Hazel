@@ -1026,6 +1026,11 @@ Hazel引擎
   * 应用回实体的transform组件(注意其中的旋转是计算变换量然后累加)
   * 使用hazel自身的分解transform函数进行拆分平移、旋转、缩放
 
+#### 内容浏览面板
+* 电脑上某个包含资源的文件夹
+* ContentBrowserPanel
+  * 使用filesystem::directory_iterator 遍历当前的目录
+  * 
 
 
 ### 序列化和反序列化

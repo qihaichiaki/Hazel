@@ -2,6 +2,7 @@
 
 #include <hazel.h>
 #include "Panels/scene_hierarchy_panel.h"
+#include "Panels/content_browser_panel.h"
 
 namespace Hazel
 {
@@ -30,6 +31,8 @@ private:
     Ref<Framebuffer> m_framebuffer;
 
     SceneHierarchyPanel m_scene_hierarchy_panel;
+    ContentBrowserPanel m_content_browser_panel;
+
     Ref<Scene> m_active_scene{nullptr};  // 示例激活scene
 
     EditorCamera m_editor_camera;
