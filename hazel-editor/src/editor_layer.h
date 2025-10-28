@@ -22,6 +22,7 @@ private:
     void createDockspace();
     void newScene();
     void openScene();
+    void openScene(const std::filesystem::path& scene_path);
     void saveSceneAs();
 
     bool onKeyPressed(KeyPressedEvent& event);

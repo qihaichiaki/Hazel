@@ -162,11 +162,19 @@ void EditorLayer::openScene()
 {
     auto file_path = FileDialogs::openFile("Hazel Scene (*.hazel)\0*.hazel\0");
     if (!file_path.empty()) {
+        openScene(file_path);
+    }
+}
+
+void EditorLayer::openScene(const std::filesystem::path& scene_path)
+{
+    std::string ex = scene_path.extension().string();
+    if (ex == ".hazel") {
         m_active_scene = createRef<Scene>();  // 创建一个新的场景
         m_active_scene->onViewportResize((uint32_t)m_viewport_size.x, (uint32_t)m_viewport_size.y);
         m_scene_hierarchy_panel.setContext(m_active_scene);
         SceneSerializer serializer{m_active_scene};
-        serializer.deserialize(file_path);
+        serializer.deserialize(scene_path.generic_string());
     }
 }
 
@@ -319,6 +327,16 @@ void EditorLayer::onImGuiRender()
     ImGui::Image((void*)(uintptr_t)(m_framebuffer->getColorAttachmentRendererID()),
                  ImVec2{m_viewport_size.x, m_viewport_size.y}, ImVec2{0, 1},
                  ImVec2{1, 0});  // v方向反转一下
+
+    // 拖拽的目标元素 image
+    if (ImGui::BeginDragDropTarget()) {
+        const ImGuiPayload* item_data = ImGui::AcceptDragDropPayload("CONTEXT_ITEM");
+        if (item_data) {
+            std::string file_path = (char*)item_data->Data;
+            openScene(file_path);
+        }
+        ImGui::EndDragDropTarget();
+    }
 
     // 显示变换组件 - Gizmos
     Entity selected_entity = m_scene_hierarchy_panel.getSelectedEntity();

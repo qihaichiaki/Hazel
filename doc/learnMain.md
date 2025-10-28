@@ -1030,7 +1030,18 @@ Hazel引擎
 * 电脑上某个包含资源的文件夹
 * ContentBrowserPanel
   * 使用filesystem::directory_iterator 遍历当前的目录
-  * 
+
+
+* 内容的拖拽和释放
+* if BeginDragDropSource 可以拖拽的目标(在任何imgui view里面写这句表明任何imgui元素可拖拽)
+* setDragDroppayload("name", void*, size, ImGuiCond_Once);  // 输入数据, 拷贝数据, ImGuiCond_Once防止多次拷贝
+* EndDragDropSource
+* 需要注意每次的id是否一致，否则每次就是拖拽的一个id, pushId()， popID();
+
+* if BeginDragDropTarget() 可以释放的目标
+* AcceptDragDropPayload("name");  // 获取对应name的拷贝数据
+  * 注意检查返回值是否为空
+* EndDragDropTarget();
 
 
 ### 序列化和反序列化

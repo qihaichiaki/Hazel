@@ -28,14 +28,25 @@ void ContentBrowserPanel::onImGuiRenderer()
                 ("assets/" + m_current_file_path.lexically_relative(s_assert_path).generic_string())
                     .c_str());
     for (auto it : std::filesystem::directory_iterator{m_current_file_path}) {
-        std::string file_name = it.path().filename().string();
-        if (it.is_directory()) {
-            if (ImGui::Button(file_name.c_str())) {
-                m_current_file_path /= file_name;
-            }
-        } else {
-            ImGui::Text("%s", file_name.c_str());
+        const auto& path = it.path();
+        std::string file_name = path.filename().string();
+
+        std::string path_str = path.generic_string();
+        ImGui::PushID(path_str.c_str());
+        ImGui::Button(file_name.c_str());
+        bool is_directory = it.is_directory();
+        if (!is_directory && ImGui::BeginDragDropSource()) {
+            ImGui::SetDragDropPayload("CONTEXT_ITEM", path_str.c_str(),
+                                      (path_str.size() + 1) * sizeof(char), ImGuiCond_Once);
+            ImGui::EndDragDropSource();
         }
+
+        if (is_directory && ImGui::IsItemHovered() &&
+            ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+            m_current_file_path /= file_name;
+        }
+
+        ImGui::PopID();
     }
 
     ImGui::End();
