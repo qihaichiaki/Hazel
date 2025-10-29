@@ -337,6 +337,18 @@ void SceneHierarchyPanel::drawComponents(Entity entity)
     drawComponent<SpriteRendererComponent>(
         "Sprite", entity, [](SpriteRendererComponent& sprite_renderer) {
             ImGui::ColorEdit4("颜色", glm::value_ptr(sprite_renderer.Color));
+
+            ImGui::Button("纹理");
+            if (ImGui::BeginDragDropTarget()) {
+                const ImGuiPayload* item_data = ImGui::AcceptDragDropPayload("CONTEXT_ITEM");
+                if (item_data) {
+                    std::string file_path = (char*)item_data->Data;
+                    sprite_renderer.Texture = Texture2D::create(file_path);
+                }
+                ImGui::EndDragDropTarget();
+            }
+
+            ImGui::DragFloat("平铺因子", &sprite_renderer.TilingFactor, 1.0f, 0.0f, 1000.0f);
         });
 }
 

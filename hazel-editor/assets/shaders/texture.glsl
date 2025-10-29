@@ -16,19 +16,19 @@ struct VertexOutput
 {
     vec4 Color;
     vec2 TexCoord;
-    float TexId;
     float TilingFactor;
 };
 
 layout(location=0)out VertexOutput Output;
+layout(location=3)out flat float v_TexId;
 layout(location=4)out flat int v_EntityID;
 
 void main()
 {
     Output.Color=a_Color;
     Output.TexCoord=a_TexCoord;
-    Output.TexId=a_TexId;
     Output.TilingFactor=a_TilingFactor;
+    v_TexId=a_TexId;
     v_EntityID=a_EntityID;
     
     gl_Position=u_ProjectionView*vec4(a_Position,1.);
@@ -43,11 +43,11 @@ struct VertexOutput
 {
     vec4 Color;
     vec2 TexCoord;
-    float TexId;
     float TilingFactor;
 };
 
 layout(location=0)in VertexOutput Input;
+layout(location=3)in flat float v_TexId;
 layout(location=4)in flat int v_EntityID;
 
 layout(binding=0)uniform sampler2D u_Textures[32];
@@ -55,6 +55,6 @@ layout(binding=0)uniform sampler2D u_Textures[32];
 void main()
 {
     // 采样器 -> (纹理坐标 * 平铺因子) * 混合颜色
-    color=texture(u_Textures[int(Input.TexId)],Input.TexCoord*Input.TilingFactor)*Input.Color;
+    color=texture(u_Textures[int(v_TexId)],Input.TexCoord*Input.TilingFactor)*Input.Color;
     color2=v_EntityID;
 }
