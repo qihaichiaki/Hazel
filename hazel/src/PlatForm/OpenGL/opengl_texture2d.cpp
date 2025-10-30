@@ -18,7 +18,8 @@ OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height) : m_width(widt
     // 设置纹理属性
     glTextureParameteri(m_renderer_id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // 线性插值
     // 放大纹理过滤器设置
-    glTextureParameteri(m_renderer_id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);  // 非线性插值, 防止模糊
+    glTextureParameteri(m_renderer_id, GL_TEXTURE_MAG_FILTER,
+                        GL_LINEAR);  // 非线性插值, 防止模糊 - 默认线性插值
     // 如果超出纹理坐标的映射(0, 1), 则进行重复利用
     glTextureParameteri(m_renderer_id, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTextureParameteri(m_renderer_id, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -61,7 +62,8 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string& path) : m_path(path)
     // 缩小纹理过滤器设置
     glTextureParameteri(m_renderer_id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // 线性插值
     // 放大纹理过滤器设置
-    glTextureParameteri(m_renderer_id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);  // 非线性插值, 防止模糊
+    glTextureParameteri(m_renderer_id, GL_TEXTURE_MAG_FILTER,
+                        GL_LINEAR);  // 非线性插值, 防止模糊 - 默认线性插值
     // 如果超出纹理坐标的映射(0, 1), 则进行重复利用
     glTextureParameteri(m_renderer_id, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTextureParameteri(m_renderer_id, GL_TEXTURE_WRAP_T, GL_REPEAT);

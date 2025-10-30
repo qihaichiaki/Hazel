@@ -28,6 +28,12 @@ void EditorLayer::onAttach()
 
     // 场景视口添加当前激活场景
     m_scene_hierarchy_panel.setContext(m_active_scene);
+
+    // 加载编辑器需要的一些图标纹理
+    // play 0
+    m_editor_icons.emplace_back(Texture2D::create("resources/icon/play.png"));
+    // stop 1
+    m_editor_icons.emplace_back(Texture2D::create("resources/icon/stop.png"));
 }
 
 void EditorLayer::onDetach()
@@ -62,8 +68,11 @@ void EditorLayer::onUpdate(Hazel::Timestep ts)
     // 帧缓冲区的第二个实体id附加区域清空
     m_framebuffer->clearAttachment(1, -1);
 
-    // m_active_scene->onUpdateRuntime(ts);
-    m_active_scene->onUpdateEditor(ts, m_editor_camera);
+    if (m_scene_state == SceneState::Editor) {
+        m_active_scene->onUpdateEditor(ts, m_editor_camera);
+    } else {
+        m_active_scene->onUpdateRuntime(ts);
+    }
 
     // 获取当前鼠标在视口中的坐标
     auto [m_x, m_y] = ImGui::GetMousePos();
@@ -339,51 +348,69 @@ void EditorLayer::onImGuiRender()
     }
 
     // 显示变换组件 - Gizmos
-    Entity selected_entity = m_scene_hierarchy_panel.getSelectedEntity();
-    if (m_gizom_type != -1 && selected_entity) {
-        ImGuizmo::SetOrthographic(false);  // 使其适用于透视投影
-        ImGuizmo::SetDrawlist();
+    if (m_scene_state == SceneState::Editor) {
+        Entity selected_entity = m_scene_hierarchy_panel.getSelectedEntity();
+        if (m_gizom_type != -1 && selected_entity) {
+            ImGuizmo::SetOrthographic(false);  // 使其适用于透视投影
+            ImGuizmo::SetDrawlist();
 
-        // 相机的视图矩阵
-        const auto& camera_view = m_editor_camera.getViewMatrix();
-        // 相机的投影矩阵
-        const auto& camera_projection = m_editor_camera.getProjection();
+            // 相机的视图矩阵
+            const auto& camera_view = m_editor_camera.getViewMatrix();
+            // 相机的投影矩阵
+            const auto& camera_projection = m_editor_camera.getProjection();
 
-        // entity的transform
-        auto& entity_transform_component = selected_entity.getComponent<TransformComponent>();
-        auto transform = entity_transform_component.getTransform();
+            // entity的transform
+            auto& entity_transform_component = selected_entity.getComponent<TransformComponent>();
+            auto transform = entity_transform_component.getTransform();
 
-        ImGuizmo::SetRect(m_viewport_bounds[0].x, m_viewport_bounds[0].y, m_viewport_size.x,
-                          m_viewport_size.y);
+            ImGuizmo::SetRect(m_viewport_bounds[0].x, m_viewport_bounds[0].y, m_viewport_size.x,
+                              m_viewport_size.y);
 
-        // Snapping 精确控制
-        bool snap = Input::isKeyPressed(KeyCode::LeftControl);
-        float snap_value = 0.5f;
-        if (m_gizom_type == ImGuizmo::OPERATION::ROTATE) {
-            snap_value = 45.0f;
-        }
+            // Snapping 精确控制
+            bool snap = Input::isKeyPressed(KeyCode::LeftControl);
+            float snap_value = 0.5f;
+            if (m_gizom_type == ImGuizmo::OPERATION::ROTATE) {
+                snap_value = 45.0f;
+            }
 
-        float snap_values[3] = {snap_value, snap_value, snap_value};
+            float snap_values[3] = {snap_value, snap_value, snap_value};
 
-        ImGuizmo::Manipulate(glm::value_ptr(camera_view), glm::value_ptr(camera_projection),
-                             (ImGuizmo::OPERATION)m_gizom_type, ImGuizmo::MODE::LOCAL,
-                             glm::value_ptr(transform), nullptr, snap ? snap_values : nullptr);
-        // 如果发生平移了
-        if (ImGuizmo::IsUsing()) {
-            // 需要分解函数, 讲改变之后的entity_transform进行分解为平移，旋转，缩放
-            // glm::decompose() 类似的功能, 但是其中处理了很多当前不关心的
-            // 所以改为Hazel自己实现的版本
-            glm::vec3 translation, rotation, scale;
-            Hazel::Math::decomposeTransform(transform, translation, rotation, scale);
+            ImGuizmo::Manipulate(glm::value_ptr(camera_view), glm::value_ptr(camera_projection),
+                                 (ImGuizmo::OPERATION)m_gizom_type, ImGuizmo::MODE::LOCAL,
+                                 glm::value_ptr(transform), nullptr, snap ? snap_values : nullptr);
+            // 如果发生平移了
+            if (ImGuizmo::IsUsing()) {
+                // 需要分解函数, 讲改变之后的entity_transform进行分解为平移，旋转，缩放
+                // glm::decompose() 类似的功能, 但是其中处理了很多当前不关心的
+                // 所以改为Hazel自己实现的版本
+                glm::vec3 translation, rotation, scale;
+                Hazel::Math::decomposeTransform(transform, translation, rotation, scale);
 
-            entity_transform_component.Translation = translation;
-            entity_transform_component.Rotation = rotation;
-            entity_transform_component.Scale = scale;
+                entity_transform_component.Translation = translation;
+                entity_transform_component.Rotation = rotation;
+                entity_transform_component.Scale = scale;
+            }
         }
     }
 
     ImGui::End();
     ImGui::PopStyleVar();
+
+    uiPlayBoard();
+}
+
+void EditorLayer::uiPlayBoard()
+{
+    ImGui::Begin("##uiPlayBoard");
+
+    if (ImGui::ImageButton(
+            "##play", m_editor_icons[m_scene_state == SceneState::Editor ? 0 : 1]->getRendererId(),
+            ImVec2{20.f, 20.f})) {
+        m_scene_state =
+            m_scene_state == SceneState::Editor ? SceneState::Runtime : SceneState::Editor;
+    }
+
+    ImGui::End();
 }
 
 }  // namespace Hazel

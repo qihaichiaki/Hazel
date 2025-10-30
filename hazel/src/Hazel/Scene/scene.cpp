@@ -101,7 +101,12 @@ void Scene::onUpdateRuntime(Timestep ts)
             auto [transform, sprite_renderer] =
                 group.get<TransformComponent, SpriteRendererComponent>(entity);
             // TODO: 是否需要优化, 防止每次都计算transform
-            Renderer2D::drawQuad(transform.getTransform(), sprite_renderer.Color);
+            if (sprite_renderer.Texture) {
+                Renderer2D::drawQuad(transform.getTransform(), sprite_renderer.Texture,
+                                     sprite_renderer.Color, sprite_renderer.TilingFactor);
+            } else {
+                Renderer2D::drawQuad(transform.getTransform(), sprite_renderer.Color, (int)entity);
+            }
         }
 
         Renderer2D::endScene();

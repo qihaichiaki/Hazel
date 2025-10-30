@@ -27,6 +27,11 @@ public:
 
     bool isEqual(const Texture& other) override;
 
+    uint32_t getRendererId() override
+    {
+        return m_renderer_id;
+    }
+
 private:
     std::string m_path;  // 文件路径保存
 

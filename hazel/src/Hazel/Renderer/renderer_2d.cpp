@@ -147,10 +147,10 @@ void Renderer2D::beginScene(const EditorCamera& camera)
 void Renderer2D::beginScene(const Camera& camera, const glm::mat4& transform)
 {
     // 上传pv矩阵
-    s_data.TextureShader->bind();
     auto projection_view_matrix =
         camera.getProjection() * glm::inverse(transform);  //  transform需要逆置
-    s_data.TextureShader->setMat4("u_ProjectionView", projection_view_matrix);
+    s_data.CameraBuffer.ViewProjection = projection_view_matrix;
+    s_data.CameraUniformBuffer->setData(&s_data.CameraBuffer, sizeof(Renderer2DData::CameraBuffer));
 
     // 四边形绘制重置
     s_data.QuadCount = 0;

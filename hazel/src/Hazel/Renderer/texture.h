@@ -29,6 +29,9 @@ public:
 
     /// @brief 判断两个纹理是否一致
     virtual bool isEqual(const Texture&) = 0;
+
+    /// 临时增加API
+    virtual uint32_t getRendererId() = 0;
 };
 
 class HAZEL_API Texture2D : public Texture

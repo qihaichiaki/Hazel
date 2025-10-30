@@ -19,6 +19,9 @@ public:
     void onImGuiRender() override;
 
 private:
+    void uiPlayBoard();
+
+private:
     void createDockspace();
     void newScene();
     void openScene();
@@ -29,7 +32,13 @@ private:
     bool onMouseButtonPressed(MouseButtonPressedEvent& event);
 
 private:
+    enum class SceneState { Editor, Runtime };
+
+    SceneState m_scene_state{SceneState::Editor};
+
+private:
     Ref<Framebuffer> m_framebuffer;
+    std::vector<Ref<Texture2D>> m_editor_icons;
 
     SceneHierarchyPanel m_scene_hierarchy_panel;
     ContentBrowserPanel m_content_browser_panel;
