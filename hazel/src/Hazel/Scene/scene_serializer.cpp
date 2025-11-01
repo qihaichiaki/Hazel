@@ -146,7 +146,7 @@ SceneSerializer::SceneSerializer(const Ref<Scene>& scene) : m_scene{scene} {}
 static void serializeEntity(YAML::Emitter& out, Entity entity)
 {
     out << YAML::BeginMap;
-    out << YAML::Key << "Entity" << YAML::Value << "114514";  // TODO: UUID
+    out << YAML::Key << "Entity" << YAML::Value << (uint64_t)(entity.getUUID());
 
     // tag
     if (entity.hasComponent<TagComponent>()) {
@@ -287,7 +287,7 @@ bool SceneSerializer::deserialize(const std::string& filepath)
     auto entities_node = root["Entities"];
     if (entities_node) {
         for (auto entity_node : entities_node) {
-            uint64_t uuid = entity_node["Entity"].as<uint64_t>();  // TODO: uuid
+            uint64_t uuid = entity_node["Entity"].as<uint64_t>();
 
             std::string tag_name;
             auto tag_component_node = entity_node["TagComponent"];
@@ -295,9 +295,9 @@ bool SceneSerializer::deserialize(const std::string& filepath)
                 tag_name = tag_component_node["Tag"].as<std::string>();
             }
 
-            HZ_CORE_TRACE("读取实体id={}, tag={}成功", uuid, tag_name);
+            HZ_CORE_TRACE("读取实体[id: {}, tag: {}]成功", uuid, tag_name);
             // create entity
-            Entity deserialize_entity = m_scene->createEntity(tag_name);
+            Entity deserialize_entity = m_scene->createEntityWithUUID(uuid, tag_name);
 
             // TransformComponent
             auto transform_component_node = entity_node["TransformComponent"];

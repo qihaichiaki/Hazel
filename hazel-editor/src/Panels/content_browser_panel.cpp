@@ -24,12 +24,12 @@ void ContentBrowserPanel::onImGuiRenderer()
     }
     ImGui::EndDisabled();
     ImGui::SameLine();
-    ImGui::Text("%s",
-                ("assets/" + m_current_file_path.lexically_relative(s_assert_path).generic_string())
-                    .c_str());
+    ImGui::Text(
+        "%s", ("assets/" + m_current_file_path.lexically_relative(s_assert_path).generic_u8string())
+                  .c_str());
     for (auto it : std::filesystem::directory_iterator{m_current_file_path}) {
         const auto& path = it.path();
-        std::string file_name = path.filename().string();
+        std::string file_name = path.filename().u8string();
 
         std::string path_str = path.generic_string();
         ImGui::PushID(path_str.c_str());

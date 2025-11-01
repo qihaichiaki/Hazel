@@ -1305,3 +1305,21 @@ layout(std140, binding = 0) uniform Camera
     * float Restitution = 0.0f  // 反弹系数
     * float RestitutionThreshold =  0.5f// 反弹恢复阈值
     * 后续这些物理特性需要移转到物理材质中去
+
+### UUID
+* 游戏引擎里的需求基本利用C++随机库生成一个uint64_t 位的uuid即可
+* 使用random_device s_random_device、mt19937_64 s_engine{s_random_device}, uniform_int_distribution<uint64_t> s_uniform_distribution;
+* s_uniform_distribution(s_engine); 生成分配即可
+* 注意利用下hash
+* namespace std
+*
+* template<>
+* struct hash<UUID>
+* operator()(const UUID& uuid) const
+  * return std::hash<uint64_t>()((uint64_t)uuid);
+
+* 使用场景:
+  * 新创建实体时
+    * 使用IDComponent, UUID作为成员
+    * 创建实体时, add一个IDComponent即可
+    * 另外创建实体可以给予一个UUID进行创建实体

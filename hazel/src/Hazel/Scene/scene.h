@@ -1,9 +1,10 @@
 #pragma once
 
-#include <entt.hpp>
-
+#include <Hazel/Core/uuid.h>
 #include <Hazel/Core/timestep.h>
 #include <Hazel/Renderer/editor_camera.h>
+
+#include <entt.hpp>
 
 namespace Hazel
 {
@@ -30,6 +31,9 @@ public:
     /// @return 实体对象
     /// @note 会默认添加transform组件和tag组件
     HAZEL_API Entity createEntity(const std::string& name = std::string{});
+
+    HAZEL_API Entity createEntityWithUUID(const UUID& uuid,
+                                          const std::string& name = std::string{});
 
     /// @brief 从当前场景删除实体对象
     /// @param entity 实体对象

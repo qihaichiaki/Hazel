@@ -177,7 +177,7 @@ void EditorLayer::openScene()
 
 void EditorLayer::openScene(const std::filesystem::path& scene_path)
 {
-    std::string ex = scene_path.extension().string();
+    std::string ex = scene_path.extension().u8string();
     if (ex == ".hazel") {
         m_active_scene = createRef<Scene>();  // 创建一个新的场景
         m_active_scene->onViewportResize((uint32_t)m_viewport_size.x, (uint32_t)m_viewport_size.y);

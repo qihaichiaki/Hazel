@@ -233,6 +233,7 @@ static void drawComponent(const std::string& name,
 // 属性面板绘制组件信息
 void SceneHierarchyPanel::drawComponents(Entity entity)
 {
+    ImGui::PushID((int)entity.getUUID());
     // tag
     if (entity.hasComponent<TagComponent>()) {
         auto& tag = entity.getComponent<TagComponent>().Tag;
@@ -391,6 +392,8 @@ void SceneHierarchyPanel::drawComponents(Entity entity)
         ImGui::DragFloat("反弹恢复阈值", &bc.RestitutionThreshold, 0.01f, 0.0f, 1.0f, "%.3f",
                          ImGuiSliderFlags_NoInput);
     });
+
+    ImGui::PopID();
 }
 
 }  // namespace Hazel

@@ -1,6 +1,6 @@
 Scene: Scene name
 Entities:
-  - Entity: 114514
+  - Entity: 16031003851777816977
     TagComponent:
       Tag: A相机
     TransformComponent:
@@ -18,7 +18,7 @@ Entities:
         OrthographicFar: 1
       Primary: true
       FixedAspectRatio: false
-  - Entity: 114514
+  - Entity: 6077881207473479184
     TagComponent:
       Tag: B物体
     TransformComponent:
@@ -27,7 +27,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteRendererComponent:
       Color: [1, 0, 0, 0.5254902]
-  - Entity: 114514
+  - Entity: 12222030655972012015
     TagComponent:
       Tag: C物体
     TransformComponent:

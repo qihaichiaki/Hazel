@@ -1,7 +1,8 @@
 #pragma once
 
-#include <Hazel/Scene/scene.h>
 #include <Hazel/Core/log.h>
+#include <Hazel/Scene/scene.h>
+#include <Hazel/Scene/components.h>
 
 namespace Hazel
 {
@@ -71,6 +72,11 @@ public:
     HAZEL_API bool operator!=(const Entity& other) const
     {
         return !(other == *this);
+    }
+
+    HAZEL_API UUID getUUID()
+    {
+        return getComponent<IDComponent>().ID;
     }
 
 private:

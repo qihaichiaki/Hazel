@@ -1,7 +1,7 @@
 #pragma once
 
+#include "Hazel/Core/uuid.h"
 #include "Hazel/Scene/scene_camera.h"
-#include "Hazel/Scene/scriptable_entity.h"
 #include "Hazel/Renderer/texture.h"
 
 #include <glm/glm.hpp>
@@ -12,6 +12,15 @@
 
 namespace Hazel
 {
+
+struct HAZEL_API IDComponent
+{
+    UUID ID;
+
+    IDComponent() = default;
+    IDComponent(const IDComponent& other) = default;
+    IDComponent(const UUID& uuid) : ID{uuid} {}
+};
 
 struct TagComponent
 {
@@ -74,6 +83,8 @@ struct CameraComponent
     HAZEL_API CameraComponent(const CameraComponent& other) = default;
 };
 
+// 前置声明, 需要使用的地方包含ScriptableEntity定义的地方
+class ScriptableEntity;
 // 原生脚本组件
 struct NativeScriptComponent
 {

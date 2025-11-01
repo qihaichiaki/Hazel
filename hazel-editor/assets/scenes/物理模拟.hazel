@@ -1,6 +1,6 @@
 Scene: Scene name
 Entities:
-  - Entity: 114514
+  - Entity: 13452258877196037977
     TagComponent:
       Tag: 相机
     TransformComponent:
@@ -18,7 +18,7 @@ Entities:
         OrthographicFar: 1
       Primary: true
       FixedAspectRatio: false
-  - Entity: 114514
+  - Entity: 14949410223581308404
     TagComponent:
       Tag: 地面
     TransformComponent:
@@ -37,7 +37,7 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
-  - Entity: 114514
+  - Entity: 9623097786416890728
     TagComponent:
       Tag: 玩家
     TransformComponent:

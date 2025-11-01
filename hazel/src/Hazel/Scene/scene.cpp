@@ -2,6 +2,7 @@
 #include "scene.h"
 #include "entity.h"
 #include "components.h"
+#include "Hazel/Scene/scriptable_entity.h"
 #include <Hazel/Renderer/renderer_2d.h>
 #include <box2d/box2d.h>
 
@@ -46,7 +47,20 @@ Entity Scene::createEntity(const std::string& name)
 {
     Entity entity{m_registry.create(), this};
 
-    // 自动添加transform组件和tag组件
+    // 自动添加id, transform组件和tag组件
+    entity.addComponent<IDComponent>();
+    entity.addComponent<TransformComponent>();
+    auto& tag = entity.addComponent<TagComponent>();
+    tag = name.empty() ? "新实体" : name;
+    return entity;
+}
+
+Entity Scene::createEntityWithUUID(const UUID& uuid, const std::string& name)
+{
+    Entity entity{m_registry.create(), this};
+
+    // 自动添加id, transform组件和tag组件
+    entity.addComponent<IDComponent>(uuid);
     entity.addComponent<TransformComponent>();
     auto& tag = entity.addComponent<TagComponent>();
     tag = name.empty() ? "新实体" : name;
