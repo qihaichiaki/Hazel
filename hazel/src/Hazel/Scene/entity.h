@@ -36,6 +36,13 @@ public:
         return m_scene->m_registry.emplace<T>(m_entity_handle, std::forward<Arg>(args)...);
     }
 
+    template <typename T, typename... Arg>
+    T& addOrReplaceComponent(Arg&&... args)
+    {
+        return m_scene->m_registry.emplace_or_replace<T>(m_entity_handle,
+                                                         std::forward<Arg>(args)...);
+    }
+
     /// @brief 获取当前实体的组件
     /// @tparam T 组件类型
     /// @return 组件对象
@@ -77,6 +84,11 @@ public:
     HAZEL_API UUID getUUID()
     {
         return getComponent<IDComponent>().ID;
+    }
+
+    HAZEL_API const std::string& getName()
+    {
+        return getComponent<TagComponent>().Tag;
     }
 
 private:

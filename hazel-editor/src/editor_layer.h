@@ -27,6 +27,8 @@ private:
     void openScene();
     void openScene(const std::filesystem::path& scene_path);
     void saveSceneAs();
+    void saveScene();
+    void duplicateEntity();
 
     bool onKeyPressed(KeyPressedEvent& event);
     bool onMouseButtonPressed(MouseButtonPressedEvent& event);
@@ -43,7 +45,9 @@ private:
     SceneHierarchyPanel m_scene_hierarchy_panel;
     ContentBrowserPanel m_content_browser_panel;
 
-    Ref<Scene> m_active_scene{nullptr};  // 示例激活scene
+    Ref<Scene> m_active_scene{nullptr};  // 当前激活scene
+    Ref<Scene> m_eidtor_scene{nullptr};  // 编辑器场景
+    std::string m_current_scene_path{};
 
     EditorCamera m_editor_camera;
 

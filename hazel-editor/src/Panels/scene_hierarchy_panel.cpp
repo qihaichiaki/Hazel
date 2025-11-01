@@ -14,25 +14,27 @@ void SceneHierarchyPanel::onImGuiRenderer()
 
     {
         ImGui::Begin("场景层次");
-        // 取出当前渲染场景的所有实体对象
-        m_context->m_registry.view<entt::entity>().each([this](auto entity_id) {
-            Entity entity{entity_id, m_context.get()};
-            drawEntityNode(entity);
-        });
+        if (m_context) {
+            // 取出当前渲染场景的所有实体对象
+            m_context->m_registry.view<entt::entity>().each([this](auto entity_id) {
+                Entity entity{entity_id, m_context.get()};
+                drawEntityNode(entity);
+            });
 
-        // 如果点击当前场景面板的空白区域, 将选择entity置为空
-        if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && ImGui::IsWindowHovered()) {
-            m_selection_context = {};
-        }
-
-        // 如果在场景层次右键空白区域, 弹出当前窗口的上下文窗口
-        // flag: 右键打开 | 悬停在项目上时不返回true，仅在悬停在空白处时返回。
-        if (ImGui::BeginPopupContextWindow(
-                0, ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems)) {
-            if (ImGui::MenuItem("创建空实体")) {
-                m_context->createEntity("空实体");
+            // 如果点击当前场景面板的空白区域, 将选择entity置为空
+            if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && ImGui::IsWindowHovered()) {
+                m_selection_context = {};
             }
-            ImGui::EndPopup();
+
+            // 如果在场景层次右键空白区域, 弹出当前窗口的上下文窗口
+            // flag: 右键打开 | 悬停在项目上时不返回true，仅在悬停在空白处时返回。
+            if (ImGui::BeginPopupContextWindow(
+                    0, ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems)) {
+                if (ImGui::MenuItem("创建空实体")) {
+                    m_context->createEntity("空实体");
+                }
+                ImGui::EndPopup();
+            }
         }
         ImGui::End();
     }

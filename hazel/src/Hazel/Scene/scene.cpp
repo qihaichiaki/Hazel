@@ -113,8 +113,8 @@ void Scene::onStartRuntime()
         body_def.type = Physic::bodyTypeTob2BodyType(rb.Type);
         body_def.motionLocks.angularZ = rb.FixedRotation;  // 锁定z轴上的旋转
         body_def.position = {transform.Translation.x, transform.Translation.y};
-        b2BodyId b2body = b2CreateBody(physic_world, &body_def);
         body_def.rotation = b2MakeRot(transform.Rotation.z);  // 设置旋转弧度
+        b2BodyId b2body = b2CreateBody(physic_world, &body_def);
         rb.B2BodyId = {b2body.index1, b2body.world0, b2body.generation};
 
         // 如果包含碰撞体组件
@@ -237,6 +237,76 @@ Entity Scene::getPrimaryCameraEntity() const
         }
     }
     return camera_entity;
+}
+
+template <typename Component>
+static void copyComponent(entt::registry& dst_registry,
+                          entt::registry& src_registry,
+                          const std::unordered_map<UUID, entt::entity>& entt_map)
+{
+    auto view = src_registry.view<Component>();
+    for (auto enid : view) {
+        UUID id = src_registry.get<IDComponent>(enid).ID;
+        HZ_CORE_ASSERT(entt_map.find(id) != entt_map.end(), "未知的UUID对象");
+
+        entt::entity new_enid = entt_map.at(id);
+        dst_registry.emplace_or_replace<Component>(
+            new_enid, view.get<Component>(enid));  // 调用各个组件的拷贝构造函数
+    }
+}
+
+template <typename Component>
+static void copyComponent(Entity dst, Entity src)
+{
+    if (src.hasComponent<Component>()) {
+        dst.addOrReplaceComponent<Component>(src.getComponent<Component>());
+    }
+}
+
+Ref<Scene> Scene::copy(const Ref<Scene>& other)
+{
+    // copy 场景
+    Ref<Scene> new_scene = createRef<Scene>();
+    new_scene->m_viewport_width = other->m_viewport_width;
+    new_scene->m_viewport_height = other->m_viewport_height;
+
+    // 遍历所有id组件, 创建对应的实体对象, 并且记录uuid和newScene中entt的映射关系
+    std::unordered_map<UUID, entt::entity> entt_map;
+    auto other_entities_view = other->m_registry.view<IDComponent>();
+    for (auto enid_it = other_entities_view.rbegin(); enid_it != other_entities_view.rend();
+         ++enid_it) {
+        auto& id_component = other->m_registry.get<IDComponent>(*enid_it);
+        auto& tag_component = other->m_registry.get<TagComponent>(*enid_it);
+
+        auto new_entity = new_scene->createEntityWithUUID(id_component.ID, tag_component.Tag);
+        entt_map.emplace(id_component.ID, (entt::entity)new_entity);
+    }
+
+    // 复制组件
+    copyComponent<TransformComponent>(new_scene->m_registry, other->m_registry, entt_map);
+    copyComponent<SpriteRendererComponent>(new_scene->m_registry, other->m_registry, entt_map);
+    copyComponent<CameraComponent>(new_scene->m_registry, other->m_registry, entt_map);
+    copyComponent<NativeScriptComponent>(new_scene->m_registry, other->m_registry, entt_map);
+    copyComponent<Rigidbody2DComponent>(new_scene->m_registry, other->m_registry, entt_map);
+    copyComponent<BoxCollider2DComponent>(new_scene->m_registry, other->m_registry, entt_map);
+
+    return new_scene;
+}
+
+Entity Scene::duplicateEntity(Entity entity)
+{
+    Entity new_entity;
+    if (entity) {
+        new_entity = createEntity(entity.getName());
+
+        copyComponent<TransformComponent>(new_entity, entity);
+        copyComponent<SpriteRendererComponent>(new_entity, entity);
+        copyComponent<CameraComponent>(new_entity, entity);
+        copyComponent<NativeScriptComponent>(new_entity, entity);
+        copyComponent<Rigidbody2DComponent>(new_entity, entity);
+        copyComponent<BoxCollider2DComponent>(new_entity, entity);
+    }
+    return new_entity;
 }
 
 }  // namespace Hazel

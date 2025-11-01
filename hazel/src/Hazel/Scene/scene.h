@@ -63,8 +63,16 @@ public:
     /// @warning 后续可能会废弃掉, 当前只是支持获取运行时存在渲染的相机对象
     HAZEL_API Entity getPrimaryCameraEntity() const;
 
+    HAZEL_API Entity duplicateEntity(Entity entity);
+
+public:
+    HAZEL_API static Ref<Scene> copy(const Ref<Scene>& other);
+
 private:
     void onCameraComponentAdded(entt::registry& registry, entt::entity entity);
+
+private:
+    Scene(const Scene&) = delete;
 
 private:
     entt::registry m_registry;             // 注册管理器, 组件和实体的容器

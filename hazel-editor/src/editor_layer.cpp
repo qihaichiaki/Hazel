@@ -25,6 +25,7 @@ void EditorLayer::onAttach()
 
     // 创建初始场景
     m_active_scene = createRef<Scene>();
+    m_eidtor_scene = m_active_scene;
 
     // 场景视口添加当前激活场景
     m_scene_hierarchy_panel.setContext(m_active_scene);
@@ -125,11 +126,19 @@ bool EditorLayer::onKeyPressed(KeyPressedEvent& event)
             }
             break;
         case KeyCode::S:
-            if (is_ctrl && is_shift) {
-                saveSceneAs();
+            if (is_ctrl) {
+                if (is_shift) {
+                    saveSceneAs();
+                } else {
+                    saveScene();
+                }
             }
             break;
-
+        case KeyCode::D:
+            if (is_ctrl) {
+                duplicateEntity();
+            }
+            break;
         case KeyCode::Q:
             m_gizom_type = -1;
             break;
@@ -165,6 +174,8 @@ void EditorLayer::newScene()
     m_active_scene = createRef<Scene>();  // 创建一个新的场景
     m_active_scene->onViewportResize((uint32_t)m_viewport_size.x, (uint32_t)m_viewport_size.y);
     m_scene_hierarchy_panel.setContext(m_active_scene);
+    m_eidtor_scene = m_active_scene;
+    m_current_scene_path = std::string{};
 }
 
 void EditorLayer::openScene()
@@ -183,7 +194,9 @@ void EditorLayer::openScene(const std::filesystem::path& scene_path)
         m_active_scene->onViewportResize((uint32_t)m_viewport_size.x, (uint32_t)m_viewport_size.y);
         m_scene_hierarchy_panel.setContext(m_active_scene);
         SceneSerializer serializer{m_active_scene};
-        serializer.deserialize(scene_path.generic_string());
+        m_current_scene_path = scene_path.generic_string();
+        serializer.deserialize(m_current_scene_path);
+        m_eidtor_scene = m_active_scene;
     }
 }
 
@@ -193,6 +206,29 @@ void EditorLayer::saveSceneAs()
     if (!file_path.empty()) {
         SceneSerializer serializer{m_active_scene};
         serializer.serialize(file_path);
+        m_current_scene_path = file_path;
+    }
+}
+
+void EditorLayer::saveScene()
+{
+    if (m_scene_state == SceneState::Editor) {
+        if (!m_current_scene_path.empty()) {
+            SceneSerializer serializer{m_active_scene};
+            serializer.serialize(m_current_scene_path);
+        } else {
+            saveSceneAs();
+        }
+    }
+}
+
+void EditorLayer::duplicateEntity()
+{
+    if (m_scene_state == SceneState::Editor) {
+        Entity selected_entity = m_scene_hierarchy_panel.getSelectedEntity();
+        if (selected_entity) {
+            m_active_scene->duplicateEntity(selected_entity);
+        }
     }
 }
 
@@ -408,13 +444,22 @@ void EditorLayer::uiPlayBoard()
     if (ImGui::ImageButton(
             "##play", m_editor_icons[m_scene_state == SceneState::Editor ? 0 : 1]->getRendererId(),
             ImVec2{20.f, 20.f})) {
+        entt::entity selected_entity_id{entt::null};
+        Entity selected_entity = m_scene_hierarchy_panel.getSelectedEntity();
+        if (selected_entity) {
+            selected_entity_id = selected_entity;
+        }
         if (m_scene_state == SceneState::Editor) {
             m_scene_state = SceneState::Runtime;
+            m_active_scene = Scene::copy(m_eidtor_scene);
             m_active_scene->onStartRuntime();
         } else {
             m_scene_state = SceneState::Editor;
             m_active_scene->onStopRuntime();
+            m_active_scene = m_eidtor_scene;
         }
+        m_scene_hierarchy_panel.setContext(m_active_scene);
+        m_scene_hierarchy_panel.setSelectedEntity({selected_entity_id, m_active_scene.get()});
     }
 
     ImGui::End();

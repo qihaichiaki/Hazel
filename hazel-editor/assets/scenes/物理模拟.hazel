@@ -5,7 +5,7 @@ Entities:
       Tag: 相机
     TransformComponent:
       Translation: [0, 0, 0]
-      Rotation: [0, 0, 0]
+      Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
       Camera:
@@ -13,7 +13,7 @@ Entities:
         PerspectiveFOV: 0.7853982
         PerspectiveNear: 0.01
         PerspectiveFar: 1000
-        OrthographicSize: 10
+        OrthographicSize: 30
         OrthographicNear: -1
         OrthographicFar: 1
       Primary: true
@@ -22,7 +22,7 @@ Entities:
     TagComponent:
       Tag: 地面
     TransformComponent:
-      Translation: [-0.15159547, -3.5134702, 0]
+      Translation: [8.536045, -13.903809, 0]
       Rotation: [0, -0, 0]
       Scale: [15.074749, 0.58633006, 1.08]
     SpriteRendererComponent:
@@ -48,11 +48,144 @@ Entities:
       Color: [1, 0, 0, 1]
     Rigidbody2DComponent:
       BodyType: Dynamic
-      FixedRotation: true
+      FixedRotation: false
     BoxCollider2DComponent:
       Offset: [0, 0]
       Size: [0.5, 0.5]
       Density: 1
       Friction: 0
       Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 15692808132241787326
+    TagComponent:
+      Tag: 地面
+    TransformComponent:
+      Translation: [-1.0609922, -8.8150625, 0]
+      Rotation: [0, -0, -0.26133877]
+      Scale: [15.074751, 0.58633083, 1.08]
+    SpriteRendererComponent:
+      Color: [0.95752895, 0.643282, 0, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 11379866577222277969
+    TagComponent:
+      Tag: 地面
+    TransformComponent:
+      Translation: [9.573562, -3.5134702, 0]
+      Rotation: [0, -0, 0.49295303]
+      Scale: [15.074751, 0.58633006, 1.08]
+    SpriteRendererComponent:
+      Color: [0.95752895, 0.643282, 0, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 15605563687824249328
+    TagComponent:
+      Tag: 地面
+    TransformComponent:
+      Translation: [-4.4663925, -1.0368148, 0]
+      Rotation: [0, -0, -0.51003665]
+      Scale: [15.074737, 0.58633035, 1.08]
+    SpriteRendererComponent:
+      Color: [0.95752895, 0.643282, 0, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 14537543239442775672
+    TagComponent:
+      Tag: 地面
+    TransformComponent:
+      Translation: [16.501453, -14.327477, 0]
+      Rotation: [0, -0, 0.8151993]
+      Scale: [15.074751, 0.58633035, 1.08]
+    SpriteRendererComponent:
+      Color: [0.95752895, 0.643282, 0, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 5879817314027059455
+    TagComponent:
+      Tag: 地面
+    TransformComponent:
+      Translation: [1.460382, -15.47133, 0]
+      Rotation: [0, -0, 2.250517]
+      Scale: [15.074754, 0.58633125, 1.08]
+    SpriteRendererComponent:
+      Color: [0.95752895, 0.643282, 0, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 4014571312184837775
+    TagComponent:
+      Tag: 地面
+    TransformComponent:
+      Translation: [22.178938, -4.2013664, 0]
+      Rotation: [0, -0, 1.5809951]
+      Scale: [15.074772, 0.58633226, 1.08]
+    SpriteRendererComponent:
+      Color: [0.95752895, 0.643282, 0, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 1725780552835418271
+    TagComponent:
+      Tag: 地面
+    TransformComponent:
+      Translation: [-9.356738, -6.718747, 0]
+      Rotation: [0, -0, 1.5928421]
+      Scale: [15.074751, 0.58632976, 1.08]
+    SpriteRendererComponent:
+      Color: [0.95752895, 0.643282, 0, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
       RestitutionThreshold: 0.5

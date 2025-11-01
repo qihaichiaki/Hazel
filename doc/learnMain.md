@@ -1323,3 +1323,13 @@ layout(std140, binding = 0) uniform Camera
     * 使用IDComponent, UUID作为成员
     * 创建实体时, add一个IDComponent即可
     * 另外创建实体可以给予一个UUID进行创建实体
+
+### 复制场景和实体
+* Scene::Copy 
+  * 利用IDComponent, 找到所有uuid和对应的entt, 建立一个映射关系
+  * 利用id和tag在新场景创建每一个entity
+  * 利用映射找到新老entity, 将老entity中的component 插入和替换(替换的存在是因为存在默认的transform组件)
+* DuplicateEntity ctrl + d
+  * 利用老entity创建一个相同tag和相同组件的实体
+
+* 保存当前场景 ctrl s
