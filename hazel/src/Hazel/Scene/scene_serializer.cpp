@@ -8,6 +8,29 @@
 // YAML 反序列化特化
 namespace YAML
 {
+template <>
+struct convert<glm::vec2>
+{
+    static Node encode(const glm::vec2& rhs)
+    {
+        Node node;
+        node.push_back(rhs.x);
+        node.push_back(rhs.y);
+        return node;
+    }
+
+    static bool decode(const Node& node, glm::vec2& rhs)
+    {
+        if (!node.IsSequence() || node.size() != 2) {
+            return false;
+        }
+
+        rhs.x = node[0].as<float>();
+        rhs.y = node[1].as<float>();
+
+        return true;
+    }
+};
 
 template <>
 struct convert<glm::vec3>
@@ -67,7 +90,43 @@ struct convert<glm::vec4>
 namespace Hazel
 {
 
+static inline std::string bodyTypeToString(Rigidbody2DComponent::BodyType body_type)
+{
+    switch (body_type) {
+        case Rigidbody2DComponent::BodyType::Static:
+            return "Static";
+        case Rigidbody2DComponent::BodyType::Dynamic:
+            return "Dynamic";
+        case Rigidbody2DComponent::BodyType::Kinematic:
+            return "Kinematic";
+    }
+
+    HZ_CORE_ASSERT(false, "不存在这样的BodyType类型");
+    return "Static";
+}
+
+static inline Rigidbody2DComponent::BodyType stringToBodyType(const std::string& body_tyoe_str)
+{
+    if (body_tyoe_str == "Static") {
+        return Rigidbody2DComponent::BodyType::Static;
+    } else if (body_tyoe_str == "Dynamic") {
+        return Rigidbody2DComponent::BodyType::Dynamic;
+    } else if (body_tyoe_str == "Kinematic") {
+        return Rigidbody2DComponent::BodyType::Kinematic;
+    }
+
+    HZ_CORE_ASSERT(false, "不存在这样的BodyType类型");
+    return Rigidbody2DComponent::BodyType::Static;
+}
+
 // YAML 序列化特化
+YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& v)
+{
+    out << YAML::Flow;  // 数组变成[], 而不是一行一行
+    out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
+    return out;
+}
+
 YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec3& v)
 {
     out << YAML::Flow;  // 数组变成[], 而不是一行一行
@@ -149,6 +208,32 @@ static void serializeEntity(YAML::Emitter& out, Entity entity)
         auto& sprite_renderer = entity.getComponent<SpriteRendererComponent>();
         out << YAML::Key << "Color" << YAML::Value << sprite_renderer.Color;
         out << YAML::EndMap;  // SpriteRendererComponent
+    }
+
+    // Rigidbody2DComponent
+    if (entity.hasComponent<Rigidbody2DComponent>()) {
+        out << YAML::Key << "Rigidbody2DComponent";
+        out << YAML::BeginMap;  // Rigidbody2DComponent
+
+        auto& rb = entity.getComponent<Rigidbody2DComponent>();
+        out << YAML::Key << "BodyType" << YAML::Value << bodyTypeToString(rb.Type);
+        out << YAML::Key << "FixedRotation" << YAML::Value << rb.FixedRotation;
+        out << YAML::EndMap;  // Rigidbody2DComponent
+    }
+
+    // BoxCollider2DComponent
+    if (entity.hasComponent<BoxCollider2DComponent>()) {
+        out << YAML::Key << "BoxCollider2DComponent";
+        out << YAML::BeginMap;  // BoxCollider2DComponent
+
+        auto& bc = entity.getComponent<BoxCollider2DComponent>();
+        out << YAML::Key << "Offset" << YAML::Value << bc.Offset;
+        out << YAML::Key << "Size" << YAML::Value << bc.Size;
+        out << YAML::Key << "Density" << YAML::Value << bc.Density;
+        out << YAML::Key << "Friction" << YAML::Value << bc.Friction;
+        out << YAML::Key << "Restitution" << YAML::Value << bc.Restitution;
+        out << YAML::Key << "RestitutionThreshold" << YAML::Value << bc.RestitutionThreshold;
+        out << YAML::EndMap;  // BoxCollider2DComponent
     }
 
     out << YAML::EndMap;
@@ -261,6 +346,36 @@ bool SceneSerializer::deserialize(const std::string& filepath)
 
                 sprite_renderer_component.Color =
                     sprite_renderer_component_node["Color"].as<glm::vec4>();
+            }
+
+            auto rigidbody_2d_component_node = entity_node["Rigidbody2DComponent"];
+            if (rigidbody_2d_component_node) {
+                auto& rigidbody_2d_component =
+                    deserialize_entity.addComponent<Rigidbody2DComponent>();
+
+                rigidbody_2d_component.Type =
+                    stringToBodyType(rigidbody_2d_component_node["BodyType"].as<std::string>());
+                rigidbody_2d_component.FixedRotation =
+                    rigidbody_2d_component_node["FixedRotation"].as<bool>();
+            }
+
+            auto box_collider_2d_component_node = entity_node["BoxCollider2DComponent"];
+            if (box_collider_2d_component_node) {
+                auto& box_collider_2d_component =
+                    deserialize_entity.addComponent<BoxCollider2DComponent>();
+
+                box_collider_2d_component.Offset =
+                    box_collider_2d_component_node["Offset"].as<glm::vec2>();
+                box_collider_2d_component.Size =
+                    box_collider_2d_component_node["Size"].as<glm::vec2>();
+                box_collider_2d_component.Density =
+                    box_collider_2d_component_node["Density"].as<float>();
+                box_collider_2d_component.Friction =
+                    box_collider_2d_component_node["Friction"].as<float>();
+                box_collider_2d_component.Restitution =
+                    box_collider_2d_component_node["Restitution"].as<float>();
+                box_collider_2d_component.RestitutionThreshold =
+                    box_collider_2d_component_node["RestitutionThreshold"].as<float>();
             }
         }
     }

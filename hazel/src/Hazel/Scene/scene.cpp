@@ -3,9 +3,29 @@
 #include "entity.h"
 #include "components.h"
 #include <Hazel/Renderer/renderer_2d.h>
+#include <box2d/box2d.h>
 
 namespace Hazel
 {
+
+namespace Physic
+{
+
+static inline b2BodyType bodyTypeTob2BodyType(Rigidbody2DComponent::BodyType body_type)
+{
+    switch (body_type) {
+        case Rigidbody2DComponent::BodyType::Static:
+            return b2BodyType::b2_staticBody;
+        case Rigidbody2DComponent::BodyType::Dynamic:
+            return b2BodyType::b2_dynamicBody;
+        case Rigidbody2DComponent::BodyType::Kinematic:
+            return b2BodyType::b2_kinematicBody;
+    }
+    HZ_CORE_ASSERT(false, "未知Rigidbody2DComponent::BodyType类型");
+    return b2BodyType::b2_staticBody;
+}
+
+}  // namespace Physic
 
 // test
 void Scene::onCameraComponentAdded(entt::registry& registry, entt::entity entity)
@@ -59,6 +79,53 @@ void Scene::onUpdateEditor(Timestep, const EditorCamera& editor_camera)
     Renderer2D::endScene();
 }
 
+void Scene::onStartRuntime()
+{
+    // 创建一个全新的物理世界
+    b2WorldDef worldDef = b2DefaultWorldDef();
+    // worldDef.restitutionThreshold = 0.5f;
+    b2WorldId physic_world = b2CreateWorld(&worldDef);
+
+    // 检查当前场景内所有存在2d刚体组件的entity, 去物理世界创建对应的实体
+    auto view = m_registry.view<Rigidbody2DComponent>();
+    for (auto enid : view) {
+        Entity entity{enid, this};
+
+        auto& rb = entity.getComponent<Rigidbody2DComponent>();
+        auto& transform = entity.getComponent<TransformComponent>();
+
+        // 创建box2d中的物理实体
+        b2BodyDef body_def = b2DefaultBodyDef();
+        body_def.type = Physic::bodyTypeTob2BodyType(rb.Type);
+        body_def.motionLocks.angularZ = rb.FixedRotation;  // 锁定z轴上的旋转
+        body_def.position = {transform.Translation.x, transform.Translation.y};
+        b2BodyId b2body = b2CreateBody(physic_world, &body_def);
+        body_def.rotation = b2MakeRot(transform.Rotation.z);  // 设置旋转弧度
+        rb.B2BodyId = {b2body.index1, b2body.world0, b2body.generation};
+
+        // 如果包含碰撞体组件
+        if (entity.hasComponent<BoxCollider2DComponent>()) {
+            auto& bc = entity.getComponent<BoxCollider2DComponent>();
+
+            // 创建多边形形状
+            b2Polygon box = b2MakeBox(transform.Scale.x * bc.Size.x, transform.Scale.y * bc.Size.y);
+            b2ShapeDef shape_def = b2DefaultShapeDef();
+            shape_def.density = bc.Density;                   // 密度
+            shape_def.material.friction = bc.Friction;        // 摩擦力
+            shape_def.material.restitution = bc.Restitution;  // 反弹系数
+            // TODO: float RestitutionThreshold{0.5f};  // 反弹恢复阈值
+            b2CreatePolygonShape(b2body, &shape_def, &box);
+        }
+    }
+
+    m_physic_world = {physic_world.index1, physic_world.generation};
+}
+
+void Scene::onStopRuntime()
+{
+    b2DestroyWorld({m_physic_world.index1, m_physic_world.generation});
+}
+
 void Scene::onUpdateRuntime(Timestep ts)
 {
     // update
@@ -73,6 +140,22 @@ void Scene::onUpdateRuntime(Timestep ts)
             }
         }
         nsc.Instance->onUpdate(ts);
+    });
+
+    // 物理更新
+    b2WorldId physic_world{m_physic_world.index1, m_physic_world.generation};
+    b2World_Step(physic_world, ts, 4);
+    m_registry.view<Rigidbody2DComponent>().each([this](auto enid, Rigidbody2DComponent& rb) {
+        Entity entity{enid, this};
+
+        b2BodyId b2body{rb.B2BodyId.index1, rb.B2BodyId.world0, rb.B2BodyId.generation};
+        auto pos = b2Body_GetPosition(b2body);
+        auto rot = b2Body_GetRotation(b2body);
+        auto angle = atan2(rot.s, rot.c);
+
+        auto& transform = entity.getComponent<TransformComponent>();
+        transform.Translation = {pos.x, pos.y, transform.Translation.z};
+        transform.Rotation.z = angle;
     });
 
     // renderer

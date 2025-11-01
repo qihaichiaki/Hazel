@@ -1262,3 +1262,46 @@ layout(std140, binding = 0) uniform Camera
   * 使用vulkan glsl shader的流程:
     * vulkan glsl -SPIR-V编译-> 1二进制文件 -SPIR-V交叉编译器-> opengl glsl ->SPIR-V编译-> 2二进制文件
     * 缓存这两个二进制文件, 下次无需编译直接使用
+
+
+
+### 2d物理引擎
+* 使用三方2d物理引擎box2d: https://github.com/erincatto/box2d
+* 场景中运行的思路:
+  * 启动运行时更新时, 检查当前场景中所有存在2d刚体组件的实体, 检查后将其信息以及存在的碰撞组件添加入物理更新世界
+  * 更新时, 脚本更新完毕后, 执行物理引擎更新, 更新完毕将实时应用的数据反馈回刚体组件的对象
+
+* box2d使用细节:
+  * Scene中包含物理更新世界: b2World* m_physic_world;
+  * b2World:
+    * 创建世界时赋予持续的水平力和持续的竖直力:new b2World{0.0f, -9.8f};
+    * 创建一个对象, 刚体:
+      * b2BodyDef bodyDef; b2Body* body = m_physic_world->CreateBody(&bodyDef);
+      * bodyDef.type, position.Set(x, y), angle = Rotation.z
+    * 更新:
+      * // 控制物理模拟的细粒度, 取决于制作的游戏类型
+      * const int32_t velocityIterations = 6;
+      * const int32_t positionIterations = 2;
+      * m_physic_world->step(ts, velocityIterations, positionIterations);
+  * b2Body 
+    * SetFixedRotation();  // 设置是否固定旋转
+    * 创建碰撞器:
+      * b2PolygonShape polygonShape; // 设置多边形形状
+      * polygonShape.SetAsBox(hx, hy);  // 设置为box, 里面值均为半宽和半高， 这里为了和物体设置的scale保持一致, 便可以何其相互乘
+      * b2FixtureDef fixtureDef;  //设置固定装置
+      * fixtureDef.shape  = polygonShape;
+      * fixtureDef.物理特性
+      * CreateFixture(fixtureDef); 
+  * Rigidbody2DComponent
+    * BodyType Static, Dynamic, Kinematic type
+    * bool FixedRotation 是否固定z轴上的旋转
+    * void* RuntimeBody = nullptr;  // 作为2d物理世界创建实体的句柄保存
+  * BoxCollider2DComponent 2d碰撞盒子组件
+    * vec2 offset (和transform之间的偏移)
+    * vec2 size(0.5, 0.5) (碰撞盒子大小)
+    * 物理特性:
+    * float Density= 1.0f;  // 密度
+    * float Friction = 0.5f;  // 摩擦力
+    * float Restitution = 0.0f  // 反弹系数
+    * float RestitutionThreshold =  0.5f// 反弹恢复阈值
+    * 后续这些物理特性需要移转到物理材质中去

@@ -98,4 +98,43 @@ struct NativeScriptComponent
     HAZEL_API NativeScriptComponent(const NativeScriptComponent& other) = default;
 };
 
+// 物理组件
+// 2d刚体组件
+struct Rigidbody2DComponent
+{
+    enum class HAZEL_API BodyType {
+        Static,    // 完全静止
+        Dynamic,   // 运动的
+        Kinematic  // 不受力的作用
+    };
+
+    BodyType Type{BodyType::Static};
+    bool FixedRotation{false};
+
+    struct B2BodyHandle
+    {
+        int32_t index1;
+        uint16_t world0;
+        uint16_t generation;
+    };
+    B2BodyHandle B2BodyId;
+
+    HAZEL_API Rigidbody2DComponent() = default;
+    HAZEL_API Rigidbody2DComponent(const Rigidbody2DComponent& other) = default;
+};
+
+// 2d方形碰撞箱
+struct BoxCollider2DComponent
+{
+    glm::vec2 Offset{0.0f, 0.0f};
+    glm::vec2 Size{0.5f, 0.5f};
+    float Density{1.0f};               // 密度
+    float Friction{0.5f};              // 摩擦力
+    float Restitution{0.0f};           // 反弹系数
+    float RestitutionThreshold{0.5f};  // 反弹恢复阈值
+
+    HAZEL_API BoxCollider2DComponent() = default;
+    HAZEL_API BoxCollider2DComponent(const BoxCollider2DComponent& other) = default;
+};
+
 }  // namespace Hazel

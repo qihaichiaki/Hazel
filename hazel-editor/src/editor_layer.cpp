@@ -338,13 +338,15 @@ void EditorLayer::onImGuiRender()
                  ImVec2{1, 0});  // v方向反转一下
 
     // 拖拽的目标元素 image
-    if (ImGui::BeginDragDropTarget()) {
-        const ImGuiPayload* item_data = ImGui::AcceptDragDropPayload("CONTEXT_ITEM");
-        if (item_data) {
-            std::string file_path = (char*)item_data->Data;
-            openScene(file_path);
+    if (m_scene_state == SceneState::Editor) {
+        if (ImGui::BeginDragDropTarget()) {
+            const ImGuiPayload* item_data = ImGui::AcceptDragDropPayload("CONTEXT_ITEM");
+            if (item_data) {
+                std::string file_path = (char*)item_data->Data;
+                openScene(file_path);
+            }
+            ImGui::EndDragDropTarget();
         }
-        ImGui::EndDragDropTarget();
     }
 
     // 显示变换组件 - Gizmos
@@ -406,8 +408,13 @@ void EditorLayer::uiPlayBoard()
     if (ImGui::ImageButton(
             "##play", m_editor_icons[m_scene_state == SceneState::Editor ? 0 : 1]->getRendererId(),
             ImVec2{20.f, 20.f})) {
-        m_scene_state =
-            m_scene_state == SceneState::Editor ? SceneState::Runtime : SceneState::Editor;
+        if (m_scene_state == SceneState::Editor) {
+            m_scene_state = SceneState::Runtime;
+            m_active_scene->onStartRuntime();
+        } else {
+            m_scene_state = SceneState::Editor;
+            m_active_scene->onStopRuntime();
+        }
     }
 
     ImGui::End();

@@ -226,9 +226,9 @@ void OpenGLShader::reflect(GLenum stage, const std::vector<uint32_t>& shader_dat
     HZ_CORE_TRACE("Uniform buffers:");
     for (const auto& resource : resources.uniform_buffers) {
         const auto& bufferType = compiler.get_type(resource.base_type_id);
-        uint32_t bufferSize = compiler.get_declared_struct_size(bufferType);
-        uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
-        int memberCount = bufferType.member_types.size();
+        auto bufferSize = compiler.get_declared_struct_size(bufferType);
+        auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+        auto memberCount = bufferType.member_types.size();
 
         HZ_CORE_TRACE("  {0}", resource.name);
         HZ_CORE_TRACE("    Size = {0}", bufferSize);
@@ -371,9 +371,9 @@ void OpenGLShader::createProgram()
         GLuint shader_ID =
             shader_IDs.emplace_back(glCreateShader(stage));  // 先创建对应类型的shader
         glShaderBinary(1, &shader_ID, GL_SHADER_BINARY_FORMAT_SPIR_V, spirv.data(),
-                       spirv.size() * sizeof(uint32_t));             // 加载shader二进制内容
-        glSpecializeShader(shader_ID, "main", 0, nullptr, nullptr);  // main类型?
-        glAttachShader(program, shader_ID);                          // 附加到shader程序上
+                       (uint32_t)(spirv.size() * sizeof(uint32_t)));  // 加载shader二进制内容
+        glSpecializeShader(shader_ID, "main", 0, nullptr, nullptr);   // main类型?
+        glAttachShader(program, shader_ID);                           // 附加到shader程序上
     }
 
     glLinkProgram(program);  // 链接shader程序

@@ -46,6 +46,9 @@ set(VULKAN_SDK_LIBS_RELEASE
     "${VULKAN_LIBRARY_DIR}/spirv-cross-glsl.lib"
 )
 
+# 加载box2d
+add_subdirectory(vendor/box2d)
+
 # dll/lib 文件指明生成位置
 # 跳过MSBuild自动配置子目录
 set(BUILD_PATH "${CMAKE_BINARY_DIR}/bin/${BUILD_CONFIG}-${BUILD_PLATFROM}/${PROJECT_NAME}")
@@ -97,7 +100,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     "${CMAKE_SOURCE_DIR}/hazel/vendor/stb_image"
     "${CMAKE_SOURCE_DIR}/hazel/vendor/entt/include" # ECS三方库, 也是单头文件包含
     "${CMAKE_SOURCE_DIR}/hazel/vendor/ImGuizmo" # ImGuizmo相关头文件导入
-    "${VULKAN_INCLUDE_DIR}"
+    "${VULKAN_INCLUDE_DIR}" # vulkan sdk相关include
+    "${CMAKE_SOURCE_DIR}/hazel/vendor/box2d/include"
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -108,4 +112,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     yaml-cpp
     $<$<CONFIG:Debug>:${VULKAN_SDK_LIBS_DEBUG}>
     $<$<CONFIG:Release>:${VULKAN_SDK_LIBS_RELEASE}>
+    box2d::box2d
 )

@@ -263,6 +263,14 @@ void SceneHierarchyPanel::drawComponents(Entity entity)
                             !m_selection_context.hasComponent<SpriteRendererComponent>())) {
             m_selection_context.addComponent<SpriteRendererComponent>();
         }
+        if (ImGui::MenuItem("Rigidbody2D", 0, false,
+                            !m_selection_context.hasComponent<Rigidbody2DComponent>())) {
+            m_selection_context.addComponent<Rigidbody2DComponent>();
+        }
+        if (ImGui::MenuItem("BoxCollider2D", 0, false,
+                            !m_selection_context.hasComponent<BoxCollider2DComponent>())) {
+            m_selection_context.addComponent<BoxCollider2DComponent>();
+        }
         ImGui::EndPopup();
     }
     ImGui::PopItemWidth();
@@ -350,6 +358,39 @@ void SceneHierarchyPanel::drawComponents(Entity entity)
 
             ImGui::DragFloat("平铺因子", &sprite_renderer.TilingFactor, 1.0f, 0.0f, 1000.0f);
         });
+
+    // Rigidbody2D
+    drawComponent<Rigidbody2DComponent>("Rigidbody2D", entity, [](Rigidbody2DComponent& rb) {
+        const char* body_type_strings[] = {"static", "dynamic", "kinematic"};
+        const char* current_body_type_string = body_type_strings[(int)rb.Type];
+        if (ImGui::BeginCombo("2D刚体类型", current_body_type_string)) {
+            for (int i = 0; i < 3; ++i) {
+                bool is_selected = current_body_type_string == body_type_strings[i];
+                if (ImGui::Selectable(body_type_strings[i], is_selected)) {
+                    current_body_type_string = body_type_strings[i];
+                    rb.Type = (Rigidbody2DComponent::BodyType)i;
+                }
+
+                if (is_selected) {
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+            ImGui::EndCombo();
+        }
+
+        ImGui::Checkbox("固定z轴旋转", &rb.FixedRotation);
+    });
+
+    // BoxCollider2D
+    drawComponent<BoxCollider2DComponent>("BoxCollider2D", entity, [](BoxCollider2DComponent& bc) {
+        ImGui::DragFloat2("偏移", glm::value_ptr(bc.Offset));
+        ImGui::DragFloat2("大小", glm::value_ptr(bc.Size));
+        ImGui::DragFloat("密度", &bc.Density, 0.01f);
+        ImGui::DragFloat("摩擦力", &bc.Friction, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat("反弹系数", &bc.Restitution, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat("反弹恢复阈值", &bc.RestitutionThreshold, 0.01f, 0.0f, 1.0f, "%.3f",
+                         ImGuiSliderFlags_NoInput);
+    });
 }
 
 }  // namespace Hazel

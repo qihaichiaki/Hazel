@@ -8,6 +8,16 @@
 namespace Hazel
 {
 
+// 物理世界的相关句柄
+namespace Physic
+{
+struct B2WorldHandle
+{
+    uint16_t index1;
+    uint16_t generation;
+};
+}  // namespace Physic
+
 class Entity;
 class Scene
 {
@@ -30,10 +40,16 @@ public:
     /// @warning 临时区分场景运行时和编辑器时的接口
     HAZEL_API void onUpdateEditor(Timestep ts, const EditorCamera& editor_camera);
 
+    /// @brief 开始场景运行时
+    HAZEL_API void onStartRuntime();
+
     /// @brief 场景运行时更新
     /// @param ts 帧间隔
     /// @warning 临时区分场景运行时和编辑器时的接口
     HAZEL_API void onUpdateRuntime(Timestep ts);
+
+    /// @brief 结束场景运行时
+    HAZEL_API void onStopRuntime();
 
     /// @brief 更新场景的视口宽度和高度
     HAZEL_API void onViewportResize(uint32_t width, uint32_t height);
@@ -47,7 +63,9 @@ private:
     void onCameraComponentAdded(entt::registry& registry, entt::entity entity);
 
 private:
-    entt::registry m_registry;  // 注册管理器, 组件和实体的容器
+    entt::registry m_registry;             // 注册管理器, 组件和实体的容器
+    Physic::B2WorldHandle m_physic_world;  // 物理世界
+
     uint32_t m_viewport_width;
     uint32_t m_viewport_height;
 
