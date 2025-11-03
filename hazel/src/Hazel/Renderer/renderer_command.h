@@ -31,7 +31,8 @@ public:
 
     /// @brief 根据索引绘制
     /// @param vertex_array 顶点数组数据
-    HAZEL_API static void drawIndexed(const Ref<VertexArray>& vertex_array, uint32_t index_count)
+    HAZEL_API static void drawIndexed(const Ref<VertexArray>& vertex_array,
+                                      uint32_t index_count = 0)
     {
         s_renderer_api->drawIndexed(vertex_array, index_count);
     }

@@ -1,0 +1,24 @@
+Scene: Scene name
+Entities:
+  - Entity: 7747640645175707136
+    TagComponent:
+      Tag: 红色
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [0.98039216, 0.011534025, 0.011534025, 0.56078434]
+      Thickness: 1
+      Fade: 0.878
+  - Entity: 16553927364407655997
+    TagComponent:
+      Tag: 白色
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [1, 1, 1, 1]
+      Thickness: 0.225
+      Fade: 0.19

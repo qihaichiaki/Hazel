@@ -46,10 +46,25 @@ public:
     /// @param texture 2d纹理对象
     /// @param tint_color 平铺因子
     /// @param tiling_factor 混合颜色
+    /// @param entity_id 实体id, 默认为-1, 表示无实体绘制. 编辑器特供, 临时的
     HAZEL_API static void drawQuad(const glm::mat4& transform,
                                    const Ref<Texture2D>& texture,
                                    const glm::vec4& tint_color = glm::vec4{1.0f},
-                                   float tiling_factor = 1.0f);
+                                   float tiling_factor = 1.0f,
+                                   int entity_id = -1);
+
+    /// @brief 绘制圆形
+    /// @param transform 圆形的坐标, 旋转, 缩放
+    /// @param color 颜色
+    /// @param thickness 圆的厚度 [0, 1.0f](1为实心圆, 0什么都没有)
+    /// @param fade 模糊程度(0.005为最清晰)
+    /// @param entity_id
+    /// @return
+    HAZEL_API static void drawCircle(const glm::mat4& transform,
+                                     const glm::vec4& color,
+                                     float thickness,
+                                     float fade = 0.005f,
+                                     int entity_id = -1);
 
     /// 绘制非旋转的四边形
 

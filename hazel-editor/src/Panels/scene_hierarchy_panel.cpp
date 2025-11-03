@@ -266,6 +266,10 @@ void SceneHierarchyPanel::drawComponents(Entity entity)
                             !m_selection_context.hasComponent<SpriteRendererComponent>())) {
             m_selection_context.addComponent<SpriteRendererComponent>();
         }
+        if (ImGui::MenuItem("CircleRenderer", 0, false,
+                            !m_selection_context.hasComponent<CircleRendererComponent>())) {
+            m_selection_context.addComponent<CircleRendererComponent>();
+        }
         if (ImGui::MenuItem("Rigidbody2D", 0, false,
                             !m_selection_context.hasComponent<Rigidbody2DComponent>())) {
             m_selection_context.addComponent<Rigidbody2DComponent>();
@@ -360,6 +364,14 @@ void SceneHierarchyPanel::drawComponents(Entity entity)
             }
 
             ImGui::DragFloat("平铺因子", &sprite_renderer.TilingFactor, 1.0f, 0.0f, 1000.0f);
+        });
+
+    // CircleRenderer
+    drawComponent<CircleRendererComponent>(
+        "Circle", entity, [](CircleRendererComponent& circle_renderer) {
+            ImGui::ColorEdit4("颜色", glm::value_ptr(circle_renderer.Color));
+            ImGui::DragFloat("厚度", &circle_renderer.Thickness, 0.025f, 0.0f, 1.0f);
+            ImGui::DragFloat("模糊效果", &circle_renderer.Fade, 0.0005f, 0.0f, 1.0f);
         });
 
     // Rigidbody2D

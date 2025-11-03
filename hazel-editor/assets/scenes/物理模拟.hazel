@@ -189,3 +189,14 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
+  - Entity: 12706266782436582768
+    TagComponent:
+      Tag: 空实体
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [5, 5, 1]
+    CircleRendererComponent:
+      Color: [1, 1, 1, 1]
+      Thickness: 0.05
+      Fade: 0.005

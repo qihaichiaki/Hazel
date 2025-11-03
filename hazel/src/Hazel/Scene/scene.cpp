@@ -76,18 +76,29 @@ void Scene::onUpdateEditor(Timestep, const EditorCamera& editor_camera)
 {
     Renderer2D::beginScene(editor_camera);
 
-    // group 持久化,初始化稍慢，但是后续访问快->内存连续
-    auto group = m_registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-    for (auto entity : group) {
-        auto [transform, sprite_renderer] =
-            group.get<TransformComponent, SpriteRendererComponent>(entity);
-        // TODO: 是否需要优化, 防止每次都计算transform
-        if (sprite_renderer.Texture) {
-            Renderer2D::drawQuad(transform.getTransform(), sprite_renderer.Texture,
-                                 sprite_renderer.Color, sprite_renderer.TilingFactor);
-        } else {
-            Renderer2D::drawQuad(transform.getTransform(), sprite_renderer.Color, (int)entity);
+    {
+        // group 持久化,初始化稍慢，但是后续访问快->内存连续
+        auto group = m_registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+        for (auto entity : group) {
+            auto [transform, sprite_renderer] =
+                group.get<TransformComponent, SpriteRendererComponent>(entity);
+            // TODO: 是否需要优化, 防止每次都计算transform
+            if (sprite_renderer.Texture) {
+                Renderer2D::drawQuad(transform.getTransform(), sprite_renderer.Texture,
+                                     sprite_renderer.Color, sprite_renderer.TilingFactor,
+                                     (int)entity);
+            } else {
+                Renderer2D::drawQuad(transform.getTransform(), sprite_renderer.Color, (int)entity);
+            }
         }
+    }
+
+    {
+        m_registry.view<TransformComponent, CircleRendererComponent>().each(
+            [](auto enid, TransformComponent& transform, CircleRendererComponent& circle_renderer) {
+                Renderer2D::drawCircle(transform.getTransform(), circle_renderer.Color,
+                                       circle_renderer.Thickness, circle_renderer.Fade, (int)enid);
+            });
     }
 
     Renderer2D::endScene();
@@ -192,7 +203,7 @@ void Scene::onUpdateRuntime(Timestep ts)
     if (main_camera != nullptr) {
         Renderer2D::beginScene(*main_camera, camera_transform);
 
-        // group 持久化,初始化稍慢，但是后续访问快->内存连续
+        // renderer quad
         auto group = m_registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
         for (auto entity : group) {
             auto [transform, sprite_renderer] =
@@ -205,6 +216,13 @@ void Scene::onUpdateRuntime(Timestep ts)
                 Renderer2D::drawQuad(transform.getTransform(), sprite_renderer.Color, (int)entity);
             }
         }
+
+        // renderer circle
+        m_registry.view<TransformComponent, CircleRendererComponent>().each(
+            [](auto enid, TransformComponent& transform, CircleRendererComponent& circle_renderer) {
+                Renderer2D::drawCircle(transform.getTransform(), circle_renderer.Color,
+                                       circle_renderer.Thickness, circle_renderer.Fade, (int)enid);
+            });
 
         Renderer2D::endScene();
     }
@@ -285,6 +303,7 @@ Ref<Scene> Scene::copy(const Ref<Scene>& other)
     // 复制组件
     copyComponent<TransformComponent>(new_scene->m_registry, other->m_registry, entt_map);
     copyComponent<SpriteRendererComponent>(new_scene->m_registry, other->m_registry, entt_map);
+    copyComponent<CircleRendererComponent>(new_scene->m_registry, other->m_registry, entt_map);
     copyComponent<CameraComponent>(new_scene->m_registry, other->m_registry, entt_map);
     copyComponent<NativeScriptComponent>(new_scene->m_registry, other->m_registry, entt_map);
     copyComponent<Rigidbody2DComponent>(new_scene->m_registry, other->m_registry, entt_map);
@@ -301,6 +320,7 @@ Entity Scene::duplicateEntity(Entity entity)
 
         copyComponent<TransformComponent>(new_entity, entity);
         copyComponent<SpriteRendererComponent>(new_entity, entity);
+        copyComponent<CircleRendererComponent>(new_entity, entity);
         copyComponent<CameraComponent>(new_entity, entity);
         copyComponent<NativeScriptComponent>(new_entity, entity);
         copyComponent<Rigidbody2DComponent>(new_entity, entity);

@@ -1333,3 +1333,61 @@ layout(std140, binding = 0) uniform Camera
   * 利用老entity创建一个相同tag和相同组件的实体
 
 * 保存当前场景 ctrl s
+
+
+### 渲染一个圆形
+* 增加CircleRendererComponent
+  * Color
+  * // Radius = 0.5f;  // 可以和sprite一样, 保持和entity1中transform组件一致的scale即可
+  * Thickness = 1.0f; // 厚度 0 ~ 1 , 1就是实心圆
+  * Fade = 0.005;  // 淡入效果
+
+
+* renderer circle
+  * 顶点数据:
+    * Worldposition
+    * LocalPosition  // -1, 1 xy
+    * Color
+    * // vec2 Params(Thickness, Fade) -> 可以这么做
+    * float Thickness
+    * float Fade
+    * int EntityID;
+  * Renderer2DData
+    * 数组对象va Circle
+    * vb  
+    * shader ->Renderer2D_Circle.glsl(将之前的texture.glsl改名为Renderer2D_Quad.glsl)
+    * 类似于QuadIndex, 同样标注
+      * Count, VertexBufferBase, xxxPtr
+
+
+  * 增加API DrawCircle()
+    * todo: 超出圆形绘制限制，flush
+    * 仍然每次调用4个顶点填充
+    * 填充圆顶点数据
+      * 局部坐标, 左下角-1-1, 右上角1, 1基本和uv坐标一致
+  * startbatch中重置CircleCount的相关计数, 以及数组指针数据
+
+* Renderer2D_Circle.glsl
+  * 需要注意glsl中location以16byte为一个槽位 -> 并非? 4个
+
+* 片段着色器:
+```glsl    
+    // Calculate distance and fill circle with white
+    float distance = 1.0 - length(Input.LocalPosition);
+
+    float circle = smoothstep(0.0, Input.Fade, distance);
+    circle *= smoothstep(Input.Thickness + Input.Fade, Input.Thickness, distance);
+
+    if (circle == 0.0)
+      discard;  // 不是圆的渲染范围内, 当前输出像素相关值就完全抛弃, 这么做的原因是防止看不见的四边形框和圆之间的内容挡住后面的内容
+
+    // Set output color
+    o_Color.rgb = Input.Color;
+    o_Color.a *= circle;
+
+    o_EntityID = v_EntityID;
+```
+
+
+* 注意：
+  * 使用glDrawElements的时候，一定要先绑定va

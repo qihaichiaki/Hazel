@@ -70,7 +70,16 @@ struct SpriteRendererComponent
 
     HAZEL_API SpriteRendererComponent() = default;
     HAZEL_API SpriteRendererComponent(const SpriteRendererComponent& other) = default;
-    HAZEL_API SpriteRendererComponent(const glm::vec4& color) : Color{color} {}
+};
+
+struct CircleRendererComponent
+{
+    glm::vec4 Color{1.0f};
+    float Thickness{1.0f};  // 0 ~ 1的厚度, 1表示实心圆
+    float Fade{0.005f};     // 模糊效果
+
+    CircleRendererComponent() = default;
+    CircleRendererComponent(const CircleRendererComponent& other) = default;
 };
 
 struct CameraComponent

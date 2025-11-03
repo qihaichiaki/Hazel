@@ -210,6 +210,18 @@ static void serializeEntity(YAML::Emitter& out, Entity entity)
         out << YAML::EndMap;  // SpriteRendererComponent
     }
 
+    // CircleRendererComponent
+    if (entity.hasComponent<CircleRendererComponent>()) {
+        out << YAML::Key << "CircleRendererComponent";
+        out << YAML::BeginMap;  // SpriteRendererComponent
+
+        auto& circle_renderer = entity.getComponent<CircleRendererComponent>();
+        out << YAML::Key << "Color" << YAML::Value << circle_renderer.Color;
+        out << YAML::Key << "Thickness" << YAML::Value << circle_renderer.Thickness;
+        out << YAML::Key << "Fade" << YAML::Value << circle_renderer.Fade;
+        out << YAML::EndMap;  // SpriteRendererComponent
+    }
+
     // Rigidbody2DComponent
     if (entity.hasComponent<Rigidbody2DComponent>()) {
         out << YAML::Key << "Rigidbody2DComponent";
@@ -348,6 +360,20 @@ bool SceneSerializer::deserialize(const std::string& filepath)
                     sprite_renderer_component_node["Color"].as<glm::vec4>();
             }
 
+            // CircleRendererComponent
+            auto circle_renderer_component_node = entity_node["CircleRendererComponent"];
+            if (circle_renderer_component_node) {
+                auto& circle_renderer_component =
+                    deserialize_entity.addComponent<CircleRendererComponent>();
+
+                circle_renderer_component.Color =
+                    circle_renderer_component_node["Color"].as<glm::vec4>();
+                circle_renderer_component.Thickness =
+                    circle_renderer_component_node["Thickness"].as<float>();
+                circle_renderer_component.Fade = circle_renderer_component_node["Fade"].as<float>();
+            }
+
+            // Rigidbody2DComponent
             auto rigidbody_2d_component_node = entity_node["Rigidbody2DComponent"];
             if (rigidbody_2d_component_node) {
                 auto& rigidbody_2d_component =
@@ -359,6 +385,7 @@ bool SceneSerializer::deserialize(const std::string& filepath)
                     rigidbody_2d_component_node["FixedRotation"].as<bool>();
             }
 
+            // BoxCollider2DComponent
             auto box_collider_2d_component_node = entity_node["BoxCollider2DComponent"];
             if (box_collider_2d_component_node) {
                 auto& box_collider_2d_component =
