@@ -82,7 +82,7 @@ struct Renderer2DData
     LineVertex* LineVertexBufferPtr = nullptr;
     uint32_t LineCount = 0;
 
-    float LineWidth = 2.0f;
+    float LineWidth = 5.0f;
 
     Renderer2D::Statistics Stats;
 

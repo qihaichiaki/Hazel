@@ -248,6 +248,21 @@ static void serializeEntity(YAML::Emitter& out, Entity entity)
         out << YAML::EndMap;  // BoxCollider2DComponent
     }
 
+    // CircleCollider2DComponent
+    if (entity.hasComponent<CircleCollider2DComponent>()) {
+        out << YAML::Key << "CircleCollider2DComponent";
+        out << YAML::BeginMap;  // CircleCollider2DComponent
+
+        auto& cc = entity.getComponent<CircleCollider2DComponent>();
+        out << YAML::Key << "Offset" << YAML::Value << cc.Offset;
+        out << YAML::Key << "Radius" << YAML::Value << cc.Radius;
+        out << YAML::Key << "Density" << YAML::Value << cc.Density;
+        out << YAML::Key << "Friction" << YAML::Value << cc.Friction;
+        out << YAML::Key << "Restitution" << YAML::Value << cc.Restitution;
+        out << YAML::Key << "RestitutionThreshold" << YAML::Value << cc.RestitutionThreshold;
+        out << YAML::EndMap;  // CircleCollider2DComponent
+    }
+
     out << YAML::EndMap;
 }
 
@@ -403,6 +418,26 @@ bool SceneSerializer::deserialize(const std::string& filepath)
                     box_collider_2d_component_node["Restitution"].as<float>();
                 box_collider_2d_component.RestitutionThreshold =
                     box_collider_2d_component_node["RestitutionThreshold"].as<float>();
+            }
+
+            // CircleCollider2DComponent
+            auto circle_collider_2d_component_node = entity_node["CircleCollider2DComponent"];
+            if (circle_collider_2d_component_node) {
+                auto& circle_collider_2d_component =
+                    deserialize_entity.addComponent<CircleCollider2DComponent>();
+
+                circle_collider_2d_component.Offset =
+                    circle_collider_2d_component_node["Offset"].as<glm::vec2>();
+                circle_collider_2d_component.Radius =
+                    circle_collider_2d_component_node["Radius"].as<float>();
+                circle_collider_2d_component.Density =
+                    circle_collider_2d_component_node["Density"].as<float>();
+                circle_collider_2d_component.Friction =
+                    circle_collider_2d_component_node["Friction"].as<float>();
+                circle_collider_2d_component.Restitution =
+                    circle_collider_2d_component_node["Restitution"].as<float>();
+                circle_collider_2d_component.RestitutionThreshold =
+                    circle_collider_2d_component_node["RestitutionThreshold"].as<float>();
             }
         }
     }

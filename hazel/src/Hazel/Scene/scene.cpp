@@ -101,9 +101,32 @@ void Scene::onUpdateEditor(Timestep, const EditorCamera& editor_camera)
             });
     }
 
-    Renderer2D::drawRect(glm::vec3{0.f}, glm::vec2{5.0, 5.0}, glm::vec4{1.f, 0.8f, 0.8f, 1.0f});
-    Renderer2D::drawLine(glm::vec3{0.f}, glm::vec3{0.f, 10.f, 0.f},
-                         glm::vec4{1.f, 0.8f, 1.0f, 1.0f});
+    // TODO: 渲染物理碰撞盒子
+    // {
+    //     m_registry.view<TransformComponent, BoxCollider2DComponent>().each(
+    //         [](auto enid, TransformComponent& transform, BoxCollider2DComponent& box_collider2d)
+    //         {
+    //             TransformComponent box_collider_2d_transform{transform};
+    //             box_collider_2d_transform.Translation +=
+    //                 glm::vec3{box_collider2d.Offset.x, box_collider2d.Offset.y, 0.0f};
+    //             box_collider_2d_transform.Scale *=
+    //                 glm::vec3{box_collider2d.Size.x, box_collider2d.Size.y, 1.0f};
+    //             Renderer2D::drawRect(box_collider_2d_transform.getTransform(),
+    //                                  {1.0f, 1.0f, 1.0f, 1.f}, (int)enid);
+    //         });
+
+    //     m_registry.view<TransformComponent, CircleCollider2DComponent>().each(
+    //         [](auto enid, TransformComponent& transform,
+    //            CircleCollider2DComponent& circle_collider2d) {
+    //             TransformComponent circle_collider_2d_transform{transform};
+    //             circle_collider_2d_transform.Translation +=
+    //                 glm::vec3{circle_collider2d.Offset.x, circle_collider2d.Offset.y, 0.0f};
+    //             circle_collider_2d_transform.Scale = {circle_collider2d.Radius * 2.0f,
+    //                                                   circle_collider2d.Radius * 2.0f, 1.0f};
+    //             Renderer2D::drawCircle(circle_collider_2d_transform.getTransform(),
+    //                                    {1.0f, 1.0f, 1.0f, 1.f}, 0.025f, 0.005f, (int)enid);
+    //         });
+    // }
 
     Renderer2D::endScene();
 }
@@ -132,18 +155,31 @@ void Scene::onStartRuntime()
         b2BodyId b2body = b2CreateBody(physic_world, &body_def);
         rb.B2BodyId = {b2body.index1, b2body.world0, b2body.generation};
 
-        // 如果包含碰撞体组件
+        // 如果包含box碰撞体组件
         if (entity.hasComponent<BoxCollider2DComponent>()) {
             auto& bc = entity.getComponent<BoxCollider2DComponent>();
 
-            // 创建多边形形状
-            b2Polygon box = b2MakeBox(transform.Scale.x * bc.Size.x, transform.Scale.y * bc.Size.y);
+            // 创建多边形形状;
+            b2Polygon box =
+                b2MakeOffsetBox(transform.Scale.x * bc.Size.x, transform.Scale.y * bc.Size.y,
+                                {bc.Offset.x, bc.Offset.y}, b2MakeRot(0));
             b2ShapeDef shape_def = b2DefaultShapeDef();
             shape_def.density = bc.Density;                   // 密度
             shape_def.material.friction = bc.Friction;        // 摩擦力
             shape_def.material.restitution = bc.Restitution;  // 反弹系数
             // TODO: float RestitutionThreshold{0.5f};  // 反弹恢复阈值
             b2CreatePolygonShape(b2body, &shape_def, &box);
+        }
+
+        if (entity.hasComponent<CircleCollider2DComponent>()) {
+            auto& cc = entity.getComponent<CircleCollider2DComponent>();
+
+            b2Circle circle{{cc.Offset.x, cc.Offset.y}, cc.Radius};
+            b2ShapeDef shape_def = b2DefaultShapeDef();
+            shape_def.density = cc.Density;                   // 密度
+            shape_def.material.friction = cc.Friction;        // 摩擦力
+            shape_def.material.restitution = cc.Restitution;  // 反弹系数
+            b2CreateCircleShape(b2body, &shape_def, &circle);
         }
     }
 
@@ -217,9 +253,9 @@ void Scene::onUpdateRuntime(Timestep ts)
                 Renderer2D::drawQuad(transform.getTransform(), sprite_renderer.Texture,
                                      sprite_renderer.Color, sprite_renderer.TilingFactor);
             } else {
-                // Renderer2D::drawQuad(transform.getTransform(), sprite_renderer.Color,
+                Renderer2D::drawQuad(transform.getTransform(), sprite_renderer.Color, (int)entity);
+                // Renderer2D::drawRect(transform.getTransform(), sprite_renderer.Color,
                 // (int)entity);
-                Renderer2D::drawRect(transform.getTransform(), sprite_renderer.Color, (int)entity);
             }
         }
 
@@ -314,6 +350,7 @@ Ref<Scene> Scene::copy(const Ref<Scene>& other)
     copyComponent<NativeScriptComponent>(new_scene->m_registry, other->m_registry, entt_map);
     copyComponent<Rigidbody2DComponent>(new_scene->m_registry, other->m_registry, entt_map);
     copyComponent<BoxCollider2DComponent>(new_scene->m_registry, other->m_registry, entt_map);
+    copyComponent<CircleCollider2DComponent>(new_scene->m_registry, other->m_registry, entt_map);
 
     return new_scene;
 }
@@ -331,6 +368,7 @@ Entity Scene::duplicateEntity(Entity entity)
         copyComponent<NativeScriptComponent>(new_entity, entity);
         copyComponent<Rigidbody2DComponent>(new_entity, entity);
         copyComponent<BoxCollider2DComponent>(new_entity, entity);
+        copyComponent<CircleCollider2DComponent>(new_entity, entity);
     }
     return new_entity;
 }
