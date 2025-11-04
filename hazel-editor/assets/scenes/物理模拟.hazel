@@ -4,7 +4,7 @@ Entities:
     TagComponent:
       Tag: 相机
     TransformComponent:
-      Translation: [0, 0, 0]
+      Translation: [6.23, 0, 0]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     CameraComponent:

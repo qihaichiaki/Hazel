@@ -75,6 +75,24 @@ public:
                                    const glm::vec4& color,
                                    int entity_id = -1);
 
+    /// @brief 绘制轴对齐矩形边框, 注意是垂直于z轴
+    /// @param position 中心点
+    /// @param half_size 半边宽高
+    /// @param color 边框颜色
+    /// @param entity_id 实体id, 默认为-1, 表示无实体绘制. 编辑器特供
+    HAZEL_API static void drawRect(const glm::vec3& position,
+                                   const glm::vec2& half_size,
+                                   const glm::vec4& color,
+                                   int entity_id = -1);
+
+    /// @brief 绘制矩形边框
+    /// @param transform 矩形边框的变换
+    /// @param color 矩形边框的颜色
+    /// @param entity_id 实体id, 默认为-1, 表示无实体绘制. 编辑器特供
+    HAZEL_API static void drawRect(const glm::mat4& transform,
+                                   const glm::vec4& color,
+                                   int entity_id = -1);
+
     /// 绘制非旋转的四边形
 
     /// @brief 根据给出信息实时绘制一个四边形

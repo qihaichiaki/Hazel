@@ -101,6 +101,10 @@ void Scene::onUpdateEditor(Timestep, const EditorCamera& editor_camera)
             });
     }
 
+    Renderer2D::drawRect(glm::vec3{0.f}, glm::vec2{5.0, 5.0}, glm::vec4{1.f, 0.8f, 0.8f, 1.0f});
+    Renderer2D::drawLine(glm::vec3{0.f}, glm::vec3{0.f, 10.f, 0.f},
+                         glm::vec4{1.f, 0.8f, 1.0f, 1.0f});
+
     Renderer2D::endScene();
 }
 
@@ -213,7 +217,9 @@ void Scene::onUpdateRuntime(Timestep ts)
                 Renderer2D::drawQuad(transform.getTransform(), sprite_renderer.Texture,
                                      sprite_renderer.Color, sprite_renderer.TilingFactor);
             } else {
-                Renderer2D::drawQuad(transform.getTransform(), sprite_renderer.Color, (int)entity);
+                // Renderer2D::drawQuad(transform.getTransform(), sprite_renderer.Color,
+                // (int)entity);
+                Renderer2D::drawRect(transform.getTransform(), sprite_renderer.Color, (int)entity);
             }
         }
 

@@ -422,7 +422,7 @@ void Renderer2D::drawCircle(
 void Renderer2D::drawLine(const glm::vec3& p0,
                           const glm::vec3& p1,
                           const glm::vec4& color,
-                          int entity_id = -1)
+                          int entity_id)
 {
     HZ_PROFILE_FUNCTION();
 
@@ -443,6 +443,35 @@ void Renderer2D::drawLine(const glm::vec3& p0,
 
     s_data.LineCount++;
     s_data.Stats.LineCount++;
+}
+
+void Renderer2D::drawRect(const glm::vec3& position,
+                          const glm::vec2& half_size,
+                          const glm::vec4& color,
+                          int entity_id)
+{
+    glm::vec3 p0{position.x - half_size.x, position.y - half_size.y, position.z};
+    glm::vec3 p1{position.x + half_size.x, position.y - half_size.y, position.z};
+    glm::vec3 p2{position.x + half_size.x, position.y + half_size.y, position.z};
+    glm::vec3 p3{position.x - half_size.x, position.y + half_size.y, position.z};
+
+    drawLine(p0, p1, color, entity_id);
+    drawLine(p1, p2, color, entity_id);
+    drawLine(p2, p3, color, entity_id);
+    drawLine(p3, p0, color, entity_id);
+}
+
+void Renderer2D::drawRect(const glm::mat4& transform, const glm::vec4& color, int entity_id)
+{
+    glm::vec3 p0 = transform * s_data.RefPositions[0];
+    glm::vec3 p1 = transform * s_data.RefPositions[1];
+    glm::vec3 p2 = transform * s_data.RefPositions[2];
+    glm::vec3 p3 = transform * s_data.RefPositions[3];
+
+    drawLine(p0, p1, color, entity_id);
+    drawLine(p1, p2, color, entity_id);
+    drawLine(p2, p3, color, entity_id);
+    drawLine(p3, p0, color, entity_id);
 }
 
 void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
@@ -532,5 +561,6 @@ void Renderer2D::resetStats()
 {
     s_data.Stats.DrawCalls = 0;
     s_data.Stats.QuadCount = 0;
+    s_data.Stats.LineCount = 0;
 }
 }  // namespace Hazel
