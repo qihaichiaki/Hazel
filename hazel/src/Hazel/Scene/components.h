@@ -51,7 +51,7 @@ struct TransformComponent
     HAZEL_API TransformComponent(const TransformComponent& other) = default;
 
     /// @brief 计算transform矩阵
-    glm::mat4 getTransform() const
+    HAZEL_API glm::mat4 getTransform() const
     {
         // auto rotation = glm::rotate(glm::mat4{1.0f}, Rotation.x, {1.0f, 0.0f, 0.0f}) *
         //                 glm::rotate(glm::mat4{1.0f}, Rotation.y, {0.0f, 1.0f, 0.0f}) *
@@ -148,6 +148,7 @@ struct BoxCollider2DComponent
 {
     glm::vec2 Offset{0.0f, 0.0f};
     glm::vec2 Size{0.5f, 0.5f};
+
     float Density{1.0f};               // 密度
     float Friction{0.5f};              // 摩擦力
     float Restitution{0.0f};           // 反弹系数
@@ -155,6 +156,21 @@ struct BoxCollider2DComponent
 
     HAZEL_API BoxCollider2DComponent() = default;
     HAZEL_API BoxCollider2DComponent(const BoxCollider2DComponent& other) = default;
+};
+
+// 2d圆形碰撞箱
+struct CircleCollider2DComponent
+{
+    glm::vec2 Offset{0.0f, 0.0f};
+    float Radius{0.0f};
+
+    float Density{1.0f};               // 密度
+    float Friction{0.5f};              // 摩擦力
+    float Restitution{0.0f};           // 反弹系数
+    float RestitutionThreshold{0.5f};  // 反弹恢复阈值
+
+    HAZEL_API CircleCollider2DComponent() = default;
+    HAZEL_API CircleCollider2DComponent(const CircleCollider2DComponent& other) = default;
 };
 
 }  // namespace Hazel

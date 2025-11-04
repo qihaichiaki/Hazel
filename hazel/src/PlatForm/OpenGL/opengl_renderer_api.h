@@ -16,6 +16,8 @@ public:
     void setClearColor(const glm::vec4& clear_color) override;
     void clear() override;
     void drawIndexed(const Ref<VertexArray>& vertex_array, uint32_t index_count) override;
+    void drawLines(const Ref<VertexArray>& vertex_array, uint32_t vertex_count) override;
+    void setLineWidth(float width) override;
     void setViewport(uint32_t width, uint32_t height) override;
 };
 }  // namespace Hazel

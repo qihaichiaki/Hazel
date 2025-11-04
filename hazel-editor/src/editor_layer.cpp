@@ -343,10 +343,11 @@ void EditorLayer::onImGuiRender()
     ImGui::Text("当前悬停的实体对象: %s", hover_entity_tag);
     ImGui::Separator();
     ImGui::Text("Renderer2D Stats:");
-    ImGui::Text("Draw Calls: %d", renderer2d_stats.DrawCalls);
-    ImGui::Text("Quad Count: %d", renderer2d_stats.QuadCount);
-    ImGui::Text("Vertex Count: %d", renderer2d_stats.getTotalVertexCount());
-    ImGui::Text("Index Count: %d", renderer2d_stats.getTotalIndexCount());
+    ImGui::Text("绘制批次: %d", renderer2d_stats.DrawCalls);
+    ImGui::Text("四边形个数: %d", renderer2d_stats.QuadCount);
+    ImGui::Text("顶点个数: %d", renderer2d_stats.getTotalVertexCount());
+    ImGui::Text("索引个数: %d", renderer2d_stats.getTotalIndexCount());
+    ImGui::Text("线段个数: %d", renderer2d_stats.LineCount);
     ImGui::End();
 
     // viewport

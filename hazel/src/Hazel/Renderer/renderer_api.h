@@ -33,6 +33,11 @@ public:
     /// @param index_count 指定绘制多少索引值, 为0则绘制顶点数组对象中索引buffer的全部索引
     virtual void drawIndexed(const Ref<VertexArray>& vertex_array, uint32_t index_count = 0) = 0;
 
+    virtual void drawLines(const Ref<VertexArray>& vertex_array, uint32_t vertex_count) = 0;
+
+    // 设置全局线端渲染宽度
+    virtual void setLineWidth(float width) = 0;
+
     /// @brief 设置渲染视口
     virtual void setViewport(uint32_t width, uint32_t height) = 0;
 

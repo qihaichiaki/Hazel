@@ -1391,3 +1391,30 @@ layout(std140, binding = 0) uniform Camera
 
 * 注意：
   * 使用glDrawElements的时候，一定要先绑定va
+
+
+### 渲染线段
+* 线段
+* 线带(连续的折现, 复用公共的顶点)
+* 线环(线带的基础上最后一个顶点会和第一个顶点相连)
+
+* 线段绘制核心代码: 
+  * glDrawArrays(GL_LINES, 0, vertexCount);
+
+
+* 线段顶点数据:
+  * LineVertex
+  * Position
+  * Color
+  * Entity ID
+
+* 同理va, vb, shader
+
+* opengl SetLineWidth(float width) 设置线条厚度
+  * glLineWidth(width);  // 全局线宽
+
+* 可以使用glEnable(GL_LINE_SMOOTH);  // 来让渲染的线端变得光滑, 抗锯齿哦
+* 扩展, 利用线段渲染实现线框渲染
+* DrawRect 非旋转的
+  * p0 -> p1, p1 -> p2, p2 -> p3, p3 -> p0
+* DrawRect transform的

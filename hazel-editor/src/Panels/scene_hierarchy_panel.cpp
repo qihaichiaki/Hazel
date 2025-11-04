@@ -278,6 +278,10 @@ void SceneHierarchyPanel::drawComponents(Entity entity)
                             !m_selection_context.hasComponent<BoxCollider2DComponent>())) {
             m_selection_context.addComponent<BoxCollider2DComponent>();
         }
+        if (ImGui::MenuItem("CircleCollider2D", 0, false,
+                            !m_selection_context.hasComponent<CircleCollider2DComponent>())) {
+            m_selection_context.addComponent<CircleCollider2DComponent>();
+        }
         ImGui::EndPopup();
     }
     ImGui::PopItemWidth();
@@ -406,6 +410,18 @@ void SceneHierarchyPanel::drawComponents(Entity entity)
         ImGui::DragFloat("反弹恢复阈值", &bc.RestitutionThreshold, 0.01f, 0.0f, 1.0f, "%.3f",
                          ImGuiSliderFlags_NoInput);
     });
+
+    // CircleCollider2D
+    drawComponent<CircleCollider2DComponent>(
+        "CircleCollider2D", entity, [](CircleCollider2DComponent& cc) {
+            ImGui::DragFloat2("偏移", glm::value_ptr(cc.Offset));
+            ImGui::DragFloat("半径", &cc.Radius);
+            ImGui::DragFloat("密度", &cc.Density, 0.01f);
+            ImGui::DragFloat("摩擦力", &cc.Friction, 0.01f, 0.0f, 1.0f);
+            ImGui::DragFloat("反弹系数", &cc.Restitution, 0.01f, 0.0f, 1.0f);
+            ImGui::DragFloat("反弹恢复阈值", &cc.RestitutionThreshold, 0.01f, 0.0f, 1.0f, "%.3f",
+                             ImGuiSliderFlags_NoInput);
+        });
 
     ImGui::PopID();
 }

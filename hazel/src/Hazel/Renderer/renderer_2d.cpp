@@ -35,6 +35,15 @@ struct CircleVertex
     int EntityID;
 };
 
+// 线段顶点数据
+struct LineVertex
+{
+    glm::vec3 Position;
+    glm::vec4 Color;
+
+    int EntityID;
+};
+
 struct Renderer2DData
 {
     static const uint32_t MaxQuads = 10000;               // 允许的最大四边形绘制数量
@@ -63,6 +72,17 @@ struct Renderer2DData
     CircleVertex* CircleVertexBufferBase = nullptr;
     CircleVertex* CircleVertexBufferPtr = nullptr;
     uint32_t CircleCount = 0;
+
+    // line
+    Ref<VertexArray> LineVertexArray;
+    Ref<VertexBuffer> LineVertexBuffer;
+    Ref<Shader> LineShader;
+
+    LineVertex* LineVertexBufferBase = nullptr;
+    LineVertex* LineVertexBufferPtr = nullptr;
+    uint32_t LineCount = 0;
+
+    float LineWidth = 5.0f;
 
     Renderer2D::Statistics Stats;
 
@@ -149,7 +169,7 @@ void Renderer2D::init()
 
     // TODO: 圆的绘制上限借用MaxQuads, 后续可以自由调整
     s_data.CircleVertexBuffer =
-        VertexBuffer::create(Renderer2DData::MaxVertices * sizeof(QuadVertex));
+        VertexBuffer::create(Renderer2DData::MaxVertices * sizeof(CircleVertex));
 
     s_data.CircleVertexBuffer->setLayout({{ShaderDataType::Float3, "a_WorldPosition"},
                                           {ShaderDataType::Float3, "a_LocalPosition"},
@@ -165,6 +185,25 @@ void Renderer2D::init()
     s_data.CircleVertexArray->setIndexBuffer(circle_index_buffer);
 
     s_data.CircleShader = Shader::create("assets/shaders/Renderer2D_Circle.glsl");
+    // ============
+
+    // ====== Line ======
+    s_data.LineVertexArray = VertexArray::create();
+
+    // TODO: 线的绘制上限借用MaxQuads, 后续可以自由调整
+    s_data.LineVertexBuffer =
+        VertexBuffer::create(Renderer2DData::MaxVertices * sizeof(LineVertex));
+
+    s_data.LineVertexBuffer->setLayout({{ShaderDataType::Float3, "a_Position"},
+                                        {ShaderDataType::Float4, "a_Color"},
+                                        {ShaderDataType::Int, "a_EntityID"}});
+    s_data.LineVertexArray->addVertexBuffer(s_data.LineVertexBuffer);
+
+    s_data.LineVertexBufferBase = new LineVertex[Renderer2DData::MaxVertices];
+
+    s_data.LineShader = Shader::create("assets/shaders/Renderer2D_Line.glsl");
+    // 设置绘制线段的宽度
+    RendererCommand::setLineWidth(s_data.LineWidth);
     // ============
 
     s_data.CameraUniformBuffer = UniformBuffer::create(sizeof(Renderer2DData::CameraData), 0);
@@ -192,6 +231,10 @@ static inline void startBatch()
     // 圆形绘制重置
     s_data.CircleCount = 0;
     s_data.CircleVertexBufferPtr = s_data.CircleVertexBufferBase;
+
+    // 线端绘制重置
+    s_data.LineCount = 0;
+    s_data.LineVertexBufferPtr = s_data.LineVertexBufferBase;
 }
 
 void Renderer2D::beginScene(const EditorCamera& camera)
@@ -251,6 +294,17 @@ void Renderer2D::flush()
 
         s_data.CircleShader->bind();
         RendererCommand::drawIndexed(s_data.CircleVertexArray, s_data.CircleCount * 6);
+
+        s_data.Stats.DrawCalls++;
+    }
+
+    if (s_data.LineCount > 0) {
+        uint32_t size = (uint32_t)((uint8_t*)s_data.LineVertexBufferPtr -
+                                   (uint8_t*)s_data.LineVertexBufferBase);
+        s_data.LineVertexBuffer->setData(s_data.LineVertexBufferBase, size);
+
+        s_data.LineShader->bind();
+        RendererCommand::drawLines(s_data.LineVertexArray, s_data.LineCount * 2);
 
         s_data.Stats.DrawCalls++;
     }
@@ -365,6 +419,61 @@ void Renderer2D::drawCircle(
     s_data.Stats.QuadCount++;
 }
 
+void Renderer2D::drawLine(const glm::vec3& p0,
+                          const glm::vec3& p1,
+                          const glm::vec4& color,
+                          int entity_id)
+{
+    HZ_PROFILE_FUNCTION();
+
+    // TODO: 超出限制, 重置flush
+    // if (s_data.QuadCount >= Renderer2DData::MaxQuads) {
+    // flushAndReset();
+    // }
+
+    s_data.LineVertexBufferPtr->Position = p0;
+    s_data.LineVertexBufferPtr->Color = color;
+    s_data.LineVertexBufferPtr->EntityID = entity_id;
+    s_data.LineVertexBufferPtr++;
+
+    s_data.LineVertexBufferPtr->Position = p1;
+    s_data.LineVertexBufferPtr->Color = color;
+    s_data.LineVertexBufferPtr->EntityID = entity_id;
+    s_data.LineVertexBufferPtr++;
+
+    s_data.LineCount++;
+    s_data.Stats.LineCount++;
+}
+
+void Renderer2D::drawRect(const glm::vec3& position,
+                          const glm::vec2& half_size,
+                          const glm::vec4& color,
+                          int entity_id)
+{
+    glm::vec3 p0{position.x - half_size.x, position.y - half_size.y, position.z};
+    glm::vec3 p1{position.x + half_size.x, position.y - half_size.y, position.z};
+    glm::vec3 p2{position.x + half_size.x, position.y + half_size.y, position.z};
+    glm::vec3 p3{position.x - half_size.x, position.y + half_size.y, position.z};
+
+    drawLine(p0, p1, color, entity_id);
+    drawLine(p1, p2, color, entity_id);
+    drawLine(p2, p3, color, entity_id);
+    drawLine(p3, p0, color, entity_id);
+}
+
+void Renderer2D::drawRect(const glm::mat4& transform, const glm::vec4& color, int entity_id)
+{
+    glm::vec3 p0 = transform * s_data.RefPositions[0];
+    glm::vec3 p1 = transform * s_data.RefPositions[1];
+    glm::vec3 p2 = transform * s_data.RefPositions[2];
+    glm::vec3 p3 = transform * s_data.RefPositions[3];
+
+    drawLine(p0, p1, color, entity_id);
+    drawLine(p1, p2, color, entity_id);
+    drawLine(p2, p3, color, entity_id);
+    drawLine(p3, p0, color, entity_id);
+}
+
 void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
 {
     // 准备变换矩阵
@@ -452,5 +561,6 @@ void Renderer2D::resetStats()
 {
     s_data.Stats.DrawCalls = 0;
     s_data.Stats.QuadCount = 0;
+    s_data.Stats.LineCount = 0;
 }
 }  // namespace Hazel
