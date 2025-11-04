@@ -58,13 +58,22 @@ public:
     /// @param color 颜色
     /// @param thickness 圆的厚度 [0, 1.0f](1为实心圆, 0什么都没有)
     /// @param fade 模糊程度(0.005为最清晰)
-    /// @param entity_id
-    /// @return
+    /// @param entity_id 实体id, 默认为-1, 表示无实体绘制. 编辑器特供
     HAZEL_API static void drawCircle(const glm::mat4& transform,
                                      const glm::vec4& color,
                                      float thickness,
                                      float fade = 0.005f,
                                      int entity_id = -1);
+
+    /// @brief 绘制线段
+    /// @param p0 起点
+    /// @param p1 终点
+    /// @param color 线段颜色
+    /// @param entity_id 实体id, 默认为-1, 表示无实体绘制. 编辑器特供
+    HAZEL_API static void drawLine(const glm::vec3& p0,
+                                   const glm::vec3& p1,
+                                   const glm::vec4& color,
+                                   int entity_id = -1);
 
     /// 绘制非旋转的四边形
 
@@ -159,6 +168,7 @@ public:
     {
         uint32_t DrawCalls = 0;
         uint32_t QuadCount = 0;
+        uint32_t LineCount = 0;
 
         uint32_t getTotalVertexCount()
         {

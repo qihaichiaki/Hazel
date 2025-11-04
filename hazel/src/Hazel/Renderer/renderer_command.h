@@ -37,6 +37,16 @@ public:
         s_renderer_api->drawIndexed(vertex_array, index_count);
     }
 
+    HAZEL_API static void drawLines(const Ref<VertexArray>& vertex_array, uint32_t vertex_count)
+    {
+        s_renderer_api->drawLines(vertex_array, vertex_count);
+    }
+
+    HAZEL_API static void setLineWidth(float width)
+    {
+        s_renderer_api->setLineWidth(width);
+    }
+
     /// @brief 设置渲染器的渲染视图
     HAZEL_API static void setViewport(uint32_t width, uint32_t height)
     {

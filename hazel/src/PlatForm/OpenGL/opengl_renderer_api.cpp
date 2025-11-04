@@ -18,6 +18,9 @@ void OpenGLRendererAPI::init()
 
     // 启用深度测试
     glEnable(GL_DEPTH_TEST);
+
+    // 优化线段渲染
+    glEnable(GL_LINE_SMOOTH);
 }
 
 void OpenGLRendererAPI::setClearColor(const glm::vec4& clear_color)
@@ -35,6 +38,17 @@ void OpenGLRendererAPI::drawIndexed(const Ref<VertexArray>& vertex_array, uint32
     vertex_array->bind();
     index_count = index_count == 0 ? vertex_array->getIndexBuffer()->getCount() : index_count;
     glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, nullptr);
+}
+
+void OpenGLRendererAPI::drawLines(const Ref<VertexArray>& vertex_array, uint32_t vertex_count)
+{
+    vertex_array->bind();
+    glDrawArrays(GL_LINES, 0, vertex_count);
+}
+
+void OpenGLRendererAPI::setLineWidth(float width)
+{
+    glLineWidth(width);
 }
 
 void OpenGLRendererAPI::setViewport(uint32_t width, uint32_t height)
