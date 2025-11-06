@@ -1418,3 +1418,7 @@ layout(std140, binding = 0) uniform Camera
 * DrawRect 非旋转的
   * p0 -> p1, p1 -> p2, p2 -> p3, p3 -> p0
 * DrawRect transform的
+
+
+### 可视化物理碰撞器
+* 在layer层增加函数OverlayRenderer专门用于调试debug渲染

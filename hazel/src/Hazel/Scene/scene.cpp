@@ -102,31 +102,30 @@ void Scene::onUpdateEditor(Timestep, const EditorCamera& editor_camera)
     }
 
     // TODO: 渲染物理碰撞盒子
-    // {
-    //     m_registry.view<TransformComponent, BoxCollider2DComponent>().each(
-    //         [](auto enid, TransformComponent& transform, BoxCollider2DComponent& box_collider2d)
-    //         {
-    //             TransformComponent box_collider_2d_transform{transform};
-    //             box_collider_2d_transform.Translation +=
-    //                 glm::vec3{box_collider2d.Offset.x, box_collider2d.Offset.y, 0.0f};
-    //             box_collider_2d_transform.Scale *=
-    //                 glm::vec3{box_collider2d.Size.x, box_collider2d.Size.y, 1.0f};
-    //             Renderer2D::drawRect(box_collider_2d_transform.getTransform(),
-    //                                  {1.0f, 1.0f, 1.0f, 1.f}, (int)enid);
-    //         });
+    {
+        m_registry.view<TransformComponent, BoxCollider2DComponent>().each(
+            [](auto enid, TransformComponent& transform, BoxCollider2DComponent& box_collider2d) {
+                TransformComponent box_collider_2d_transform{transform};
+                box_collider_2d_transform.Translation +=
+                    glm::vec3{box_collider2d.Offset.x, box_collider2d.Offset.y, 0.0f};
+                box_collider_2d_transform.Scale *=
+                    glm::vec3{box_collider2d.Size.x * 2.0f, box_collider2d.Size.y * 2.0f, 1.0f};
+                Renderer2D::drawRect(box_collider_2d_transform.getTransform(),
+                                     {0.0f, 1.0f, 0.0f, 1.f}, (int)enid);
+            });
 
-    //     m_registry.view<TransformComponent, CircleCollider2DComponent>().each(
-    //         [](auto enid, TransformComponent& transform,
-    //            CircleCollider2DComponent& circle_collider2d) {
-    //             TransformComponent circle_collider_2d_transform{transform};
-    //             circle_collider_2d_transform.Translation +=
-    //                 glm::vec3{circle_collider2d.Offset.x, circle_collider2d.Offset.y, 0.0f};
-    //             circle_collider_2d_transform.Scale = {circle_collider2d.Radius * 2.0f,
-    //                                                   circle_collider2d.Radius * 2.0f, 1.0f};
-    //             Renderer2D::drawCircle(circle_collider_2d_transform.getTransform(),
-    //                                    {1.0f, 1.0f, 1.0f, 1.f}, 0.025f, 0.005f, (int)enid);
-    //         });
-    // }
+        m_registry.view<TransformComponent, CircleCollider2DComponent>().each(
+            [](auto enid, TransformComponent& transform,
+               CircleCollider2DComponent& circle_collider2d) {
+                TransformComponent circle_collider_2d_transform{transform};
+                circle_collider_2d_transform.Translation +=
+                    glm::vec3{circle_collider2d.Offset.x, circle_collider2d.Offset.y, 0.005f};
+                circle_collider_2d_transform.Scale = {circle_collider2d.Radius * 2.0f,
+                                                      circle_collider2d.Radius * 2.0f, 1.0f};
+                Renderer2D::drawCircle(circle_collider_2d_transform.getTransform(),
+                                       {0.0f, 1.0f, 0.0f, 1.f}, 0.01f, 0.005f, (int)enid);
+            });
+    }
 
     Renderer2D::endScene();
 }
